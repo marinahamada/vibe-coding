@@ -6,22 +6,22 @@
   <title>Virtual Fridge Chef</title>
   <style>
     :root {
-      --bg-top: #eef5ff;
-      --bg-bottom: #f6fbff;
+      --bg-top: #f4f6f8;
+      --bg-bottom: #eef2f5;
       --ink: #111827;
-      --muted: #55637a;
-      --glass: rgba(255, 255, 255, 0.72);
-      --glass-strong: rgba(255, 255, 255, 0.9);
-      --line: rgba(255, 255, 255, 0.84);
+      --muted: #5b6471;
+      --glass: #ffffff;
+      --glass-strong: #ffffff;
+      --line: #d9dde3;
       --accent: #0a84ff;
-      --accent-dark: #0060df;
+      --accent-dark: #0a6ad1;
       --danger: #ff3b30;
-      --chip: #f2f6fb;
-      --card-shadow: 0 20px 55px rgba(16, 38, 72, 0.18);
-      --soft-shadow: 0 10px 28px rgba(16, 38, 72, 0.12);
-      --radius-xl: 28px;
-      --radius-lg: 20px;
-      --radius-md: 14px;
+      --chip: #f4f6f8;
+      --card-shadow: none;
+      --soft-shadow: none;
+      --radius-xl: 18px;
+      --radius-lg: 14px;
+      --radius-md: 10px;
     }
 
     * { box-sizing: border-box; }
@@ -31,11 +31,8 @@
       min-height: 100vh;
       color: var(--ink);
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
-      background:
-        radial-gradient(1000px 500px at 8% 6%, rgba(255, 255, 255, 0.92), transparent 70%),
-        radial-gradient(700px 380px at 94% 86%, rgba(10, 132, 255, 0.18), transparent 65%),
-        linear-gradient(155deg, var(--bg-top), var(--bg-bottom));
-      padding: 28px;
+      background: linear-gradient(180deg, var(--bg-top), var(--bg-bottom));
+      padding: 18px;
       -webkit-font-smoothing: antialiased;
     }
 
@@ -47,9 +44,6 @@
       border: 1px solid var(--line);
       box-shadow: var(--card-shadow);
       overflow: hidden;
-      backdrop-filter: blur(20px) saturate(150%);
-      -webkit-backdrop-filter: blur(20px) saturate(150%);
-      animation: floatIn 700ms ease both;
     }
 
     .titlebar {
@@ -57,8 +51,8 @@
       align-items: center;
       justify-content: space-between;
       padding: 12px 18px;
-      border-bottom: 1px solid rgba(222, 232, 245, 0.95);
-      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.82), rgba(246, 250, 255, 0.65));
+      border-bottom: 1px solid #e1e6ed;
+      background: #f7f8fa;
     }
 
     .traffic {
@@ -100,8 +94,8 @@
     .hero {
       border-radius: var(--radius-lg);
       padding: 18px;
-      background: linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(241, 247, 255, 0.82));
-      border: 1px solid rgba(255, 255, 255, 0.95);
+      background: #ffffff;
+      border: 1px solid #e4e8ee;
       box-shadow: var(--soft-shadow);
     }
 
@@ -126,11 +120,10 @@
 
     .card {
       background: var(--glass-strong);
-      border: 1px solid rgba(255, 255, 255, 0.92);
+      border: 1px solid #e4e8ee;
       border-radius: var(--radius-lg);
       box-shadow: var(--soft-shadow);
       padding: 16px;
-      animation: rise 600ms ease both;
     }
 
     .card h3 {
@@ -173,34 +166,33 @@
       font-size: 0.92rem;
       font-family: inherit;
       cursor: pointer;
-      transition: transform 120ms ease, filter 180ms ease, box-shadow 180ms ease;
+      transition: filter 180ms ease;
     }
 
     button:hover { filter: brightness(1.05); }
-    button:active { transform: translateY(1px) scale(0.99); }
+    button:active { filter: brightness(0.98); }
 
     .btn-primary {
-      background: linear-gradient(180deg, #2b9bff, var(--accent));
-      box-shadow: 0 6px 16px rgba(10, 132, 255, 0.3);
+      background: var(--accent);
+      box-shadow: none;
     }
 
     .btn-secondary {
-      background: linear-gradient(180deg, #4fb3ff, var(--accent-dark));
-      box-shadow: 0 6px 16px rgba(0, 96, 223, 0.25);
+      background: var(--accent-dark);
+      box-shadow: none;
     }
 
     .btn-danger {
-      background: linear-gradient(180deg, #ff786f, var(--danger));
-      box-shadow: 0 6px 16px rgba(255, 59, 48, 0.25);
+      background: var(--danger);
+      box-shadow: none;
     }
 
     .fridge-shell {
       position: relative;
-      border-radius: 20px;
+      border-radius: 14px;
       padding: 14px;
-      background: linear-gradient(180deg, #f9fcff, #eaf2fb);
-      border: 1px solid #cfdeef;
-      box-shadow: inset 0 2px 8px rgba(255, 255, 255, 0.9), inset 0 -2px 8px rgba(147, 172, 200, 0.3);
+      background: #eef3f8;
+      border: 1px solid #d5dde7;
       overflow: hidden;
       min-height: 205px;
     }
@@ -212,8 +204,8 @@
       right: 16px;
       top: 62px;
       height: 1px;
-      background: #cad9e9;
-      box-shadow: 0 48px 0 #cad9e9;
+      background: #d0d9e4;
+      box-shadow: 0 48px 0 #d0d9e4;
     }
 
     .fridge-shell::after {
@@ -224,8 +216,8 @@
       right: 14px;
       width: 9px;
       border-radius: 999px;
-      background: linear-gradient(180deg, #b4c8dd, #8ea6bf);
-      box-shadow: inset -1px 0 2px rgba(0, 0, 0, 0.16);
+      background: #a8b7c8;
+      box-shadow: none;
     }
 
     .fridge-head {
@@ -245,7 +237,7 @@
       height: 9px;
       border-radius: 50%;
       background: #5cd65c;
-      box-shadow: 0 0 10px rgba(92, 214, 92, 0.8);
+      box-shadow: none;
     }
 
     .fridge {
@@ -254,8 +246,8 @@
       flex-wrap: wrap;
       align-content: flex-start;
       gap: 8px;
-      background: linear-gradient(180deg, #ffffff, #f4f9ff);
-      border: 1px solid #cddbea;
+      background: #ffffff;
+      border: 1px solid #d5dde7;
       border-radius: 13px;
       padding: 10px;
       margin-right: 16px;
@@ -272,7 +264,6 @@
       border-radius: 999px;
       padding: 7px 10px;
       font-size: 0.9rem;
-      animation: pop 280ms ease;
     }
 
     .chip .x {
@@ -296,9 +287,9 @@
     }
 
     .quick button {
-      background: linear-gradient(180deg, #f4f8fe, #e7eff9);
+      background: #f4f6f9;
       color: #2a3d57;
-      border: 1px solid #d4e2f1;
+      border: 1px solid #d8e0ea;
       box-shadow: none;
       border-radius: 999px;
       font-weight: 600;
@@ -315,8 +306,8 @@
 
     .stat {
       border-radius: 13px;
-      border: 1px solid #d8e4f1;
-      background: linear-gradient(180deg, #fbfdff, #f3f8ff);
+      border: 1px solid #d9e0e8;
+      background: #f7f9fb;
       text-align: center;
       padding: 10px 7px;
       color: #334a68;
@@ -340,10 +331,10 @@
 
     .safari {
       border-radius: 16px;
-      border: 1px solid #cfdeed;
-      background: #f9fbff;
+      border: 1px solid #d8dee7;
+      background: #ffffff;
       overflow: hidden;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+      box-shadow: none;
     }
 
     .safari-bar {
@@ -352,8 +343,8 @@
       align-items: center;
       gap: 10px;
       padding: 9px 10px;
-      background: linear-gradient(180deg, #f4f8fd, #e8f0fa);
-      border-bottom: 1px solid #d5e1ee;
+      background: #f2f4f7;
+      border-bottom: 1px solid #dce2ea;
     }
 
     .safari-controls {
@@ -365,7 +356,7 @@
       width: 12px;
       height: 12px;
       border-radius: 50%;
-      box-shadow: inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+      box-shadow: none;
     }
 
     .safari-btn.red { background: #ff5f57; }
@@ -375,9 +366,9 @@
     .url-pill {
       text-align: center;
       border-radius: 999px;
-      border: 1px solid #d3dfed;
+      border: 1px solid #d8dee7;
       background: #ffffff;
-      color: #516985;
+      color: #4f5f73;
       font-size: 0.78rem;
       font-weight: 600;
       padding: 6px 10px;
@@ -410,9 +401,9 @@
       margin: 8px 0 10px;
       padding: 4px 10px;
       border-radius: 999px;
-      border: 1px solid #c7def8;
-      background: #eef6ff;
-      color: #1f66b4;
+      border: 1px solid #d6dde6;
+      background: #f5f7fa;
+      color: #3c4f67;
       font-size: 0.8rem;
       font-weight: 700;
     }
@@ -427,8 +418,8 @@
     }
 
     .meta span {
-      border: 1px solid #d4e1ee;
-      background: #f3f8fe;
+      border: 1px solid #d8e0e8;
+      background: #f6f8fb;
       border-radius: 10px;
       padding: 4px 8px;
     }
@@ -456,21 +447,6 @@
       font-style: italic;
     }
 
-    @keyframes floatIn {
-      from { transform: translateY(12px) scale(0.985); opacity: 0; }
-      to { transform: translateY(0) scale(1); opacity: 1; }
-    }
-
-    @keyframes rise {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes pop {
-      from { transform: scale(0.92); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-
     @media (max-width: 940px) {
       body { padding: 14px; }
       .content { padding: 14px; }
@@ -487,22 +463,22 @@
         <span class="dot yellow"></span>
         <span class="dot green"></span>
       </div>
-      <h1>🍏 Fridge Chef Play</h1>
-      <div class="device">📱 + 💻 mode</div>
+      <h1>Fridge Chef</h1>
+      <div class="device">iOS + Mac style</div>
     </header>
 
     <section class="content">
       <article class="hero">
-        <h2>🧊 ➜ 👨‍🍳 ➜ 🍽️</h2>
-        <p>Drop food into your virtual fridge, tap cook, and get a playful chef-made dish with style, steps, and plating flair.</p>
+        <h2>Virtual Fridge Game</h2>
+        <p>Add ingredients, then create a recipe from what you have.</p>
       </article>
 
       <section class="grid">
         <article class="card">
-          <h3>🧊 My Fridge</h3>
+          <h3>My Fridge</h3>
           <div class="add-row">
             <input id="ingredientInput" type="text" placeholder="🥕 tomato / basil / egg ..." />
-            <button id="addBtn" type="button" class="btn-primary">➕ 🥬</button>
+            <button id="addBtn" type="button" class="btn-primary">Add</button>
           </div>
 
           <div class="fridge-shell">
@@ -529,24 +505,24 @@
           <div class="stats">
             <div class="stat">
               <strong id="countStat">0</strong>
-              🧺
+              Items
             </div>
             <div class="stat">
               <strong id="freshnessStat">100%</strong>
-              ✨
+              Fresh
             </div>
             <div class="stat">
-              <strong id="levelStat">🐣</strong>
-              👨‍🍳
+              <strong id="levelStat">Rookie</strong>
+              Rank
             </div>
           </div>
         </article>
 
         <article class="card">
-          <h3>👨‍🍳 Studio</h3>
+          <h3>Chef Studio</h3>
           <div class="actions">
-            <button id="cookBtn" class="btn-secondary" type="button">🍳✨</button>
-            <button id="clearBtn" class="btn-danger" type="button">🗑️🧊</button>
+            <button id="cookBtn" class="btn-secondary" type="button">Cook</button>
+            <button id="clearBtn" class="btn-danger" type="button">Clear</button>
           </div>
 
           <div class="safari">
@@ -556,11 +532,11 @@
                 <span class="safari-btn yellow"></span>
                 <span class="safari-btn green"></span>
               </div>
-              <div class="url-pill">🧑‍🍳 recipe://fridge-chef</div>
+              <div class="url-pill">recipe://fridge-chef</div>
               <div class="safari-tools">🔁 ⤴︎</div>
             </div>
             <section id="recipe" class="recipe-card" aria-live="polite">
-              <p class="empty">😴 No dish yet. Add 3+ items, then tap 🍳✨.</p>
+              <p class="empty">No dish yet. Add 3+ items, then tap Cook.</p>
             </section>
           </div>
         </article>
@@ -631,7 +607,7 @@
       if (!ingredients.length) {
         const p = document.createElement('p');
         p.className = 'empty';
-        p.textContent = '🫙 empty fridge';
+        p.textContent = 'Fridge is empty.';
         fridgeEl.appendChild(p);
         return;
       }
@@ -698,7 +674,7 @@
         `🔥 Saute aromatics and let ${withEmoji(mainVeg)} soften until glossy.`,
         `🍲 Add ${withEmoji(mainCarb)} + ${withEmoji(mainProtein)} and stir in ${withEmoji(herb)}.`,
         `⚖️ Balance with ${withEmoji(citrus)} and a tiny butter finish.`,
-        `🍽️ Plate high in the center, drizzle oil, sprinkle herbs, snap a pic.`
+        `Plate in the center, drizzle lightly, and finish with herbs.`
       ];
 
       return {
@@ -715,8 +691,8 @@
 
     function renderRecipe(data) {
       recipeEl.innerHTML = `
-        <h4 class="recipe-title">🍽️ ${data.title}</h4>
-        <span class="badge">🌍 ${data.style}</span>
+        <h4 class="recipe-title">${data.title}</h4>
+        <span class="badge">${data.style}</span>
 
         <div class="meta">
           <span>⏱️ ${data.cookTime}m</span>
@@ -724,13 +700,13 @@
           <span>✨ ${data.beauty}/100</span>
         </div>
 
-        <h4>🧺</h4>
+        <h4>Ingredients</h4>
         <ul>${data.ingredients.map((item) => `<li>${item}</li>`).join('')}</ul>
 
-        <h4>👨‍🍳</h4>
+        <h4>Steps</h4>
         <ol>${data.steps.map((step) => `<li>${step}</li>`).join('')}</ol>
 
-        <h4>🎨</h4>
+        <h4>Plating</h4>
         <p>${data.plating}</p>
       `;
     }
@@ -739,7 +715,7 @@
       countStat.textContent = String(ingredients.length);
       const freshness = Math.max(62, 100 - ingredients.length * 3);
       freshnessStat.textContent = `${freshness}%`;
-      levelStat.textContent = ingredients.length >= 8 ? '🧑‍🍳' : ingredients.length >= 4 ? '😎' : '🐣';
+      levelStat.textContent = ingredients.length >= 8 ? 'Pro' : ingredients.length >= 4 ? 'Skilled' : 'Rookie';
     }
 
     addBtn.addEventListener('click', () => addIngredient(ingredientInput.value));
@@ -753,7 +729,7 @@
 
     cookBtn.addEventListener('click', () => {
       if (ingredients.length < 3) {
-        recipeEl.innerHTML = '<p class="empty">🧠 Need at least 3 items for chef magic.</p>';
+        recipeEl.innerHTML = '<p class="empty">Need at least 3 items to cook.</p>';
         return;
       }
       renderRecipe(recipeTemplate([...ingredients]));
@@ -763,7 +739,7 @@
       ingredients.length = 0;
       renderFridge();
       renderStats();
-      recipeEl.innerHTML = '<p class="empty">🧼 fridge reset. Ready for round 2.</p>';
+      recipeEl.innerHTML = '<p class="empty">Fridge reset. Ready for a new round.</p>';
     });
 
     renderFridge();
