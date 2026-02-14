@@ -1,0 +1,925 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tile Vibe Studio (iOS-ish)</title>
+  <style>
+    :root{
+      --bg:#f2f2f7;
+      --card:#ffffffcc;
+      --cardSolid:#ffffff;
+      --text:#111111;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --accent:#0a84ff;
+      --danger:#ff3b30;
+      --shadow: 0 12px 30px rgba(0,0,0,.08);
+      --radius: 18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background: radial-gradient(1200px 600px at 20% 0%, #ffffff 0%, var(--bg) 55%);
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display","SF Pro Text","Hiragino Sans","Noto Sans JP", "Segoe UI", Arial;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .wrap{max-width:1100px;margin:0 auto;padding:18px;}
+    header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:12px;}
+    h1{margin:0;font-size:20px;letter-spacing:0.2px}
+    .sub{color:var(--muted);font-size:12px;margin-top:4px;line-height:1.4}
+    .pill{
+      display:inline-flex;gap:8px;align-items:center;
+      padding:8px 12px;border-radius:999px;
+      border:1px solid var(--line);
+      background: #ffffffaa;
+      backdrop-filter: blur(14px);
+      font-size:12px;color:var(--muted);
+      box-shadow: 0 6px 20px rgba(0,0,0,.05);
+    }
+    .grid{display:grid;grid-template-columns: 1.25fr 1fr;gap:14px}
+    @media (max-width: 900px){ .grid{grid-template-columns:1fr;} }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      padding:14px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .row.tight{gap:8px}
+    .row > *{margin:0}
+    .label{color:var(--muted);font-size:12px}
+    button, select, input{
+      border:1px solid var(--line);
+      padding:10px 12px;
+      border-radius: 14px;
+      font-size:13px;
+      outline:none;
+      background: var(--cardSolid);
+      color: var(--text);
+    }
+    input{min-width: 220px}
+    button{
+      cursor:pointer;
+      transition: transform .05s ease, background .15s ease, border-color .15s ease;
+      user-select:none;
+    }
+    button:active{transform: translateY(1px);}
+    button.primary{
+      background: var(--accent);
+      border-color: rgba(0,0,0,.06);
+      color:#fff;
+    }
+    button.ghost{
+      background: transparent;
+    }
+    button.danger{
+      background: #fff;
+      border-color: rgba(255,59,48,.35);
+      color: var(--danger);
+    }
+    button.danger:hover{border-color: rgba(255,59,48,.65)}
+    .seg{
+      display:inline-flex;
+      border:1px solid var(--line);
+      border-radius: 14px;
+      overflow:hidden;
+      background: var(--cardSolid);
+    }
+    .seg button{
+      border:none;
+      border-right:1px solid var(--line);
+      border-radius:0;
+      padding:10px 12px;
+      background:transparent;
+      color:var(--muted);
+    }
+    .seg button:last-child{border-right:none}
+    .seg button.on{
+      background: rgba(10,132,255,.12);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    canvas{
+      width:100%;height:auto;
+      border-radius: 16px;
+      border:1px solid var(--line);
+      background: #fff;
+    }
+    .hint{color:var(--muted);font-size:12px;line-height:1.45;margin:10px 0 0}
+    .sep{height:1px;background:var(--line);margin:12px 0}
+
+    .kvs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width: 560px){ .kvs{grid-template-columns:1fr} }
+    .kv{border:1px solid var(--line);border-radius:16px;padding:10px;background: var(--cardSolid)}
+    .kv .k{color:var(--muted);font-size:12px}
+    .kv .v{font-size:13px;margin-top:4px;word-break: break-all}
+
+    .gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    @media (max-width: 900px){ .gallery{grid-template-columns:repeat(2,1fr)} }
+    @media (max-width: 560px){ .gallery{grid-template-columns:1fr} }
+
+    .thumb{
+      border:1px solid var(--line);
+      border-radius: 18px;
+      overflow:hidden;
+      background: var(--cardSolid);
+      box-shadow: 0 10px 24px rgba(0,0,0,.06);
+    }
+    .thumb img{display:block;width:100%;height:auto}
+    .thumb .meta{padding:10px}
+    .thumb .title{font-size:13px;margin:0 0 6px 0;display:flex;align-items:center;gap:6px}
+    .star{color:#ffcc00}
+    .thumb .small{font-size:12px;color:var(--muted);margin:0}
+    .thumb .tags{font-size:12px;color:var(--muted);margin:8px 0 0;display:flex;flex-wrap:wrap;gap:6px}
+    .tagChip{
+      border:1px solid var(--line);
+      padding:4px 8px;border-radius:999px;
+      background:#f9fafb;
+    }
+    .thumb .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+    .thumb .actions button{padding:8px 10px;border-radius:12px}
+
+    .searchBar{
+      display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+    }
+    .searchBar input{flex:1;min-width:200px}
+    .mini{padding:8px 10px;border-radius:12px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Tile Vibe Studio</h1>
+        <div class="sub">ランダムタイル生成 → 自動命名 → タグ/お気に入り付きで保存 → 検索できるギャラリー（iOSっぽいUI）</div>
+      </div>
+      <div class="pill" id="statusPill">Ready</div>
+    </header>
+
+    <div class="grid">
+      <!-- LEFT -->
+      <section class="card">
+        <div class="row" style="justify-content:space-between">
+          <div class="row tight">
+            <button id="genBtn" class="primary">Generate</button>
+            <button id="mutateBtn" class="ghost">Shuffle a bit</button>
+            <button id="exportBtn" class="ghost">Export PNG</button>
+          </div>
+
+          <div class="row tight">
+            <span class="label">Grid</span>
+            <select id="gridSel">
+              <option value="3">3 × 3</option>
+              <option value="6">6 × 6</option>
+              <option value="10">10 × 10</option>
+              <option value="18" selected>18 × 18</option>
+              <option value="24">24 × 24</option>
+              <option value="30">30 × 30</option>
+            </select>
+
+            <span class="label">Theme</span>
+            <select id="themeSel">
+              <option value="flower" selected>Flowers</option>
+              <option value="flags">Flags</option>
+              <option value="sunset">Sunset</option>
+              <option value="wild">Wild Random</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <canvas id="canvas" width="900" height="900"></canvas>
+
+        <div class="sep"></div>
+
+        <div class="row">
+          <input id="nameInput" placeholder="作品名（自動提案されます）" />
+          <button id="suggestBtn" class="ghost">Suggest name</button>
+        </div>
+
+        <div class="row">
+          <input id="tagsInput" placeholder="タグ（例：#cute #sunset / カンマ区切りもOK）" />
+          <div class="seg" aria-label="favorite toggle">
+            <button id="favOffBtn" class="on" type="button">☆</button>
+            <button id="favOnBtn" type="button">★</button>
+          </div>
+          <button id="saveBtn" class="primary">Save</button>
+          <button id="clearBtn" class="danger">Clear All</button>
+        </div>
+
+        <p class="hint">
+          Tips:<br/>
+          ・Shuffle a bit は約25%だけ差し替え（“惜しい”時）<br/>
+          ・テーマは「花/国旗/夕焼け/超ランダム」。花と夕焼けは“作品っぽく”寄せてます
+        </p>
+
+        <div class="kvs">
+          <div class="kv">
+            <div class="k">Grid</div>
+            <div class="v" id="gridInfo">—</div>
+          </div>
+          <div class="kv">
+            <div class="k">Recipe (seed)</div>
+            <div class="v" id="seedInfo">—</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT -->
+      <section class="card">
+        <div class="row" style="justify-content:space-between">
+          <h2 style="margin:0;font-size:16px">Gallery</h2>
+          <div class="row tight">
+            <span class="label">Sort</span>
+            <select id="sortSel">
+              <option value="new" selected>Newest</option>
+              <option value="old">Oldest</option>
+              <option value="name">Name</option>
+              <option value="fav">Favorites</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="searchBar">
+          <input id="searchInput" placeholder="Search（作品名 / タグ）" />
+          <button id="onlyFavBtn" class="mini ghost" type="button">★ only</button>
+          <button id="resetFilterBtn" class="mini ghost" type="button">Reset</button>
+        </div>
+
+        <div class="sep"></div>
+
+        <div id="gallery" class="gallery"></div>
+        <p class="hint">保存先：このブラウザの localStorage（簡易）。別PC/別ブラウザには同期しません。</p>
+      </section>
+    </div>
+  </div>
+
+<script>
+/** ------------------------------
+ *  Seeded RNG
+ * ------------------------------ */
+function xmur3(str) {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return function() {
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    return (h ^= (h >>> 16)) >>> 0;
+  };
+}
+function sfc32(a, b, c, d) {
+  return function() {
+    a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0;
+    let t = (a + b) | 0;
+    a = b ^ (b >>> 9);
+    b = (c + (c << 3)) | 0;
+    c = (c << 21) | (c >>> 11);
+    d = (d + 1) | 0;
+    t = (t + d) | 0;
+    c = (c + t) | 0;
+    return (t >>> 0) / 4294967296;
+  };
+}
+function makeRng(seedStr){
+  const seed = xmur3(seedStr);
+  return sfc32(seed(), seed(), seed(), seed());
+}
+function randInt(rng, min, max){
+  return Math.floor(rng() * (max - min + 1)) + min;
+}
+function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+/** ------------------------------
+ *  Color utils
+ * ------------------------------ */
+function hslToHex(h, s, l) {
+  s /= 100; l /= 100;
+  const k = n => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  const toHex = x => Math.round(255 * x).toString(16).padStart(2, "0");
+  return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
+}
+function hexToRgb(hex){
+  const h = hex.replace("#","").trim();
+  const full = h.length===3 ? h.split("").map(c=>c+c).join("") : h;
+  const n = parseInt(full,16);
+  return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 };
+}
+function rgbToHsl({r,g,b}){
+  r/=255; g/=255; b/=255;
+  const max=Math.max(r,g,b), min=Math.min(r,g,b);
+  let h=0,s=0,l=(max+min)/2;
+  const d=max-min;
+  if(d!==0){
+    s = d/(1-Math.abs(2*l-1));
+    switch(max){
+      case r: h = 60*(((g-b)/d)%6); break;
+      case g: h = 60*(((b-r)/d)+2); break;
+      case b: h = 60*(((r-g)/d)+4); break;
+    }
+  }
+  if(h<0) h+=360;
+  return {h,s:s*100,l:l*100};
+}
+function mixHex(a,b,t){
+  const A=hexToRgb(a), B=hexToRgb(b);
+  const r=Math.round(A.r+(B.r-A.r)*t);
+  const g=Math.round(A.g+(B.g-A.g)*t);
+  const b2=Math.round(A.b+(B.b-A.b)*t);
+  return "#" + [r,g,b2].map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+
+/** ------------------------------
+ *  Theme palettes
+ *  - "さらにランダムに" ＝ 同一テーマ内でも毎回変わるように
+ * ------------------------------ */
+const FLOWER_BASE = [
+  // inspired by flowers (rose/tulip/lily/hydrangea etc.)
+  ["#ff5d8f","#ff99c8","#ffd6ff","#bde0fe","#a2d2ff","#caffbf","#fdffb6"], // rosy
+  ["#ffadad","#ffd6a5","#fdffb6","#caffbf","#9bf6ff","#a0c4ff","#bdb2ff"], // gentle
+  ["#e63946","#ffb703","#fb8500","#8ecae6","#219ebc","#a8dadc","#f1faee"], // vivid bouquet
+  ["#6d597a","#b56576","#e56b6f","#eaac8b","#f2e9e4","#c9ada7","#4a4e69"], // moody
+];
+const FLAGS = [
+  // well-known flag-ish palettes
+  {name:"Tricolor", colors:["#0055a4","#ffffff","#ef4135"]},
+  {name:"Nordic", colors:["#002868","#ffffff","#d00c33"]},
+  {name:"RisingSun", colors:["#ffffff","#bc002d","#111827"]},
+  {name:"Brasil", colors:["#009c3b","#ffdf00","#002776","#ffffff"]},
+  {name:"Italia", colors:["#009246","#ffffff","#ce2b37"]},
+  {name:"Ocean", colors:["#003f5c","#2f4b7c","#665191","#a05195","#d45087"]},
+];
+const SUNSET_BASE = [
+  ["#ff4800","#ff9f1c","#ffd166","#ffe29a","#f8f9fa","#a9def9","#5e60ce"],
+  ["#ff006e","#ffbe0b","#fb5607","#8338ec","#3a86ff","#f1faee","#ffd6a5"],
+  ["#ff7a00","#ffb703","#ffd6a5","#ffadad","#cdb4db","#a2d2ff","#bde0fe"],
+];
+
+function buildPalette(theme, rng){
+  if(theme === "flower"){
+    const base = FLOWER_BASE[randInt(rng,0,FLOWER_BASE.length-1)];
+    // randomize a bit by shifting hue/sat/light
+    const shift = randInt(rng,-18,18);
+    return base.map(hex=>{
+      const hsl = rgbToHsl(hexToRgb(hex));
+      const h = (hsl.h + shift + randInt(rng,-12,12) + 360) % 360;
+      const s = clamp(hsl.s + randInt(rng,-10,10), 25, 92);
+      const l = clamp(hsl.l + randInt(rng,-10,10), 22, 88);
+      return hslToHex(h, s, l);
+    });
+  }
+
+  if(theme === "flags"){
+    const pick = FLAGS[randInt(rng,0,FLAGS.length-1)];
+    // add small variance around each color to feel less rigid
+    return pick.colors.map(hex=>{
+      const hsl = rgbToHsl(hexToRgb(hex));
+      const h = (hsl.h + randInt(rng,-8,8) + 360) % 360;
+      const s = clamp(hsl.s + randInt(rng,-10,10), 20, 100);
+      const l = clamp(hsl.l + randInt(rng,-8,8), 10, 95);
+      return hslToHex(h, s, l);
+    });
+  }
+
+  if(theme === "sunset"){
+    const base = SUNSET_BASE[randInt(rng,0,SUNSET_BASE.length-1)];
+    // turn into a gradient-like palette (even more "sunset")
+    const a = base[randInt(rng,0,base.length-1)];
+    const b = base[randInt(rng,0,base.length-1)];
+    const steps = randInt(rng,6,9);
+    const pal = [];
+    for(let i=0;i<steps;i++){
+      const t = i/(steps-1);
+      pal.push(mixHex(a,b,t));
+    }
+    // sprinkle a couple accent colors
+    pal.push(base[randInt(rng,0,base.length-1)]);
+    pal.push(base[randInt(rng,0,base.length-1)]);
+    return pal;
+  }
+
+  // wild random: purposely chaotic but still "usable"
+  const baseHue = randInt(rng, 0, 360);
+  const n = randInt(rng, 7, 12);
+  const pal = [];
+  for(let i=0;i<n;i++){
+    const h = (baseHue + randInt(rng,-180,180) + i*randInt(rng,0,60) + 360) % 360;
+    const s = randInt(rng, 15, 100);
+    const l = randInt(rng, 10, 90);
+    pal.push(hslToHex(h, s, l));
+  }
+  return pal;
+}
+
+/** ------------------------------
+ *  Auto naming (simple but vibe-y)
+ * ------------------------------ */
+const NAME_BANK = {
+  flower: {
+    adjectives: ["Petal", "Bloom", "Orchid", "Rose", "Dahlia", "Iris", "Lilac", "Garden", "Bouquet"],
+    moods: ["Whisper", "Kiss", "Hush", "Drift", "Fever", "Mist", "Glow", "Muse", "Parade"]
+  },
+  flags: {
+    adjectives: ["Banner", "Tricolor", "Emblem", "Signal", "Standard", "Harbor", "Union", "Border"],
+    moods: ["March", "Pulse", "Anthem", "Route", "Crosswind", "Cadence", "Rally", "Beacon"]
+  },
+  sunset: {
+    adjectives: ["Sunset", "Afterglow", "Dusk", "Golden", "Amber", "Saffron", "Twilight", "Horizon"],
+    moods: ["Fade", "Ember", "Wave", "Blush", "Flare", "Lull", "Drift", "Echo"]
+  },
+  wild: {
+    adjectives: ["Chaos", "Confetti", "Prism", "Neon", "Glitch", "Carnival", "Kaleido", "Vortex"],
+    moods: ["Storm", "Rush", "Spark", "Shuffle", "Flicker", "Noise", "Dare", "Orbit"]
+  }
+};
+
+function describePalette(palette){
+  // crude heuristic: pick dominant hue category from first few colors
+  const hs = palette.slice(0, Math.min(6,palette.length)).map(c=>rgbToHsl(hexToRgb(c)).h);
+  const avg = hs.reduce((a,b)=>a+b,0)/hs.length;
+  if(avg < 25 || avg >= 335) return "Red";
+  if(avg < 60) return "Gold";
+  if(avg < 120) return "Green";
+  if(avg < 200) return "Blue";
+  if(avg < 270) return "Violet";
+  return "Pink";
+}
+
+function suggestTitle(theme, palette, rng){
+  const bank = NAME_BANK[theme] || NAME_BANK.wild;
+  const A = bank.adjectives[randInt(rng,0,bank.adjectives.length-1)];
+  const M = bank.moods[randInt(rng,0,bank.moods.length-1)];
+  const colorWord = describePalette(palette);
+  const forms = [
+    `${A} ${M}`,
+    `${colorWord} ${A}`,
+    `${M} of ${A}`,
+    `${A} / ${colorWord}`,
+    `${A} ${M} Tiles`
+  ];
+  return forms[randInt(rng,0,forms.length-1)];
+}
+
+/** ------------------------------
+ *  Art state
+ * ------------------------------ */
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+const statusPill = document.getElementById("statusPill");
+const themeSel = document.getElementById("themeSel");
+const gridSel = document.getElementById("gridSel");
+const gridInfo = document.getElementById("gridInfo");
+const seedInfo = document.getElementById("seedInfo");
+
+const genBtn = document.getElementById("genBtn");
+const mutateBtn = document.getElementById("mutateBtn");
+const exportBtn = document.getElementById("exportBtn");
+const saveBtn = document.getElementById("saveBtn");
+const clearBtn = document.getElementById("clearBtn");
+const suggestBtn = document.getElementById("suggestBtn");
+
+const nameInput = document.getElementById("nameInput");
+const tagsInput = document.getElementById("tagsInput");
+
+const favOffBtn = document.getElementById("favOffBtn");
+const favOnBtn = document.getElementById("favOnBtn");
+
+const galleryEl = document.getElementById("gallery");
+const sortSel = document.getElementById("sortSel");
+const searchInput = document.getElementById("searchInput");
+const onlyFavBtn = document.getElementById("onlyFavBtn");
+const resetFilterBtn = document.getElementById("resetFilterBtn");
+
+let current = null; // {seed, rows, cols, tileSize, theme, palette, colors2D}
+let currentFav = false;
+let filterOnlyFav = false;
+
+function setStatus(text){ statusPill.textContent = text; }
+
+function setFavUI(isFav){
+  currentFav = !!isFav;
+  if(currentFav){
+    favOnBtn.classList.add("on");
+    favOffBtn.classList.remove("on");
+  }else{
+    favOffBtn.classList.add("on");
+    favOnBtn.classList.remove("on");
+  }
+}
+
+function themeKey(){
+  const v = themeSel.value;
+  if(v === "wild") return "wild";
+  return v;
+}
+
+function generateArt(opts = {}) {
+  const size = parseInt(gridSel.value, 10) || 18;
+  const rows = opts.rows ?? size;
+  const cols = opts.cols ?? size;
+
+  const tileSize = Math.floor(canvas.width / cols);
+  const seed = opts.seed ?? (Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,8));
+  const theme = opts.theme ?? themeKey();
+
+  const rng = makeRng(seed + "|" + theme + "|" + rows + "x" + cols);
+
+  // palette from theme (randomized inside theme)
+  const palette = buildPalette(theme, rng);
+
+  // tiles (random from palette)
+  const colors2D = Array.from({length: rows}, () => Array.from({length: cols}, () => {
+    return palette[randInt(rng, 0, palette.length - 1)];
+  }));
+
+  // add artwork-ish structure:
+  // - sometimes clusters
+  // - sometimes stripes / symmetry
+  const styleRoll = rng();
+
+  if(styleRoll < 0.45){
+    // cluster blobs
+    const blobs = randInt(rng, 2, Math.max(3, Math.floor(size/3)));
+    for (let b=0;b<blobs;b++){
+      const cx = randInt(rng, 0, cols-1);
+      const cy = randInt(rng, 0, rows-1);
+      const radius = randInt(rng, 1, Math.max(2, Math.floor(size/6)));
+      const col = palette[randInt(rng, 0, palette.length - 1)];
+      for (let y=Math.max(0, cy-radius); y<=Math.min(rows-1, cy+radius); y++){
+        for (let x=Math.max(0, cx-radius); x<=Math.min(cols-1, cx+radius); x++){
+          if ((x-cx)*(x-cx)+(y-cy)*(y-cy) <= radius*radius && rng() < 0.78){
+            colors2D[y][x] = col;
+          }
+        }
+      }
+    }
+  } else if(styleRoll < 0.72){
+    // gradient-ish sweep
+    const a = palette[randInt(rng,0,palette.length-1)];
+    const b = palette[randInt(rng,0,palette.length-1)];
+    const vertical = rng() < 0.5;
+    for(let y=0;y<rows;y++){
+      for(let x=0;x<cols;x++){
+        const t = vertical ? (y/(rows-1||1)) : (x/(cols-1||1));
+        const col = mixHex(a,b,t);
+        // add randomness to keep it from being too smooth
+        colors2D[y][x] = (rng()<0.20) ? palette[randInt(rng,0,palette.length-1)] : col;
+      }
+    }
+  } else {
+    // light symmetry
+    const axis = rng() < 0.5 ? "v" : "h";
+    for(let y=0;y<rows;y++){
+      for(let x=0;x<cols;x++){
+        const nx = axis==="v" ? (cols-1-x) : x;
+        const ny = axis==="h" ? (rows-1-y) : y;
+        if(rng() < 0.55){
+          colors2D[ny][nx] = colors2D[y][x];
+        }
+      }
+    }
+  }
+
+  current = { seed, rows, cols, tileSize, theme, palette, colors2D };
+  drawCurrent();
+  gridInfo.textContent = `${rows} × ${cols}  (tile ${tileSize}px)`;
+  seedInfo.textContent = seed;
+
+  // auto-suggest name each generation
+  const nameRng = makeRng(seed + "|name|" + theme);
+  nameInput.value = suggestTitle(theme, palette, nameRng);
+
+  setFavUI(false);
+  setStatus("Generated");
+}
+
+function mutateArt() {
+  if (!current) return generateArt();
+  const rng = makeRng(current.seed + "|mutate|" + Date.now().toString(36));
+  const { rows, cols, theme } = current;
+  const palette = buildPalette(theme, makeRng(current.seed + "|palette|" + Date.now().toString(36)));
+
+  // replace ~25%
+  for (let y=0;y<rows;y++){
+    for (let x=0;x<cols;x++){
+      if (rng() < 0.25){
+        current.colors2D[y][x] = palette[randInt(rng, 0, palette.length - 1)];
+      }
+    }
+  }
+  current.palette = palette;
+  drawCurrent();
+  setStatus("Shuffled a bit");
+}
+
+function drawCurrent(){
+  const { rows, cols, tileSize, colors2D } = current;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  const w = cols * tileSize;
+  const h = rows * tileSize;
+  const ox = Math.floor((canvas.width - w) / 2);
+  const oy = Math.floor((canvas.height - h) / 2);
+
+  // tiles
+  for (let y=0;y<rows;y++){
+    for (let x=0;x<cols;x++){
+      ctx.fillStyle = colors2D[y][x];
+      ctx.fillRect(ox + x*tileSize, oy + y*tileSize, tileSize, tileSize);
+    }
+  }
+
+  // subtle grid lines
+  ctx.globalAlpha = 0.18;
+  ctx.strokeStyle = "#000000";
+  ctx.lineWidth = 1;
+  for (let y=0;y<=rows;y++){
+    ctx.beginPath();
+    ctx.moveTo(ox, oy + y*tileSize);
+    ctx.lineTo(ox + w, oy + y*tileSize);
+    ctx.stroke();
+  }
+  for (let x=0;x<=cols;x++){
+    ctx.beginPath();
+    ctx.moveTo(ox + x*tileSize, oy);
+    ctx.lineTo(ox + x*tileSize, oy + h);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+}
+
+/** ------------------------------
+ *  Tags
+ * ------------------------------ */
+function parseTags(s){
+  const raw = (s||"").trim();
+  if(!raw) return [];
+  // split by comma/space
+  const parts = raw
+    .replace(/，/g,",")
+    .split(/[\s,]+/g)
+    .map(x=>x.trim())
+    .filter(Boolean)
+    .map(x=> x.startsWith("#") ? x.slice(1) : x);
+  // unique, keep short-ish
+  const uniq = [];
+  for(const p of parts){
+    const t = p.slice(0,24);
+    if(t && !uniq.includes(t)) uniq.push(t);
+  }
+  return uniq.slice(0,12);
+}
+
+/** ------------------------------
+ *  Storage
+ * ------------------------------ */
+const KEY = "tile_vibe_gallery_v2_iosish";
+
+function loadGallery(){
+  try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
+  catch { return []; }
+}
+function saveGallery(items){
+  localStorage.setItem(KEY, JSON.stringify(items));
+}
+function nowISO(){ return new Date().toISOString(); }
+
+function saveCurrent(){
+  if (!current) generateArt();
+
+  const title = (nameInput.value || "").trim();
+  if (!title) { setStatus("名前を入れてね"); nameInput.focus(); return; }
+
+  const tags = parseTags(tagsInput.value);
+  const thumb = canvas.toDataURL("image/png");
+
+  const item = {
+    id: crypto?.randomUUID?.() ?? (Date.now().toString(36) + Math.random().toString(36).slice(2,8)),
+    title,
+    tags,
+    favorite: currentFav,
+    createdAt: nowISO(),
+    thumb,
+    art: current
+  };
+
+  const items = loadGallery();
+  items.unshift(item);
+  saveGallery(items);
+
+  setStatus("Saved ✓");
+  renderGallery();
+}
+
+function clearAll(){
+  if (!confirm("ギャラリーを全削除します。OK?")) return;
+  localStorage.removeItem(KEY);
+  renderGallery();
+  setStatus("Cleared");
+}
+
+/** ------------------------------
+ *  Gallery UI: sort + search + fav filter
+ * ------------------------------ */
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function sortItems(items){
+  const mode = sortSel.value;
+  const copy = items.slice();
+  if (mode === "new") copy.sort((a,b)=> b.createdAt.localeCompare(a.createdAt));
+  if (mode === "old") copy.sort((a,b)=> a.createdAt.localeCompare(b.createdAt));
+  if (mode === "name") copy.sort((a,b)=> (a.title||"").localeCompare(b.title||""));
+  if (mode === "fav") copy.sort((a,b)=> (b.favorite===true) - (a.favorite===true) || b.createdAt.localeCompare(a.createdAt));
+  return copy;
+}
+function applyFilters(items){
+  const q = (searchInput.value||"").trim().toLowerCase();
+  let out = items;
+
+  if(filterOnlyFav){
+    out = out.filter(x=>x.favorite===true);
+  }
+  if(q){
+    out = out.filter(x=>{
+      const t = (x.title||"").toLowerCase();
+      const tags = (x.tags||[]).join(" ").toLowerCase();
+      return t.includes(q) || tags.includes(q);
+    });
+  }
+  return out;
+}
+
+function renderGallery(){
+  let items = loadGallery();
+  items = sortItems(items);
+  items = applyFilters(items);
+
+  galleryEl.innerHTML = "";
+
+  if (items.length === 0){
+    const p = document.createElement("p");
+    p.className = "hint";
+    p.textContent = "該当する保存がありません。GenerateしてSaveしてね。";
+    galleryEl.appendChild(p);
+    return;
+  }
+
+  for (const it of items){
+    const card = document.createElement("div");
+    card.className = "thumb";
+
+    const star = it.favorite ? `<span class="star">★</span>` : `<span style="color:#c7c7cc">☆</span>`;
+    const tagsHtml = (it.tags||[]).map(t=>`<span class="tagChip">#${escapeHtml(t)}</span>`).join("");
+
+    card.innerHTML = `
+      <img src="${it.thumb}" alt="${escapeHtml(it.title)}" />
+      <div class="meta">
+        <p class="title">${star}<span>${escapeHtml(it.title)}</span></p>
+        <p class="small">${new Date(it.createdAt).toLocaleString()}</p>
+        <div class="tags">${tagsHtml || `<span class="tagChip">no tags</span>`}</div>
+        <div class="actions">
+          <button data-act="load" data-id="${it.id}">Load</button>
+          <button class="ghost" data-act="toggleFav" data-id="${it.id}">${it.favorite ? "Unfavorite" : "Favorite"}</button>
+          <button class="ghost" data-act="dup" data-id="${it.id}">Duplicate</button>
+          <button class="danger" data-act="del" data-id="${it.id}">Delete</button>
+        </div>
+      </div>
+    `;
+    galleryEl.appendChild(card);
+  }
+}
+
+galleryEl.addEventListener("click", (e)=>{
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  const act = btn.dataset.act;
+  const id = btn.dataset.id;
+  const items = loadGallery();
+  const idx = items.findIndex(x=>x.id===id);
+  if (idx < 0) return;
+
+  if (act === "load"){
+    const it = items[idx];
+    current = it.art;
+
+    // restore controls
+    gridSel.value = String(current.rows);
+    themeSel.value = current.theme || "flower";
+    nameInput.value = it.title || "";
+    tagsInput.value = (it.tags||[]).map(t=>"#"+t).join(" ");
+    setFavUI(!!it.favorite);
+
+    drawCurrent();
+    gridInfo.textContent = `${current.rows} × ${current.cols}  (tile ${current.tileSize}px)`;
+    seedInfo.textContent = current.seed;
+    setStatus("Loaded");
+  }
+
+  if (act === "toggleFav"){
+    items[idx].favorite = !items[idx].favorite;
+    saveGallery(items);
+    renderGallery();
+    setStatus(items[idx].favorite ? "Favorited" : "Unfavorited");
+  }
+
+  if (act === "dup"){
+    const copy = structuredClone(items[idx]);
+    copy.id = crypto?.randomUUID?.() ?? (Date.now().toString(36) + Math.random().toString(36).slice(2,8));
+    copy.title = copy.title + " (copy)";
+    copy.createdAt = nowISO();
+    items.unshift(copy);
+    saveGallery(items);
+    renderGallery();
+    setStatus("Duplicated");
+  }
+
+  if (act === "del"){
+    if (!confirm("削除する？")) return;
+    items.splice(idx,1);
+    saveGallery(items);
+    renderGallery();
+    setStatus("Deleted");
+  }
+});
+
+/** ------------------------------
+ *  Export
+ * ------------------------------ */
+function exportPng(){
+  if (!current) generateArt();
+  const a = document.createElement("a");
+  const safeTitle = (nameInput.value || "tile-art").trim().replace(/[^a-zA-Z0-9_-]+/g,"-").slice(0,60);
+  a.download = `${safeTitle || "tile-art"}.png`;
+  a.href = canvas.toDataURL("image/png");
+  a.click();
+  setStatus("Exported");
+}
+
+/** ------------------------------
+ *  Events
+ * ------------------------------ */
+genBtn.addEventListener("click", ()=>generateArt());
+mutateBtn.addEventListener("click", mutateArt);
+exportBtn.addEventListener("click", exportPng);
+
+saveBtn.addEventListener("click", saveCurrent);
+clearBtn.addEventListener("click", clearAll);
+
+suggestBtn.addEventListener("click", ()=>{
+  if(!current) generateArt();
+  const rng = makeRng(current.seed + "|name2|" + Date.now().toString(36));
+  nameInput.value = suggestTitle(current.theme, current.palette, rng);
+  setStatus("Suggested");
+});
+
+gridSel.addEventListener("change", ()=>generateArt());
+themeSel.addEventListener("change", ()=>generateArt());
+
+favOffBtn.addEventListener("click", ()=>setFavUI(false));
+favOnBtn.addEventListener("click", ()=>setFavUI(true));
+
+sortSel.addEventListener("change", renderGallery);
+
+searchInput.addEventListener("input", renderGallery);
+
+onlyFavBtn.addEventListener("click", ()=>{
+  filterOnlyFav = !filterOnlyFav;
+  onlyFavBtn.textContent = filterOnlyFav ? "★ only ✓" : "★ only";
+  setStatus(filterOnlyFav ? "Filter: favorites" : "Filter: all");
+  renderGallery();
+});
+
+resetFilterBtn.addEventListener("click", ()=>{
+  searchInput.value = "";
+  filterOnlyFav = false;
+  onlyFavBtn.textContent = "★ only";
+  sortSel.value = "new";
+  setStatus("Reset");
+  renderGallery();
+});
+
+/** ------------------------------
+ *  Boot
+ * ------------------------------ */
+setFavUI(false);
+generateArt();     // uses selected grid/theme
+renderGallery();
+</script>
+</body>
+</html>

@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Brand Elsewhere Logo Lab</title>
+<style>
+  :root{
+    --bg:#f3f5f9;
+    --panel:#ffffff;
+    --text:#121722;
+    --muted:#5f6877;
+    --line:#d9dfeb;
+    --primary:#0c7cff;
+    --primary-2:#0060d8;
+    --danger:#d82355;
+    --ok:#19a861;
+    --shadow:0 10px 30px rgba(15,23,42,.08);
+    --radius:16px;
+    --radius-lg:22px;
+    --mono:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;max-width:100%;overflow-x:hidden}
+  body{
+    font-family: "Avenir Next", "Segoe UI", -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(1200px 600px at 8% -10%, #d8e9ff 0%, transparent 60%),
+      radial-gradient(900px 500px at 90% 0%, #ffe3ee 0%, transparent 60%),
+      linear-gradient(180deg,#fbfcff,#eef2f8);
+  }
+
+  .app{
+    max-width:1100px;
+    margin:0 auto;
+    padding:
+      calc(18px + env(safe-area-inset-top))
+      calc(18px + env(safe-area-inset-right))
+      calc(24px + env(safe-area-inset-bottom))
+      calc(18px + env(safe-area-inset-left));
+  }
+
+  .top{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:14px;
+  }
+
+  h1{margin:0;font-size:20px;letter-spacing:.2px}
+  .sub{margin-top:6px;color:var(--muted);font-size:13px;line-height:1.45}
+
+  .status{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.8);
+    border-radius:999px;
+    padding:8px 12px;
+    font-size:12px;
+    color:var(--muted);
+    white-space:nowrap;
+  }
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(25,168,97,.18)}
+
+  .layout{
+    display:grid;
+    grid-template-columns: 1.1fr .9fr;
+    gap:14px;
+  }
+  .layout > *{
+    min-width: 0;
+  }
+  @media (max-width: 960px){
+    .layout{grid-template-columns:1fr}
+  }
+
+  .panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow);
+  }
+
+  .left{padding:16px}
+
+  .brandRow{
+    display:grid;
+    grid-template-columns: 1fr auto;
+    gap:10px;
+    align-items:center;
+    margin-bottom:14px;
+  }
+  @media (max-width: 640px){
+    .brandRow{grid-template-columns:1fr}
+  }
+
+  .fieldLabel{font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.7px}
+
+  select,button,input[type="text"]{
+    font:inherit;
+  }
+
+  select,input[type="text"]{
+    width:100%;
+    min-height:42px;
+    border-radius:12px;
+    border:1px solid #cbd5e4;
+    background:#fff;
+    padding:10px 12px;
+    color:var(--text);
+    font-size:14px;
+  }
+
+  .btn{
+    min-height:42px;
+    border:1px solid transparent;
+    border-radius:12px;
+    padding:10px 14px;
+    cursor:pointer;
+    font-size:14px;
+    font-weight:600;
+    white-space:nowrap;
+  }
+  .btn:active{transform:translateY(1px)}
+
+  .btnPrimary{background:linear-gradient(180deg,var(--primary),var(--primary-2));color:#fff}
+  .btnGhost{background:#fff;border-color:#cbd5e4;color:#1b2433}
+  .btnPink{background:linear-gradient(180deg,#ff4f7e,#de2458);color:#fff}
+
+  .locks{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:14px;
+  }
+  .chip{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    border:1px solid #cbd5e4;
+    border-radius:999px;
+    min-height:38px;
+    padding:0 12px;
+    font-size:13px;
+    background:#fff;
+  }
+
+  .combo{
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px;
+    background:#f8fbff;
+    margin-bottom:14px;
+  }
+  .comboTop{font-size:12px;color:var(--muted);margin-bottom:8px}
+  .comboMain{
+    font-size:32px;
+    line-height:1.08;
+    font-weight:700;
+    letter-spacing:-.3px;
+    margin-bottom:8px;
+    display:flex;
+    align-items:flex-end;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .comboElse{font-size:15px;color:#3a4352;line-height:1.45}
+
+  .actionGrid{
+    display:grid;
+    grid-template-columns: repeat(2,minmax(0,1fr));
+    gap:10px;
+  }
+  #shuffle{
+    grid-column:1 / -1;
+    min-height:48px;
+    font-size:15px;
+  }
+  @media (max-width: 520px){
+    .actionGrid{grid-template-columns:1fr}
+  }
+
+  .right{padding:14px}
+  .rightHead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+  .rightTitle{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}
+
+  .meta{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .tile{
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:10px;
+    background:#f8fbff;
+  }
+  .k{font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+  .v{font-size:15px;font-weight:700;line-height:1.2}
+  .s{margin-top:5px;font-size:12px;color:#4e5867}
+
+  .logoBox{
+    border:1px solid var(--line);
+    border-radius:16px;
+    overflow:hidden;
+    background:#fff;
+  }
+  .logoToolbar{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    overflow-x:auto;
+    padding:10px;
+    border-bottom:1px solid var(--line);
+    background:#f9fbff;
+  }
+  .logoToolbar .btn{min-height:36px;padding:8px 10px;font-size:12px}
+
+  .stage{padding:10px}
+  .svgWrap{
+    width:100%;
+    aspect-ratio: 1.6 / 1;
+    border:1px solid var(--line);
+    border-radius:12px;
+    background:#fff;
+    overflow:hidden;
+  }
+
+  .seed{
+    margin-top:8px;
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--muted);
+    line-height:1.5;
+  }
+
+  .recipeBox{margin-top:10px}
+  .recipeHint{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.4}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div>
+      <h1>If Brand Was Born Elsewhere</h1>
+      <div class="sub">Randomize brand x elsewhere and regenerate an abstract logo with reproducible recipe.</div>
+    </div>
+    <div class="status" id="status"><span class="dot"></span><span>Ready</span></div>
+  </header>
+
+  <div class="layout">
+    <section class="panel left">
+      <div class="brandRow">
+        <div>
+          <div class="fieldLabel">Brand</div>
+          <select id="brandPick" title="Pick a brand"></select>
+        </div>
+        <button class="btn btnGhost" id="surpriseBrand">Surprise</button>
+      </div>
+
+      <div class="locks">
+        <label class="chip"><input type="checkbox" id="lockBrand" /> Lock Brand</label>
+        <label class="chip"><input type="checkbox" id="lockElse" /> Lock Elsewhere</label>
+      </div>
+
+      <div class="combo">
+        <div class="comboTop" id="metaLine">Tap Shuffle to begin</div>
+        <div class="comboMain"><span id="emoji">✨</span><span id="brand">Google</span><span style="font-size:15px;color:#778096">x</span></div>
+        <div class="comboElse" id="elsewhere">a 19th-century winery in Bordeaux</div>
+      </div>
+
+      <div class="actionGrid">
+        <button class="btn btnPrimary" id="shuffle">Shuffle Universe</button>
+        <button class="btn btnPink" id="copy">Copy Title</button>
+        <button class="btn btnGhost" id="regenLogo">Regenerate Logo</button>
+      </div>
+    </section>
+
+    <aside class="panel right">
+      <div class="rightHead">
+        <div class="rightTitle">Snapshot</div>
+      </div>
+
+      <div class="meta">
+        <div class="tile">
+          <div class="k">Brand</div>
+          <div class="v" id="miniBrand">Google</div>
+          <div class="s" id="miniBrandTag">Tech / Everyday</div>
+        </div>
+        <div class="tile">
+          <div class="k">Elsewhere</div>
+          <div class="v" id="miniElse">Winery</div>
+          <div class="s" id="miniPlace">Bordeaux</div>
+        </div>
+      </div>
+
+      <div class="logoBox">
+        <div class="logoToolbar">
+          <button class="btn btnGhost" id="copyRecipe">Copy Recipe</button>
+          <button class="btn btnGhost" id="loadRecipe">Load Recipe</button>
+          <button class="btn btnGhost" id="downloadSVG">SVG</button>
+          <button class="btn btnGhost" id="downloadPNG">PNG 4K</button>
+        </div>
+        <div class="stage">
+          <div class="svgWrap" id="svgWrap"></div>
+          <div class="seed" id="seedNote">seed: -</div>
+        </div>
+      </div>
+
+      <div class="recipeBox">
+        <div class="fieldLabel">Recipe (optional)</div>
+        <input type="text" id="recipeInput" placeholder='{"brand":"Google","era":"Renaissance","noun":"atelier","place":"Florence","variant":2}' />
+        <div class="recipeHint">Paste a copied recipe then press Load Recipe.</div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+const BRANDS = [
+  { name:"Google", tag:"Tech / Everyday" },
+  { name:"Apple", tag:"Tech / Design" },
+  { name:"Sony", tag:"Tech / Culture" },
+  { name:"Nintendo", tag:"Play / Culture" },
+  { name:"Samsung", tag:"Tech" },
+  { name:"Studio Ghibli", tag:"Film / Culture" },
+  { name:"Pixar", tag:"Film / Pop" },
+  { name:"A24", tag:"Film / Indie" },
+  { name:"Spotify", tag:"Music / Culture" },
+  { name:"Netflix", tag:"Media" },
+  { name:"National Geographic", tag:"Culture / Knowledge" },
+  { name:"Penguin Books", tag:"Publishing" },
+  { name:"MoMA", tag:"Art / Design" },
+  { name:"Tate", tag:"Art / Culture" },
+  { name:"Bauhaus", tag:"Design / Modernism" },
+  { name:"Leica", tag:"Photography" },
+  { name:"Polaroid", tag:"Photography / Pop" },
+  { name:"TED", tag:"Ideas" },
+  { name:"Wikipedia", tag:"Knowledge" },
+  { name:"Mozilla", tag:"Open Web" },
+  { name:"IKEA", tag:"Everyday / Design" },
+  { name:"Uniqlo", tag:"Everyday" },
+  { name:"Muji", tag:"Minimal / Everyday" },
+  { name:"Lego", tag:"Play / Design" },
+  { name:"Starbucks", tag:"Everyday" },
+  { name:"Toyota", tag:"Mobility" },
+  { name:"Honda", tag:"Mobility" },
+  { name:"Volvo", tag:"Mobility" },
+  { name:"Tesla", tag:"Mobility / Future" },
+  { name:"Coca-Cola", tag:"Pop / Beverage" },
+  { name:"Asahi", tag:"Beverage" }
+];
+
+const ERAS = ["19th-century","Edo-period","Renaissance","Belle Époque","Gilded Age","Imperial-era","Medieval","Postwar","Pre-electric","Fin-de-siècle"];
+
+const NOUNS = [
+  { noun:"winery", emoji:"🍷", palette:["#2b9cff","#ff7ab6","#ffe28a","#a7ffcc"] },
+  { noun:"temple", emoji:"🛕", palette:["#66d1ff","#f4d06f","#c0c7ff","#b6f7d8"] },
+  { noun:"atelier", emoji:"🎨", palette:["#ff9fd0","#66d1ff","#ffe28a","#b7ffda"] },
+  { noun:"workshop", emoji:"🔧", palette:["#66d1ff","#ffd39a","#c0c7ff","#a7ffcc"] },
+  { noun:"cabaret", emoji:"🎭", palette:["#ff2d55","#ff9fd0","#ffe28a","#66d1ff"] },
+  { noun:"monastery", emoji:"🕯️", palette:["#c0c7ff","#ffe28a","#a7ffcc","#66d1ff"] },
+  { noun:"observatory", emoji:"🔭", palette:["#66d1ff","#c0c7ff","#ffe28a","#ff7ab6"] },
+  { noun:"market", emoji:"🧺", palette:["#ffe28a","#ff9fd0","#66d1ff","#a7ffcc"] },
+  { noun:"library", emoji:"📜", palette:["#ffd39a","#c0c7ff","#a7ffcc","#66d1ff"] },
+  { noun:"studio", emoji:"🎬", palette:["#66d1ff","#ff7ab6","#ffd39a","#c0c7ff"] },
+  { noun:"academy", emoji:"🎓", palette:["#66d1ff","#a7ffcc","#ffe28a","#c0c7ff"] },
+  { noun:"glassworks", emoji:"🫧", palette:["#66d1ff","#a7ffcc","#c0c7ff","#ffe28a"] },
+  { noun:"foundry", emoji:"⚙️", palette:["#c0c7ff","#ffd39a","#ff7ab6","#66d1ff"] },
+  { noun:"vineyard", emoji:"🍇", palette:["#66d1ff","#ff7ab6","#a7ffcc","#ffe28a"] }
+];
+
+const PLACES_A = ["Kyoto","Tokyo","Shanghai","Hangzhou","Suzhou","Beijing","Xi’an","Seoul","Busan","Taipei","Hanoi","Jaipur","Udaipur","Paris","Bordeaux","Lyon","Florence","Venice","Milan","Seville","Granada","Vienna","Prague","Istanbul","Marrakech","Fez","Alexandria","Beirut","Jerusalem","New Orleans","Havana","Buenos Aires","Mexico City","San Francisco","Reykjavik","Stockholm"];
+const PLACES_B = ["Atlantis","Babylon","Pompeii","Angkor","Timbuktu","Carthage","The Silk Road","The Forbidden City","Machu Picchu"];
+const PLACES_C = ["Lunar Colony","Mars Outpost","Neo Venice","Floating Kyoto","Submerged Alexandria","Arctic Station","The Last Library"];
+
+const statusEl = document.getElementById("status");
+const metaLine = document.getElementById("metaLine");
+const brandPick = document.getElementById("brandPick");
+const surpriseBrandBtn = document.getElementById("surpriseBrand");
+const shuffleBtn = document.getElementById("shuffle");
+const copyBtn = document.getElementById("copy");
+const lockBrandEl = document.getElementById("lockBrand");
+const lockElseEl = document.getElementById("lockElse");
+const regenLogoBtn = document.getElementById("regenLogo");
+const brandEl = document.getElementById("brand");
+const elseEl = document.getElementById("elsewhere");
+const emojiEl = document.getElementById("emoji");
+const miniBrand = document.getElementById("miniBrand");
+const miniBrandTag = document.getElementById("miniBrandTag");
+const miniElse = document.getElementById("miniElse");
+const miniPlace = document.getElementById("miniPlace");
+const svgWrap = document.getElementById("svgWrap");
+const seedNote = document.getElementById("seedNote");
+const recipeInput = document.getElementById("recipeInput");
+const copyRecipeBtn = document.getElementById("copyRecipe");
+const loadRecipeBtn = document.getElementById("loadRecipe");
+const downloadSVGBtn = document.getElementById("downloadSVG");
+const downloadPNGBtn = document.getElementById("downloadPNG");
+
+function randInt(n){ return Math.floor(Math.random()*n); }
+function choice(arr){ return arr[randInt(arr.length)]; }
+function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+function safeName(s){ return s.replace(/[^\w\-]+/g,"_").slice(0,80); }
+
+function weightedChoice(list){
+  const total = list.reduce((s,x)=>s+x.w,0);
+  let r = Math.random()*total;
+  for(const x of list){
+    r -= x.w;
+    if(r <= 0) return x.item;
+  }
+  return list[list.length-1].item;
+}
+
+function hashStr(s){
+  let h = 2166136261;
+  for(let i=0;i<s.length;i++){
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function mulberry32(a){
+  return function(){
+    let t = a += 0x6D2B79F5;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function pickPlace(){
+  const bucket = weightedChoice([{item:"A",w:70},{item:"B",w:20},{item:"C",w:10}]);
+  if(bucket === "A") return choice(PLACES_A);
+  if(bucket === "B") return choice(PLACES_B);
+  return choice(PLACES_C);
+}
+
+function articleFor(word){ return /^[aeiou]/i.test(word) ? "an" : "a"; }
+
+function prepFor(place){
+  if(place === "The Silk Road") return "on";
+  if(place === "The Last Library") return "at";
+  return "in";
+}
+
+function makeElsewhere(){
+  const era = choice(ERAS);
+  const nounObj = choice(NOUNS);
+  const place = pickPlace();
+  const line = `${articleFor(era)} ${era} ${nounObj.noun} ${prepFor(place)} ${place}`;
+  return { era, nounObj, place, line };
+}
+
+function setStatus(text, ok=true){
+  statusEl.innerHTML = `<span class="dot" style="background:${ok?"var(--ok)":"var(--danger)"};box-shadow:0 0 0 3px ${ok?"rgba(25,168,97,.18)":"rgba(216,35,85,.18)"}"></span><span>${text}</span>`;
+}
+
+function populateBrandPick(){
+  brandPick.innerHTML = "";
+  for(const b of BRANDS){
+    const opt = document.createElement("option");
+    opt.value = b.name;
+    opt.textContent = b.name;
+    brandPick.appendChild(opt);
+  }
+}
+
+function getBrandByName(name){
+  return BRANDS.find(b => b.name === name) || BRANDS[0];
+}
+
+function generateSVG(brandName, elsewhereObj, variantSeed=0){
+  const base = `${brandName}|${elsewhereObj.era}|${elsewhereObj.nounObj.noun}|${elsewhereObj.place}|${variantSeed}`;
+  const seed = hashStr(base);
+  const rnd = mulberry32(seed);
+  const [c1,c2,c3,c4] = elsewhereObj.nounObj.palette;
+
+  const W = 1000;
+  const H = 620;
+  const r = 44;
+
+  const cx = W*(0.47 + (rnd()-0.5)*0.08);
+  const cy = H*(0.50 + (rnd()-0.5)*0.08);
+  const ring = 140 + rnd()*140;
+  const blob = 200 + rnd()*180;
+  const wave = 0.10 + rnd()*0.25;
+  const strokes = 3 + Math.floor(rnd()*4);
+
+  const svg = `
+<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="${c1}"/>
+      <stop offset="0.35" stop-color="${c2}"/>
+      <stop offset="0.7" stop-color="${c3}"/>
+      <stop offset="1" stop-color="${c4}"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="16"/>
+    </filter>
+    <clipPath id="clip"><rect x="0" y="0" width="${W}" height="${H}" rx="${r}"/></clipPath>
+  </defs>
+  <g clip-path="url(#clip)">
+    <rect width="${W}" height="${H}" fill="white"/>
+    <circle cx="${W*0.22}" cy="${H*0.24}" r="${blob}" fill="${c1}" opacity="0.28" filter="url(#soft)"/>
+    <circle cx="${W*0.80}" cy="${H*0.30}" r="${blob*0.75}" fill="${c2}" opacity="0.24" filter="url(#soft)"/>
+    <circle cx="${W*0.58}" cy="${H*0.92}" r="${blob*0.82}" fill="${c3}" opacity="0.22" filter="url(#soft)"/>
+    <circle cx="${cx}" cy="${cy}" r="${ring}" fill="url(#g)" opacity="0.92"/>
+    <circle cx="${cx}" cy="${cy}" r="${ring*0.64}" fill="white" opacity="0.22"/>
+    <g stroke="white" stroke-opacity="0.75" stroke-width="${10 + rnd()*6}" stroke-linecap="round" fill="none">
+      ${Array.from({length:strokes}).map(()=>{
+        const a = rnd()*Math.PI*2;
+        const len = ring*(0.62 + rnd()*0.34);
+        const x1 = cx + Math.cos(a)*len*0.48;
+        const y1 = cy + Math.sin(a)*len*0.48;
+        const x2 = cx + Math.cos(a+wave)*len*0.56;
+        const y2 = cy + Math.sin(a+wave)*len*0.56;
+        const mx = (x1+x2)/2 + (rnd()-0.5)*ring*0.12;
+        const my = (y1+y2)/2 + (rnd()-0.5)*ring*0.12;
+        return `<path d="M ${x1.toFixed(1)} ${y1.toFixed(1)} Q ${mx.toFixed(1)} ${my.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}"/>`;
+      }).join("\n")}
+    </g>
+  </g>
+</svg>`.trim();
+
+  return { svg, seed };
+}
+
+let state = {
+  brand: BRANDS[0],
+  elsewhere: makeElsewhere(),
+  logoVariant: 0
+};
+
+function renderAll(){
+  brandEl.textContent = state.brand.name;
+  elseEl.textContent = state.elsewhere.line;
+  emojiEl.textContent = state.elsewhere.nounObj.emoji;
+  metaLine.textContent = `${state.elsewhere.era} • ${state.elsewhere.place}`;
+  miniBrand.textContent = state.brand.name;
+  miniBrandTag.textContent = state.brand.tag;
+  miniElse.textContent = cap(state.elsewhere.nounObj.noun);
+  miniPlace.textContent = state.elsewhere.place;
+  brandPick.value = state.brand.name;
+
+  const out = generateSVG(state.brand.name, state.elsewhere, state.logoVariant);
+  svgWrap.innerHTML = out.svg;
+  seedNote.textContent = `seed: ${out.seed} • variant: ${state.logoVariant}`;
+  recipeInput.value = recipeFromState();
+}
+
+function shuffleUniverse(){
+  setStatus("Shuffling...");
+  if(!lockBrandEl.checked){ state.brand = choice(BRANDS); }
+  else { state.brand = getBrandByName(brandPick.value); }
+  if(!lockElseEl.checked){ state.elsewhere = makeElsewhere(); }
+  state.logoVariant++;
+  renderAll();
+  setStatus("Done");
+}
+
+function copyText(text, okLabel){
+  (navigator.clipboard?.writeText(text) ?? Promise.reject())
+    .then(()=>{ setStatus(okLabel); setTimeout(()=>setStatus("Ready"),900); })
+    .catch(()=>{
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+      setStatus(okLabel);
+      setTimeout(()=>setStatus("Ready"),900);
+    });
+}
+
+function copyTitle(){
+  const text = `${state.elsewhere.nounObj.emoji} ${state.brand.name} x ${state.elsewhere.line}`;
+  copyText(text, "Copied");
+}
+
+function recipeFromState(){
+  return JSON.stringify({
+    brand: state.brand.name,
+    era: state.elsewhere.era,
+    noun: state.elsewhere.nounObj.noun,
+    place: state.elsewhere.place,
+    variant: state.logoVariant
+  });
+}
+
+function copyRecipe(){
+  copyText(recipeFromState(), "Recipe copied");
+}
+
+function parseRecipe(raw){
+  const data = JSON.parse(raw);
+  const nounObj = NOUNS.find(n => n.noun === data.noun);
+  const era = ERAS.includes(data.era) ? data.era : null;
+  const place = [...PLACES_A, ...PLACES_B, ...PLACES_C].includes(data.place) ? data.place : null;
+  const variant = Number.isInteger(data.variant) && data.variant >= 0 ? data.variant : 0;
+  if(!nounObj || !era || !place) throw new Error("invalid recipe");
+
+  const brand = getBrandByName(data.brand);
+  const line = `${articleFor(era)} ${era} ${nounObj.noun} ${prepFor(place)} ${place}`;
+  return { brand, elsewhere:{ era, nounObj, place, line }, variant };
+}
+
+function loadRecipe(){
+  const raw = recipeInput.value.trim();
+  if(!raw){
+    setStatus("Recipe is empty", false);
+    setTimeout(()=>setStatus("Ready"),1200);
+    return;
+  }
+  try{
+    const next = parseRecipe(raw);
+    state.brand = next.brand;
+    state.elsewhere = next.elsewhere;
+    state.logoVariant = next.variant;
+    renderAll();
+    setStatus("Recipe loaded");
+    setTimeout(()=>setStatus("Ready"),900);
+  } catch {
+    setStatus("Invalid recipe", false);
+    setTimeout(()=>setStatus("Ready"),1200);
+  }
+}
+
+function regenLogo(){
+  state.logoVariant++;
+  renderAll();
+  setStatus("Logo refreshed");
+  setTimeout(()=>setStatus("Ready"),900);
+}
+
+function downloadSVG(){
+  const svg = svgWrap.querySelector("svg");
+  if(!svg) return;
+  const serializer = new XMLSerializer();
+  const svgText = serializer.serializeToString(svg);
+  const blob = new Blob([svgText], {type:"image/svg+xml;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = safeName(`${state.brand.name}_${state.elsewhere.nounObj.noun}_${state.elsewhere.place}.svg`);
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 1500);
+}
+
+async function downloadPNG(){
+  const svg = svgWrap.querySelector("svg");
+  if(!svg) return;
+  try{
+    const serializer = new XMLSerializer();
+    const svgText = serializer.serializeToString(svg);
+    const svgBlob = new Blob([svgText], { type:"image/svg+xml;charset=utf-8" });
+    const svgUrl = URL.createObjectURL(svgBlob);
+
+    const img = new Image();
+    img.src = svgUrl;
+    await new Promise((res, rej)=>{ img.onload = res; img.onerror = rej; });
+    URL.revokeObjectURL(svgUrl);
+
+    const canvas = document.createElement("canvas");
+    const EXPORT_WIDTH = 3840;
+    canvas.width = EXPORT_WIDTH;
+    canvas.height = Math.round(EXPORT_WIDTH * (620/1000));
+
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(img,0,0,canvas.width,canvas.height);
+
+    const pngBlob = await new Promise((res, rej) =>
+      canvas.toBlob(b => b ? res(b) : rej(new Error("PNG export failed")), "image/png", 1)
+    );
+
+    const pngUrl = URL.createObjectURL(pngBlob);
+    const a = document.createElement("a");
+    a.download = safeName(`${state.brand.name}_${state.elsewhere.nounObj.noun}_${state.elsewhere.place}.png`);
+    a.href = pngUrl;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(pngUrl), 1500);
+
+    setStatus("PNG downloaded");
+    setTimeout(()=>setStatus("Ready"),900);
+  } catch {
+    setStatus("PNG failed", false);
+    setTimeout(()=>setStatus("Ready"),1200);
+  }
+}
+
+populateBrandPick();
+
+brandPick.addEventListener("change", ()=>{
+  state.brand = getBrandByName(brandPick.value);
+  state.logoVariant++;
+  renderAll();
+  setStatus("Brand set");
+  setTimeout(()=>setStatus("Ready"),800);
+});
+
+surpriseBrandBtn.addEventListener("click", ()=>{
+  state.brand = choice(BRANDS);
+  state.logoVariant++;
+  renderAll();
+  setStatus("Surprise!");
+  setTimeout(()=>setStatus("Ready"),800);
+});
+
+shuffleBtn.addEventListener("click", shuffleUniverse);
+copyBtn.addEventListener("click", copyTitle);
+regenLogoBtn.addEventListener("click", regenLogo);
+copyRecipeBtn.addEventListener("click", copyRecipe);
+loadRecipeBtn.addEventListener("click", loadRecipe);
+downloadSVGBtn.addEventListener("click", downloadSVG);
+downloadPNGBtn.addEventListener("click", downloadPNG);
+
+renderAll();
+setStatus("Ready");
+</script>
+</body>
+</html>

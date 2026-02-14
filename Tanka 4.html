@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tanka Tiles — Simple</title>
+  <style>
+    :root{
+      --bg0:#070812; --bg1:#0b1224;
+      --card: rgba(255,255,255,.08);
+      --line: rgba(255,255,255,.14);
+      --text:#eef2ff; --muted:#b9c1dd;
+
+      --blue:#0a84ff; --purple:#bf5af2; --green:#30d158; --orange:#ff9f0a; --pink:#ff2d55;
+      --shadow: 0 22px 70px rgba(0,0,0,.55);
+      --radius: 18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; padding:20px;
+      color:var(--text);
+      font-family: system-ui, -apple-system, "SF Pro Display","SF Pro Text","Segoe UI", Arial;
+      background:
+        radial-gradient(900px 520px at 12% 0%, rgba(10,132,255,.25) 0%, transparent 60%),
+        radial-gradient(900px 520px at 88% 10%, rgba(191,90,242,.16) 0%, transparent 55%),
+        radial-gradient(900px 520px at 70% 95%, rgba(48,209,88,.10) 0%, transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap{max-width:980px;margin:0 auto}
+    header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:14px}
+    h1{margin:0;font-size:18px;letter-spacing:.2px}
+    .sub{margin-top:6px;color:var(--muted);font-size:12px;line-height:1.4}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 12px;border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.07);
+      backdrop-filter: blur(14px);
+      font-size:12px;color:var(--muted);
+      box-shadow: 0 12px 28px rgba(0,0,0,.35);
+      white-space:nowrap;
+    }
+    .grid{display:grid;grid-template-columns: 1.25fr 0.75fr;gap:14px}
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr;} }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      padding:14px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .sep{height:1px;background:rgba(255,255,255,.10);margin:12px 0}
+    .label{color:var(--muted);font-size:12px}
+
+    input, button{
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.20);
+      background: rgba(255,255,255,.07);
+      color: var(--text);
+      padding:10px 12px;
+      font-size:13px;
+      outline:none;
+      box-shadow: 0 1px 0 rgba(255,255,255,.10) inset, 0 1px 2px rgba(0,0,0,.35);
+    }
+    input{min-width: 240px}
+    input.small{min-width: 200px}
+    button{cursor:pointer;user-select:none;transition: transform .05s ease, filter .15s ease}
+    button:hover{filter:brightness(1.06)}
+    button:active{transform: translateY(1px); filter:brightness(.98)}
+
+    .btn.primary{
+      background: linear-gradient(180deg, rgba(10,132,255,.95), rgba(10,132,255,.62));
+      border-color: rgba(10,132,255,.55);
+      color:#fff;
+      box-shadow: 0 1px 0 rgba(255,255,255,.15) inset, 0 18px 40px rgba(10,132,255,.22);
+    }
+    .btn.variant{
+      background: linear-gradient(180deg, rgba(191,90,242,.95), rgba(191,90,242,.62));
+      border-color: rgba(191,90,242,.55);
+      color:#fff;
+      box-shadow: 0 1px 0 rgba(255,255,255,.15) inset, 0 18px 40px rgba(191,90,242,.18);
+    }
+    .btn.copy{
+      background: linear-gradient(180deg, rgba(48,209,88,.92), rgba(48,209,88,.56));
+      border-color: rgba(48,209,88,.55);
+      color:#fff;
+      box-shadow: 0 1px 0 rgba(255,255,255,.15) inset, 0 18px 40px rgba(48,209,88,.16);
+    }
+
+    .hint{color:var(--muted);font-size:12px;line-height:1.45}
+    .hint strong{color:#fff}
+    .warning{
+      border:1px solid rgba(255,159,10,.35);
+      background: rgba(255,159,10,.10);
+      color:#ffe6c7;
+      padding:10px 12px;
+      border-radius: 14px;
+      font-size:12px;
+      line-height:1.45;
+      display:none;
+      margin-top:10px;
+      white-space:pre-wrap;
+    }
+
+    .tiles{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+    .tile{
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.20);
+      border-radius: 16px;
+      padding:12px 12px;
+      cursor:pointer;
+      position:relative;
+      transition: transform .05s ease, filter .15s ease;
+    }
+    .tile:hover{filter:brightness(1.04)}
+    .tile:active{transform: translateY(1px)}
+    .tile.locked{
+      border-color: rgba(255,255,255,.32);
+      background: rgba(255,255,255,.08);
+    }
+    .tileHead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+    .badge{
+      font-size:11px; padding:4px 10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: var(--muted);
+    }
+    .badge.lock{color:#fff;border-color:rgba(255,255,255,.26)}
+    .lineText{white-space:pre-line;font-size:18px;line-height:1.9}
+    .mono{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:8px}
+
+    .resultBox{
+      white-space:pre-line;
+      background: rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius: 16px;
+      padding:12px 14px;
+      font-size:18px;
+      line-height:2.0;
+      min-height:160px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Tanka Tiles</h1>
+        <div class="sub">Minimal tile game: click a line to <b>Lock/Unlock</b>. “New Variant” rerolls only unlocked lines. Meter is always 5–7–5–7–7 (mora-accurate).</div>
+      </div>
+      <div class="pill" id="status">Ready</div>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <div class="row">
+          <span class="label">Fixed word (surface)</span>
+          <input id="fixedSurface" placeholder="e.g., ぶどう / 車 / さくら" />
+
+          <span class="label">Reading (hiragana)</span>
+          <input id="fixedReading" class="small" placeholder="e.g., ぶどう / くるま" />
+
+          <span class="label" id="autoHint" style="margin-left:auto">Kana OK</span>
+        </div>
+
+        <div class="row" style="margin-top:10px">
+          <button id="genBtn" class="btn primary">Generate</button>
+          <button id="variantBtn" class="btn variant">New Variant</button>
+          <button id="copyBtn" class="btn copy">Copy Full Tanka</button>
+        </div>
+
+        <div class="hint" style="margin-top:10px">
+          • If your fixed word is <strong>kana</strong>, Reading can be empty.<br/>
+          • If it includes <strong>kanji</strong>, please type Reading in hiragana.
+        </div>
+
+        <div class="warning" id="warningBox"></div>
+
+        <div class="tiles" id="tiles"></div>
+
+        <div class="sep"></div>
+        <div class="label">Full tanka</div>
+        <div class="resultBox" id="full"></div>
+        <div class="mono" id="meter"></div>
+      </section>
+
+      <section class="card">
+        <div class="label">How to play</div>
+        <div class="hint" style="margin-top:8px">
+          1) Enter a fixed word (and reading if needed).<br/>
+          2) Click <b>Generate</b>.<br/>
+          3) Click a line tile to <b>Lock</b> it.<br/>
+          4) Click <b>New Variant</b> to reroll only unlocked lines.<br/>
+          5) Copy when it feels right.
+        </div>
+        <div class="sep"></div>
+        <div class="label">Reliability</div>
+        <div class="hint" style="margin-top:8px">
+          This version includes automatic retries (different seeds + trying different fixed-word lines) to reduce failures.
+        </div>
+      </section>
+    </div>
+  </div>
+
+<script>
+/* ========= UI ========= */
+const statusEl = document.getElementById("status");
+const warnEl = document.getElementById("warningBox");
+const fixedSurfaceEl = document.getElementById("fixedSurface");
+const fixedReadingEl = document.getElementById("fixedReading");
+const autoHintEl = document.getElementById("autoHint");
+const tilesEl = document.getElementById("tiles");
+const fullEl = document.getElementById("full");
+const meterEl = document.getElementById("meter");
+
+function setStatus(t){ statusEl.textContent = t; }
+function showWarn(msg){ warnEl.style.display="block"; warnEl.textContent = msg; }
+function clearWarn(){ warnEl.style.display="none"; warnEl.textContent=""; }
+
+window.addEventListener("error", (e)=>{
+  const msg = (e?.error?.stack || e?.message || "Unknown error");
+  setStatus("ERROR");
+  showWarn("JavaScript error:\n" + msg);
+  console.error(e);
+});
+
+/* ========= Mora utils ========= */
+const SMALL = new Set("ゃゅょぁぃぅぇぉゎャュョァィゥェォヮ".split(""));
+function toHira(str){
+  return (str||"").replace(/[\u30a1-\u30f6]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0x60));
+}
+function countMora(reading){
+  const s = toHira((reading||"").trim());
+  if(!s) return 0;
+  let n = 0;
+  for(const ch of s){
+    if(ch === "ー"){ n++; continue; }
+    if(SMALL.has(ch)) continue;
+    if(ch.match(/[ぁ-ゖ]/)) n++;
+  }
+  return n;
+}
+function isKanaOnly(s){
+  const h = toHira((s||"").trim());
+  return !!h && /^[ぁ-ゖー]+$/.test(h);
+}
+
+/* ========= RNG ========= */
+function xmur3(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=(h<<13)|(h>>>19);}return function(){h=Math.imul(h^(h>>>16),2246822507);h=Math.imul(h^(h>>>13),3266489909);return (h^=(h>>>16))>>>0;};}
+function sfc32(a,b,c,d){return function(){a>>>=0;b>>>=0;c>>>=0;d>>>=0;let t=(a+b)|0;a=b^(b>>>9);b=(c+(c<<3))|0;c=(c<<21)|(c>>>11);d=(d+1)|0;t=(t+d)|0;c=(c+t)|0;return (t>>>0)/4294967296;};}
+function makeRng(seed){const s=xmur3(seed);return sfc32(s(),s(),s(),s());}
+function randi(rng,min,max){return Math.floor(rng()*(max-min+1))+min;}
+function pick(rng, arr){return arr[randi(rng,0,arr.length-1)];}
+
+/* ========= Vocab (embedded: B) ========= */
+function W(surface, reading){ return {surface, reading}; }
+
+// Nouns: worldbuilding-ish + short fillers to improve fit
+const NOUN = [
+  // short fillers / anchors
+  W("いま","いま"), W("ここ","ここ"), W("そこ","そこ"), W("きみ","きみ"), W("わたし","わたし"),
+  W("うた","うた"), W("とき","とき"), W("ま","ま"),
+
+  // sky / light
+  W("よる","よる"), W("よぞら","よぞら"), W("ほし","ほし"), W("つき","つき"),
+  W("ひかり","ひかり"), W("あかり","あかり"), W("かげ","かげ"), W("こもれび","こもれび"),
+  W("ゆうぐれ","ゆうぐれ"), W("よあけ","よあけ"), W("あさやけ","あさやけ"),
+  W("くも","くも"), W("かすみ","かすみ"), W("しぐれ","しぐれ"),
+
+  // water
+  W("うみ","うみ"), W("なみ","なみ"), W("みなも","みなも"), W("みずうみ","みずうみ"),
+  W("しずく","しずく"), W("あめ","あめ"), W("ゆき","ゆき"),
+
+  // nature
+  W("はな","はな"), W("さくら","さくら"), W("つぼみ","つぼみ"), W("はなびら","はなびら"),
+  W("みどり","みどり"), W("こかげ","こかげ"),
+
+  // city
+  W("まち","まち"), W("よるまち","よるまち"), W("まちあかり","まちあかり"),
+  W("ねおん","ねおん"), W("まど","まど"), W("ろじ","ろじ"),
+  W("えき","えき"), W("でんしゃ","でんしゃ"), W("こうさてん","こうさてん"),
+
+  // memory / feeling objects
+  W("きおく","きおく"), W("てがみ","てがみ"), W("ためいき","ためいき"),
+  W("しずけさ","しずけさ"), W("よはく","よはく"), W("ことば","ことば"),
+  W("こえ","こえ"), W("ゆび","ゆび"), W("ひとみ","ひとみ"),
+
+  // colors
+  W("いろ","いろ"), W("あお","あお"), W("あか","あか"), W("しろ","しろ"),
+  W("むらさき","むらさき"), W("きんいろ","きんいろ"), W("ぎんいろ","ぎんいろ")
+];
+
+// Verbs: include short verbs to improve exact fits
+const VERB = [
+  W("ある","ある"), W("いる","いる"), W("みる","みる"), W("ゆく","ゆく"), W("くる","くる"),
+  W("まつ","まつ"), W("ねる","ねる"),
+
+  W("ゆれる","ゆれる"), W("ながれる","ながれる"), W("にじむ","にじむ"), W("ほどける","ほどける"),
+  W("ひらく","ひらく"), W("とじる","とじる"), W("おもいだす","おもいだす"), W("みつける","みつける"),
+  W("うすれる","うすれる"), W("かさなる","かさなる"), W("しずむ","しずむ"), W("うかぶ","うかぶ"), W("きえる","きえる"),
+
+  // glue forms
+  W("みて","みて"), W("いて","いて"), W("きて","きて"), W("まって","まって"),
+  W("ゆれて","ゆれて"), W("ながれて","ながれて"), W("にじんで","にじんで"), W("ほどけて","ほどけて"),
+  W("ひらいて","ひらいて"), W("とじて","とじて"), W("おもいだし","おもいだし"),
+  W("みつけて","みつけて"), W("うすれて","うすれて")
+];
+
+const ADJ = [
+  W("やさしい","やさしい"), W("さびしい","さびしい"), W("なつかしい","なつかしい"),
+  W("あたたかい","あたたかい"), W("つめたい","つめたい"), W("ひそやか","ひそやか"),
+  W("まぶしい","まぶしい"), W("やわらかい","やわらかい"), W("ゆるやか","ゆるやか"),
+  W("あおい","あおい"), W("あかい","あかい"), W("くらい","くらい"), W("しろい","しろい"),
+  W("ながい","ながい"), W("とおい","とおい"), W("ふかい","ふかい")
+];
+
+const PART = [
+  W("の","の"), W("は","は"), W("が","が"), W("を","を"), W("に","に"), W("で","で"),
+  W("と","と"), W("も","も"), W("や","や"), W("へ","へ"),
+  W("から","から"), W("まで","まで"), W("だけ","だけ"), W("さえ","さえ")
+];
+
+const CONN = [
+  W("そして","そして"), W("けれど","けれど"), W("それでも","それでも"),
+  W("いつか","いつか"), W("いま","いま"), W("だから","だから"), W("もしも","もしも")
+];
+
+const TARGET = [5,7,5,7,7];
+
+const TEMPLATES = [
+  ["noun","part","noun"],
+  ["noun","part","verb"],
+  ["adj","noun"],
+  ["noun","verb"],
+  ["conn","noun","part","noun"],
+  ["noun","part","adj","noun"],
+  ["noun","part","noun","part","verb"],
+  ["conn","noun","verb"],
+  ["noun","part","noun","verb"],
+  ["adj","noun","part","verb"]
+];
+
+function poolFor(slot){
+  if(slot==="noun") return NOUN;
+  if(slot==="verb") return VERB;
+  if(slot==="adj")  return ADJ;
+  if(slot==="part") return PART;
+  if(slot==="conn") return CONN;
+  return NOUN;
+}
+function tokenMora(tok){ return countMora(tok.reading); }
+
+/* ========= Fixed token (A: kanji via reading) ========= */
+function refreshHint(){
+  const s = (fixedSurfaceEl.value||"").trim();
+  if(!s){ autoHintEl.textContent = "Kana OK"; return; }
+  autoHintEl.textContent = isKanaOnly(s) ? "Kana OK" : "Kanji detected → reading required";
+}
+fixedSurfaceEl.addEventListener("input", refreshHint);
+refreshHint();
+
+function getFixedToken(){
+  const surface = (fixedSurfaceEl.value||"").trim();
+  const readingInput = (fixedReadingEl.value||"").trim();
+
+  if(!surface) throw new Error("Please enter a fixed word.");
+
+  if(isKanaOnly(surface)){
+    const r = toHira(surface);
+    if(countMora(r) <= 0) throw new Error("Could not read fixed word. Use hiragana.");
+    return {surface, reading:r};
+  }
+
+  if(!readingInput) throw new Error("Kanji detected. Please fill Reading in hiragana (e.g., 車 → くるま).");
+  const r = toHira(readingInput);
+  if(!isKanaOnly(r) || countMora(r) <= 0) throw new Error("Reading must be kana (recommended: hiragana).");
+  return {surface, reading:r};
+}
+
+/* ========= Line builder (no weird filler) ========= */
+function buildLineExact(targetMora, rng, fixedTok=null){
+  for(let attempt=0; attempt<1400; attempt++){
+    let tpl = pick(rng, TEMPLATES).slice();
+    if(fixedTok){
+      tpl.splice(randi(rng, 0, tpl.length), 0, "fixed");
+    }
+    const out = [];
+    let rem = targetMora;
+
+    function dfs(i){
+      if(i===tpl.length) return rem===0;
+
+      const slot = tpl[i];
+
+      if(slot==="fixed"){
+        const m = tokenMora(fixedTok);
+        if(m<=0 || m>rem) return false;
+        out.push(fixedTok); rem -= m;
+        const ok = dfs(i+1);
+        if(ok) return true;
+        rem += m; out.pop();
+        return false;
+      }
+
+      const pool = poolFor(slot);
+      const tries = (slot==="part") ? 14 : 26;
+
+      for(let k=0;k<tries;k++){
+        const tok = pool[randi(rng,0,pool.length-1)];
+        const m = tokenMora(tok);
+        if(m<=0 || m>rem) continue;
+        if(i===tpl.length-1 && slot==="part") continue;
+
+        out.push(tok); rem -= m;
+        if(dfs(i+1)) return true;
+        rem += m; out.pop();
+      }
+      return false;
+    }
+
+    if(dfs(0)){
+      const text = out.map(t=>t.surface).join("")
+        .replace(/(の)\1+/g,"の").replace(/(は)\1+/g,"は").replace(/(が)\1+/g,"が")
+        .replace(/(を)\1+/g,"を").replace(/(に)\1+/g,"に").replace(/(で)\1+/g,"で")
+        .replace(/(と)\1+/g,"と");
+      const reading = out.map(t=>t.reading).join("");
+      return {text, reading};
+    }
+  }
+  throw new Error("Generation failed. Click again to retry.");
+}
+
+/* ========= Retry wrapper (reduces failures massively) ========= */
+function tryGenerateWithRetries({seedBase, fixedTok, keepFixedLine, maxTries=40}){
+  const rng0 = makeRng(seedBase);
+
+  const lineOrder = keepFixedLine
+    ? [state.fixedLine]
+    : [0,1,2,3,4].sort(()=> rng0() - 0.5);
+
+  for(const lineIdx of lineOrder){
+    for(let t=0;t<maxTries;t++){
+      const attemptSeed = seedBase + "|try|" + lineIdx + "|" + t;
+      try{
+        const lines = TARGET.map((m, i)=>{
+          const includeFixed = (i === lineIdx) ? fixedTok : null;
+          return buildLineExact(m, makeRng(attemptSeed + "|L|" + i), includeFixed);
+        });
+        const whole = lines.map(l=>l.text).join("\n");
+        if(!whole.includes(fixedTok.surface)) continue;
+        return {ok:true, fixedLine: lineIdx, lines, seedBase: attemptSeed};
+      }catch(e){
+        // keep trying
+      }
+    }
+  }
+  return {ok:false};
+}
+
+/* ========= Tile-game state ========= */
+let state = {
+  fixedTok: null,
+  fixedLine: 0,
+  seedBase: null,
+  locked: [false,false,false,false,false],
+  lines: [] // {text, reading}
+};
+
+function linesToText(lines){ return lines.map(l=>l.text).join("\n"); }
+
+function render(){
+  tilesEl.innerHTML = "";
+  for(let i=0;i<5;i++){
+    const tile = document.createElement("div");
+    tile.className = "tile" + (state.locked[i] ? " locked" : "");
+    tile.dataset.i = i;
+
+    const target = TARGET[i];
+    const m = state.lines[i] ? countMora(state.lines[i].reading) : 0;
+
+    tile.innerHTML = `
+      <div class="tileHead">
+        <div class="label">Line ${i+1} • target ${target}</div>
+        <div class="badge ${state.locked[i] ? "lock":""}">${state.locked[i] ? "LOCKED" : "UNLOCKED"}</div>
+      </div>
+      <div class="lineText">${state.lines[i]?.text || ""}</div>
+      <div class="mono">meter: ${m}/${target}${i===state.fixedLine ? "  • fixed word line" : ""}</div>
+    `;
+    tilesEl.appendChild(tile);
+  }
+
+  const full = linesToText(state.lines);
+  fullEl.textContent = full;
+
+  const meters = state.lines.map((l)=>countMora(l.reading)).join(" / ");
+  meterEl.textContent = `meter: ${meters}  (target: 5 / 7 / 5 / 7 / 7)`;
+}
+
+tilesEl.addEventListener("click", (e)=>{
+  const tile = e.target.closest(".tile");
+  if(!tile) return;
+  const i = parseInt(tile.dataset.i, 10);
+  state.locked[i] = !state.locked[i];
+  render();
+  setStatus(state.locked[i] ? `Locked line ${i+1}` : `Unlocked line ${i+1}`);
+});
+
+/* ========= Generate / Variant ========= */
+function generateAll(isVariant){
+  clearWarn();
+  const fixedTok = getFixedToken();
+
+  const base = (fixedTok.reading || "fixed") + "|tanka_tiles";
+  const seedBase = base + "|" + Date.now().toString(36) + "|" + Math.random().toString(36).slice(2,8);
+
+  const keepFixedLine = isVariant && state.seedBase;
+  const result = tryGenerateWithRetries({
+    seedBase: (keepFixedLine ? (state.seedBase + "|v|" + Date.now().toString(36)) : seedBase),
+    fixedTok,
+    keepFixedLine,
+    maxTries: 50
+  });
+
+  if(!result.ok){
+    throw new Error("Could not fit the meter with current vocab. Try a shorter reading, or click again.");
+  }
+
+  state.fixedTok = fixedTok;
+  state.seedBase = result.seedBase;
+
+  if(!keepFixedLine){
+    state.fixedLine = result.fixedLine;
+    state.locked = [false,false,false,false,false];
+  }
+
+  state.lines = result.lines;
+
+  render();
+  setStatus(isVariant ? "Variant ✓" : "Generated ✓");
+}
+
+function rerollUnlockedLines(){
+  clearWarn();
+  if(!state.seedBase || !state.fixedTok){
+    generateAll(false);
+    return;
+  }
+
+  // Keep fixed line stable; reroll only unlocked lines, with retries per line.
+  const baseSeed = state.seedBase + "|u|" + Date.now().toString(36);
+
+  for(let i=0;i<5;i++){
+    if(state.locked[i]) continue;
+
+    const includeFixed = (i === state.fixedLine) ? state.fixedTok : null;
+
+    // retry just this line
+    let ok = false;
+    for(let t=0;t<60;t++){
+      try{
+        state.lines[i] = buildLineExact(TARGET[i], makeRng(baseSeed + "|L|" + i + "|t|" + t), includeFixed);
+        ok = true;
+        break;
+      }catch(e){
+        // keep trying
+      }
+    }
+    if(!ok){
+      throw new Error("Reroll failed for an unlocked line. Try again (or unlock fewer lines).");
+    }
+  }
+
+  // ensure fixed surface still present
+  const whole = linesToText(state.lines);
+  if(!whole.includes(state.fixedTok.surface)){
+    // force fixed line again
+    state.lines[state.fixedLine] = buildLineExact(TARGET[state.fixedLine], makeRng(baseSeed + "|force"), state.fixedTok);
+  }
+
+  state.seedBase = baseSeed;
+  render();
+  setStatus("Rerolled unlocked ✓");
+}
+
+/* ========= Buttons ========= */
+document.getElementById("genBtn").addEventListener("click", ()=>{
+  try{ generateAll(false); }
+  catch(e){ setStatus("Error"); showWarn(e.message || String(e)); }
+});
+
+document.getElementById("variantBtn").addEventListener("click", ()=>{
+  try{
+    // Tile-game behavior: reroll only unlocked lines.
+    rerollUnlockedLines();
+  }catch(e){
+    setStatus("Error");
+    showWarn(e.message || String(e));
+  }
+});
+
+document.getElementById("copyBtn").addEventListener("click", async ()=>{
+  const text = fullEl.textContent || "";
+  if(!text){ setStatus("Nothing to copy"); return; }
+  try{
+    await navigator.clipboard.writeText(text);
+    setStatus("Copied ✓");
+  }catch{
+    setStatus("Copy failed");
+    showWarn("Copy failed due to browser permission. You can select & copy manually.");
+  }
+});
+
+/* boot */
+try{
+  fixedSurfaceEl.value = "ぶどう";
+  fixedReadingEl.value = ""; // kana optional
+  generateAll(false);
+  setStatus("Ready ✓");
+}catch(e){
+  setStatus("Ready");
+}
+</script>
+</body>
+</html>

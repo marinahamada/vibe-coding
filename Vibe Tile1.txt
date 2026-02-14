@@ -1,0 +1,57 @@
+Tile Vibe Studio
+Generate tiles → click to lock → shuffle unlocked only → auto-title → save with tags & favorites → searchable gallery.
+Ready
+Generate
+Shuffle Unlocked
+Unlock All
+Export PNG
+Grid
+              3 × 3
+              6 × 6
+              10 × 10
+              18 × 18
+              24 × 24
+              30 × 30
+            
+Theme
+              Flowers
+              Sakura
+              Plants
+              Mountain
+              River
+              Japan
+              Tokyo
+              Flags
+              Sunset (3-layer)
+              Wild Random
+            
+
+
+Tip: Click tiles to lock 🔒
+Locked tiles stay during “Shuffle Unlocked”
+
+
+Suggest Title
+
+☆
+★
+Save
+Clear All
+“Sunset (3-layer)” builds sky → horizon → night for extra drama. Shuffle replaces ~30% of unlocked tiles only.
+Grid
+—
+Recipe (seed)
+—
+Gallery
+Sort
+              Newest
+              Oldest
+              Name
+              Favorites
+            
+
+
+★ only
+Reset
+
+Storage: localStorage in this browser only.

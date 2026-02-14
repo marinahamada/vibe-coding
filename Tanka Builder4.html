@@ -1,0 +1,1278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tanka Lab — Beauty Research (iOS)</title>
+<style>
+  :root{
+    --bgA:hsl(220 70% 18%);
+    --bgB:hsl(265 70% 16%);
+    --bgC:hsl(30 75% 18%);
+    --sat: 1;
+    --blur: 22px;
+    --angle: 135deg;
+
+    --text: rgba(255,255,255,.92);
+    --muted: rgba(255,255,255,.68);
+    --line: rgba(255,255,255,.14);
+    --card: rgba(255,255,255,.08);
+    --shadow: 0 22px 70px rgba(0,0,0,.55);
+    --radius: 18px;
+
+    --blue:#0a84ff; --purple:#bf5af2; --green:#30d158; --orange:#ff9f0a; --pink:#ff2d55; --red:#ff453a;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; padding:18px;
+    color:var(--text);
+    font-family: system-ui, -apple-system, "SF Pro Display","SF Pro Text","Segoe UI", Arial;
+    background:
+      radial-gradient(1000px 520px at 15% 10%, color-mix(in oklab, var(--bgA) 92%, black) 0%, transparent 60%),
+      radial-gradient(1000px 520px at 85% 10%, color-mix(in oklab, var(--bgB) 92%, black) 0%, transparent 60%),
+      radial-gradient(1000px 560px at 70% 95%, color-mix(in oklab, var(--bgC) 92%, black) 0%, transparent 62%),
+      linear-gradient(180deg, #060712, #0b1224);
+    overflow-x:hidden;
+  }
+  .bg{
+    position:fixed; inset:-40px;
+    background: linear-gradient(var(--angle), var(--bgA), var(--bgB), var(--bgC));
+    filter: saturate(var(--sat));
+    opacity:.52;
+    z-index:-2;
+    animation: drift 14s ease-in-out infinite alternate;
+  }
+  .bg::after{
+    content:"";
+    position:absolute; inset:0;
+    background:
+      radial-gradient(900px 700px at 30% 30%, rgba(255,255,255,.07), transparent 60%),
+      radial-gradient(900px 700px at 70% 60%, rgba(255,255,255,.05), transparent 60%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+    filter: blur(calc(var(--blur) * .55));
+    opacity:.55;
+  }
+  @keyframes drift{
+    0%{ transform: translate3d(-10px,-10px,0) scale(1.06); }
+    100%{ transform: translate3d(10px,6px,0) scale(1.08); }
+  }
+
+  .wrap{max-width:1100px;margin:0 auto}
+  header{
+    display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:14px
+  }
+  h1{margin:0;font-size:18px;letter-spacing:.2px}
+  .sub{margin-top:6px;color:var(--muted);font-size:12px;line-height:1.4}
+  .pill{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:8px 12px;border-radius:999px;
+    border:1px solid var(--line);
+    background: rgba(255,255,255,.07);
+    backdrop-filter: blur(18px);
+    font-size:12px;color:var(--muted);
+    box-shadow: 0 12px 28px rgba(0,0,0,.35);
+    white-space:nowrap;
+  }
+  .grid{display:grid;grid-template-columns: 1.35fr 0.65fr;gap:14px}
+  @media (max-width: 980px){ .grid{grid-template-columns:1fr;} }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius: var(--radius);
+    padding:14px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(18px);
+  }
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .sep{height:1px;background:rgba(255,255,255,.10);margin:12px 0}
+  .label{color:var(--muted);font-size:12px}
+  input, button{
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,.20);
+    background: rgba(255,255,255,.07);
+    color: var(--text);
+    padding:10px 12px;
+    font-size:13px;
+    outline:none;
+    box-shadow: 0 1px 0 rgba(255,255,255,.10) inset, 0 1px 2px rgba(0,0,0,.35);
+  }
+  input{min-width: 240px}
+  input.small{min-width: 200px}
+  button{cursor:pointer;user-select:none;transition: transform .05s ease, filter .15s ease}
+  button:hover{filter:brightness(1.06)}
+  button:active{transform: translateY(1px); filter:brightness(.98)}
+  .btn.primary{
+    background: linear-gradient(180deg, rgba(10,132,255,.95), rgba(10,132,255,.62));
+    border-color: rgba(10,132,255,.55);
+    color:#fff;
+    box-shadow: 0 1px 0 rgba(255,255,255,.15) inset, 0 18px 40px rgba(10,132,255,.22);
+  }
+  .btn.secondary{
+    background: linear-gradient(180deg, rgba(191,90,242,.92), rgba(191,90,242,.58));
+    border-color: rgba(191,90,242,.55);
+    color:#fff;
+    box-shadow: 0 1px 0 rgba(255,255,255,.15) inset, 0 18px 40px rgba(191,90,242,.18);
+  }
+  .btn.ghost{ background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.16); }
+  .hint{color:var(--muted);font-size:12px;line-height:1.45}
+  .hint strong{color:#fff}
+  .warning{
+    border:1px solid rgba(255,159,10,.35);
+    background: rgba(255,159,10,.10);
+    color:#ffe6c7;
+    padding:10px 12px;
+    border-radius: 14px;
+    font-size:12px;
+    line-height:1.45;
+    display:none;
+    margin-top:10px;
+    white-space:pre-wrap;
+  }
+
+  /* Tiles pool */
+  .pool{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+  .tile{
+    padding:10px 12px;border-radius:14px;
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(0,0,0,.22);
+    cursor:pointer;
+    min-width: 110px;
+    transition: transform .05s ease, filter .15s ease, opacity .15s ease;
+  }
+  .tile:hover{filter:brightness(1.05)}
+  .tile:active{transform: translateY(1px)}
+  .tile.used{opacity:.35; cursor:not-allowed}
+  .tileTop{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:6px}
+  .tag{
+    font-size:10.5px; padding:3px 8px; border-radius:999px;
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.06);
+    color: var(--muted);
+    white-space:nowrap;
+  }
+  .tag.theme{border-color: rgba(48,209,88,.35); color: rgba(209,255,229,.95);}
+  .tag.neutral{border-color: rgba(10,132,255,.32); color: rgba(210,230,255,.95);}
+  .tag.particle{border-color: rgba(255,159,10,.40); color: rgba(255,236,210,.95);}
+  .tag.action{border-color: rgba(255,45,85,.40); color: rgba(255,219,231,.95);}
+  .word{font-size:16px; letter-spacing:.2px}
+  .mora{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+
+  /* Builder lines */
+  .lines{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+  .lineCard{
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(0,0,0,.20);
+    border-radius: 16px;
+    padding:12px;
+  }
+  .lineCard.active{
+    border-color: rgba(255,255,255,.32);
+    background: rgba(255,255,255,.08);
+  }
+  .lineHead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+  .badge{
+    font-size:11px; padding:4px 10px; border-radius:999px;
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.06);
+    color: var(--muted);
+    white-space:nowrap;
+  }
+  .badge.good{border-color: rgba(48,209,88,.35); color: rgba(220,255,238,.95);}
+  .badge.bad{border-color: rgba(255,159,10,.35); color: rgba(255,231,200,.95);}
+  .tokens{display:flex;flex-wrap:wrap;gap:8px}
+  .token{
+    padding:7px 10px;border-radius:999px;
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.06);
+    cursor:pointer;
+    transition: filter .15s ease;
+  }
+  .token:hover{filter:brightness(1.07)}
+  .token small{font-family:var(--mono);color:var(--muted);margin-left:6px}
+  .lineFoot{display:flex;gap:10px;align-items:center;margin-top:10px}
+  .mini{padding:8px 10px;font-size:12px;border-radius: 12px}
+
+  /* Right panel widgets */
+  .panelGrid{display:grid;grid-template-columns: 1fr 1fr;gap:12px}
+  .kpiCard{
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(0,0,0,.18);
+    border-radius: 16px;
+    padding:12px;
+  }
+  .kpiTitle{font-size:12px;color:var(--muted);margin-bottom:8px}
+  .kpiBig{font-size:18px}
+  .bar{
+    height:10px;border-radius:999px;
+    background: rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.10);
+    overflow:hidden;
+  }
+  .bar > div{
+    height:100%;
+    background: linear-gradient(90deg, rgba(10,132,255,.9), rgba(191,90,242,.8));
+    width:0%;
+  }
+  .mono{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .fullBox{
+    white-space:pre-line;
+    background: rgba(0,0,0,.20);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius: 16px;
+    padding:12px 14px;
+    font-size:18px;
+    line-height:2.0;
+    min-height:140px;
+  }
+
+  .flow{ display:flex;flex-wrap:wrap;gap:8px;align-items:center; }
+  .pillMini{
+    display:inline-flex;gap:8px;align-items:center;
+    padding:6px 10px;border-radius:999px;
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.06);
+    font-size:12px;color:var(--muted);
+  }
+  .spark{
+    width:100%; height:52px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.04);
+    border-radius: 14px;
+    overflow:hidden;
+  }
+  .legendRow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px}
+  .legend{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted)}
+  .sw{width:10px;height:10px;border-radius:3px;border:1px solid rgba(255,255,255,.18)}
+
+  /* NEW: Line Vowel Palette */
+  .linePalettes{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+  .lpRow{display:grid;grid-template-columns: 44px 1fr 48px;gap:10px;align-items:center}
+  .lpBar{
+    height:14px;border-radius:999px;
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.06);
+    overflow:hidden;
+    box-shadow: 0 1px 0 rgba(255,255,255,.10) inset;
+  }
+  .lpLbl{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .lpMora{font-family:var(--mono);font-size:12px;color:rgba(255,255,255,.75);text-align:right}
+
+  /* NEW: Gradient Artwork */
+  .artWrap{
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(0,0,0,.18);
+    border-radius: 16px;
+    overflow:hidden;
+  }
+  canvas{display:block;width:100%;height:auto}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true"></div>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Tanka Lab — Beauty Research</h1>
+      <div class="sub">
+        Deck per round: <strong>6 theme</strong> + <strong>3 neutral</strong> + <strong>3 particles</strong> + <strong>3 actions</strong> (no duplicates).
+        Right panel shows <strong>Poem Preview + Line Vowel Palettes + Generated Gradient Artwork</strong>.
+      </div>
+    </div>
+    <div class="pill" id="status">Ready</div>
+  </header>
+
+  <div class="grid">
+    <!-- Left -->
+    <section class="card">
+      <div class="row">
+        <span class="label">Fixed word (surface)</span>
+        <input id="fixedSurface" placeholder="e.g., 葡萄 / ぶどう / 車 / さくら" />
+        <span class="label">Reading (hiragana)</span>
+        <input id="fixedReading" class="small" placeholder="required for kanji: ぶどう / くるま" />
+        <span class="label" id="autoHint" style="margin-left:auto">Kana OK</span>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <button id="newRoundBtn" class="btn primary">New Round</button>
+        <button id="resetBtn" class="btn ghost">Reset Layout</button>
+        <button id="copyBtn" class="btn secondary">Copy</button>
+      </div>
+
+      <div class="hint" style="margin-top:10px">
+        • Select a <strong>line</strong>, then click a <strong>tile</strong> to place.<br/>
+        • Click a placed token to remove (returns to pool).<br/>
+        • Fixed word must be used at least once.
+      </div>
+
+      <div class="warning" id="warningBox"></div>
+
+      <div class="sep"></div>
+      <div class="label">Tile pool (15 + Fixed)</div>
+      <div class="pool" id="pool"></div>
+
+      <div class="sep"></div>
+      <div class="label">Builder</div>
+      <div class="lines" id="lines"></div>
+
+      <div class="sep"></div>
+      <div class="label">Full tanka</div>
+      <div class="fullBox" id="full"></div>
+      <div class="mono" id="meter"></div>
+    </section>
+
+    <!-- Right -->
+    <aside class="card">
+      <div class="label">Research panel — Sound + Color</div>
+      <div class="hint" style="margin-top:8px">
+        The artwork is derived from vowels, flow, softness, and dakuten contrast.
+      </div>
+
+      <div class="sep"></div>
+
+      <!-- NEW: Poem preview -->
+      <div class="kpiCard">
+        <div class="kpiTitle">Poem preview</div>
+        <div class="fullBox" id="rightPoem" style="min-height:120px;font-size:16px;line-height:1.9"></div>
+        <div class="mono" id="rightMeter" style="margin-top:8px"></div>
+
+        <div class="kpiTitle" style="margin-top:12px">Line vowel palettes</div>
+        <div class="linePalettes" id="linePalettes"></div>
+      </div>
+
+      <div class="sep"></div>
+
+      <!-- NEW: Artwork -->
+      <div class="kpiCard">
+        <div class="kpiTitle">Generated gradient artwork</div>
+        <div class="artWrap">
+          <canvas id="art" width="560" height="320"></canvas>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button id="regenArtBtn" class="btn ghost">Regenerate Artwork</button>
+          <button id="downloadArtBtn" class="btn secondary">Download PNG</button>
+        </div>
+        <div class="mono" id="artNote" style="margin-top:8px"></div>
+      </div>
+
+      <div class="sep"></div>
+
+      <!-- KPIs -->
+      <div class="panelGrid">
+        <div class="kpiCard">
+          <div class="kpiTitle">Kanji density</div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <svg width="64" height="64" viewBox="0 0 64 64">
+              <circle cx="32" cy="32" r="24" fill="none" stroke="rgba(255,255,255,.10)" stroke-width="8"/>
+              <circle id="ringArc" cx="32" cy="32" r="24" fill="none" stroke="rgba(10,132,255,.85)" stroke-linecap="round" stroke-width="8"
+                      stroke-dasharray="150.8" stroke-dashoffset="150.8" transform="rotate(-90 32 32)"/>
+            </svg>
+            <div>
+              <div class="kpiBig" id="kanjiPct">0%</div>
+              <div class="mono" id="kanjiNote">0 / 0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="kpiCard">
+          <div class="kpiTitle">Abstract vs concrete</div>
+          <div class="bar"><div id="absBar"></div></div>
+          <div class="mono" style="margin-top:8px" id="absNote">abstract 0 • concrete 0</div>
+        </div>
+
+        <div class="kpiCard">
+          <div class="kpiTitle">Dakuten / handakuten</div>
+          <div class="bar"><div id="dakBar"></div></div>
+          <div class="mono" style="margin-top:8px" id="dakNote">0%</div>
+        </div>
+
+        <div class="kpiCard">
+          <div class="kpiTitle">Repetition (texture)</div>
+          <div class="bar"><div id="repBar"></div></div>
+          <div class="mono" style="margin-top:8px" id="repNote">vowel-run 0 • kana-run 0</div>
+        </div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="kpiCard">
+        <div class="kpiTitle">Vowel flow (dominant transitions)</div>
+        <div class="flow" id="flowPills"></div>
+        <div class="legendRow">
+          <div class="legend"><span class="sw" style="background:rgba(255,159,10,.9)"></span>a</div>
+          <div class="legend"><span class="sw" style="background:rgba(10,132,255,.9)"></span>i</div>
+          <div class="legend"><span class="sw" style="background:rgba(191,90,242,.9)"></span>u</div>
+          <div class="legend"><span class="sw" style="background:rgba(48,209,88,.9)"></span>e</div>
+          <div class="legend"><span class="sw" style="background:rgba(255,45,85,.9)"></span>o</div>
+        </div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="kpiCard">
+        <div class="kpiTitle">Rhythm wave (per line)</div>
+        <svg class="spark" id="rhythmSvg" viewBox="0 0 320 52" preserveAspectRatio="none"></svg>
+        <div class="mono" style="margin-top:8px" id="rhythmNote">grain • density • breaks</div>
+      </div>
+
+      <div class="sep"></div>
+      <div class="hint">
+        Particles include <strong>の</strong> guaranteed.
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+/* ===================== Basics ===================== */
+const statusEl = document.getElementById("status");
+const warnEl = document.getElementById("warningBox");
+const fixedSurfaceEl = document.getElementById("fixedSurface");
+const fixedReadingEl = document.getElementById("fixedReading");
+const autoHintEl = document.getElementById("autoHint");
+const poolEl = document.getElementById("pool");
+const linesEl = document.getElementById("lines");
+const fullEl = document.getElementById("full");
+const meterEl = document.getElementById("meter");
+
+const rightPoemEl = document.getElementById("rightPoem");
+const rightMeterEl = document.getElementById("rightMeter");
+const linePalettesEl = document.getElementById("linePalettes");
+
+const artCanvas = document.getElementById("art");
+const artCtx = artCanvas.getContext("2d");
+const artNote = document.getElementById("artNote");
+document.getElementById("regenArtBtn").addEventListener("click", ()=> renderAll(true));
+document.getElementById("downloadArtBtn").addEventListener("click", ()=>{
+  const a = document.createElement("a");
+  a.download = "tanka-gradient.png";
+  a.href = artCanvas.toDataURL("image/png");
+  a.click();
+});
+
+const ringArc = document.getElementById("ringArc");
+const kanjiPct = document.getElementById("kanjiPct");
+const kanjiNote = document.getElementById("kanjiNote");
+const absBar = document.getElementById("absBar");
+const absNote = document.getElementById("absNote");
+
+const dakBar = document.getElementById("dakBar");
+const dakNote = document.getElementById("dakNote");
+const repBar = document.getElementById("repBar");
+const repNote = document.getElementById("repNote");
+const flowPills = document.getElementById("flowPills");
+const rhythmSvg = document.getElementById("rhythmSvg");
+const rhythmNote = document.getElementById("rhythmNote");
+
+function setStatus(t){ statusEl.textContent = t; }
+function showWarn(msg){ warnEl.style.display="block"; warnEl.textContent = msg; }
+function clearWarn(){ warnEl.style.display="none"; warnEl.textContent=""; }
+function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+
+/* ===================== Mora utils ===================== */
+const SMALL = new Set("ゃゅょぁぃぅぇぉゎャュョァィゥェォヮ".split(""));
+function toHira(str){
+  return (str||"").replace(/[\u30a1-\u30f6]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0x60));
+}
+function isKanaOnly(s){
+  const h = toHira((s||"").trim());
+  return !!h && /^[ぁ-ゖー]+$/.test(h);
+}
+function countMora(reading){
+  const s = toHira((reading||"").trim());
+  if(!s) return 0;
+  let n = 0;
+  for(const ch of s){
+    if(ch === "ー"){ n++; continue; }
+    if(SMALL.has(ch)) continue;
+    if(ch.match(/[ぁ-ゖ]/)) n++;
+  }
+  return n;
+}
+
+/* ===================== Sound utils ===================== */
+const VOWELS = ["a","i","u","e","o"];
+function kanaVowel(ch){
+  if(SMALL.has(ch) || ch === "ー") return null;
+  const a = "あかさたなはまやらわがざだばぱぁゃ";
+  const i = "いきしちにひみりぎじぢびぴぃ";
+  const u = "うくすつぬふむゆるぐずづぶぷぅゅ";
+  const e = "えけせてねへめれげぜでべぺぇ";
+  const o = "おこそとのほもよろをごぞどぼぽぉょを";
+  if(a.includes(ch)) return "a";
+  if(i.includes(ch)) return "i";
+  if(u.includes(ch)) return "u";
+  if(e.includes(ch)) return "e";
+  if(o.includes(ch)) return "o";
+  return null;
+}
+function readingVowels(reading){
+  const s = toHira((reading||"").trim());
+  const out = [];
+  for(const ch of s){
+    const v = kanaVowel(ch);
+    if(v) out.push(v);
+  }
+  return out;
+}
+function readingSoftness(reading){
+  const s = toHira((reading||"").trim());
+  let score = 0, cnt = 0;
+  for(const ch of s){
+    if(SMALL.has(ch) || ch==="ー") continue;
+    if(!ch.match(/[ぁ-ゖ]/)) continue;
+    cnt++;
+    const hard = "かきくけこさしすせそたちつてとぱぴぷぺぽがぎぐげござじずぜぞだぢづでどばびぶべぼ";
+    const soft = "まみむめもなにぬねのらりるれろやゆよわをはひふへほ";
+    if(hard.includes(ch)) score += 0.15;
+    else if(soft.includes(ch)) score += 0.85;
+    else score += 0.55;
+  }
+  return cnt ? (score/cnt) : 0.55;
+}
+function countDakutenKana(reading){
+  const s = toHira((reading||"").trim());
+  const m = s.match(/[がぎぐげござじずぜぞだぢづでどばびぶべぼぱぴぷぺぽ]/g);
+  return m ? m.length : 0;
+}
+function longestRun(arr){
+  let max = 0, runs = 0;
+  let cur = 0, prev = null;
+  for(const x of arr){
+    if(x === prev){ cur++; }
+    else{
+      if(cur >= 2) runs++;
+      max = Math.max(max, cur);
+      cur = 1; prev = x;
+    }
+  }
+  if(cur >= 2) runs++;
+  max = Math.max(max, cur);
+  return {max, runs};
+}
+function vowelFlowTransitions(vowels){
+  const map = new Map();
+  for(let i=1;i<vowels.length;i++){
+    const a = vowels[i-1], b = vowels[i];
+    if(!a || !b) continue;
+    const key = `${a}→${b}`;
+    map.set(key, (map.get(key)||0)+1);
+  }
+  return [...map.entries()].sort((x,y)=> y[1]-x[1]).slice(0,6);
+}
+
+/* ===================== RNG ===================== */
+function xmur3(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=(h<<13)|(h>>>19);}return function(){h=Math.imul(h^(h>>>16),2246822507);h=Math.imul(h^(h>>>13),3266489909);return (h^=(h>>>16))>>>0;};}
+function sfc32(a,b,c,d){return function(){a>>>=0;b>>>=0;c>>>=0;d>>>=0;let t=(a+b)|0;a=b^(b>>>9);b=(c+(c<<3))|0;c=(c<<21)|(c>>>11);d=(d+1)|0;t=(t+d)|0;c=(c+t)|0;return (t>>>0)/4294967296;};}
+function makeRng(seed){const s=xmur3(seed);return sfc32(s(),s(),s(),s());}
+function randi(rng,min,max){return Math.floor(rng()*(max-min+1))+min;}
+function pick(rng, arr){return arr[randi(rng,0,arr.length-1)];}
+
+/* ===================== Vocab ===================== */
+function T(surface, reading, kind, isAbstract){
+  const r = toHira(reading);
+  return {
+    id: (crypto?.randomUUID?.() || Math.random().toString(16).slice(2)),
+    surface,
+    reading: r,
+    kind,
+    isAbstract: !!isAbstract,
+    mora: countMora(r),
+    vowels: readingVowels(r),
+    softness: readingSoftness(r),
+  };
+}
+
+const THEME = [
+  T("水面","みなも","theme",false), T("湖面","こめん","theme",false), T("波紋","はもん","theme",false),
+  T("水滴","すいてき","theme",false), T("霧","きり","theme",false), T("潮","しお","theme",false),
+  T("潮風","しおかぜ","theme",false), T("井戸","いど","theme",false), T("水路","すいろ","theme",false),
+  T("薄氷","うすごおり","theme",false), T("水音","みずおと","theme",false), T("反射","はんしゃ","theme",false),
+  T("透明","とうめい","theme",true), T("揺らぎ","ゆらぎ","theme",true),
+  T("記憶","きおく","theme",true), T("残像","ざんぞう","theme",true), T("断片","だんぺん","theme",true),
+  T("余白","よはく","theme",true), T("沈黙","ちんもく","theme",true), T("未明","みめい","theme",true),
+  T("気配","けはい","theme",true), T("境界","きょうかい","theme",true),
+];
+const NEUTRAL = [
+  T("朝","あさ","neutral",false), T("夜","よる","neutral",false), T("空","そら","neutral",false),
+  T("影","かげ","neutral",false), T("窓","まど","neutral",false), T("部屋","へや","neutral",false),
+  T("道","みち","neutral",false), T("風","かぜ","neutral",false), T("雨","あめ","neutral",false),
+  T("光","ひかり","neutral",false), T("手","て","neutral",false), T("声","こえ","neutral",false),
+  T("あなた","あなた","neutral",true), T("わたし","わたし","neutral",true), T("今日","きょう","neutral",true),
+];
+const PARTICLES = [
+  T("の","の","particle",false),
+  T("に","に","particle",false),
+  T("へ","へ","particle",false),
+  T("で","で","particle",false),
+  T("と","と","particle",false),
+  T("を","を","particle",false),
+  T("や","や","particle",false),
+  T("から","から","particle",false),
+  T("まで","まで","particle",false),
+  T("だけ","だけ","particle",false),
+];
+const ACTIONS = [
+  T("滲む","にじむ","action",false),
+  T("揺れる","ゆれる","action",false),
+  T("沈む","しずむ","action",false),
+  T("浮かぶ","うかぶ","action",false),
+  T("溶ける","とける","action",false),
+  T("凍る","こおる","action",false),
+  T("残る","のこる","action",false),
+  T("消える","きえる","action",false),
+  T("満ちる","みちる","action",false),
+  T("うすく","うすく","action",false),
+  T("静かに","しずかに","action",true),
+  T("ゆっくり","ゆっくり","action",true),
+  T("ふと","ふと","action",true),
+  T("まだ","まだ","action",true),
+];
+
+/* ===================== State ===================== */
+const TARGET = [5,7,5,7,7];
+const state = {
+  seed: "",
+  roundTiles: [],
+  used: new Set(),
+  lines: [[],[],[],[],[]],
+  activeLine: 0,
+  fixedToken: null,
+  artSeed: "art|0",
+};
+
+function getFixedToken(){
+  const surface = (fixedSurfaceEl.value||"").trim();
+  const readingInput = (fixedReadingEl.value||"").trim();
+
+  if(!surface) throw new Error("Please enter a fixed word.");
+
+  if(isKanaOnly(surface)){
+    const r = toHira(surface);
+    if(countMora(r) <= 0) throw new Error("Could not read fixed word. Use hiragana.");
+    return T(surface, r, "fixed", true);
+  }
+  if(!readingInput) throw new Error("Kanji detected. Please fill Reading in hiragana (e.g., 車 → くるま).");
+  const r = toHira(readingInput);
+  if(!isKanaOnly(r) || countMora(r) <= 0) throw new Error("Reading must be kana (recommended: hiragana).");
+  return T(surface, r, "fixed", true);
+}
+function refreshHint(){
+  const s = (fixedSurfaceEl.value||"").trim();
+  if(!s){ autoHintEl.textContent = "Kana OK"; return; }
+  autoHintEl.textContent = isKanaOnly(s) ? "Kana OK" : "Kanji detected → reading required";
+}
+fixedSurfaceEl.addEventListener("input", refreshHint);
+refreshHint();
+
+/* ===================== Round generation ===================== */
+function uniqueSample(rng, arr, n){
+  const pool = arr.slice();
+  const out = [];
+  while(out.length < n && pool.length){
+    const idx = randi(rng, 0, pool.length-1);
+    out.push(pool.splice(idx,1)[0]);
+  }
+  return out;
+}
+function newRound(){
+  clearWarn();
+  const fixed = getFixedToken();
+  state.fixedToken = fixed;
+  state.used = new Set();
+  state.lines = [[],[],[],[],[]];
+  state.activeLine = 0;
+
+  state.seed = "round|" + fixed.reading + "|" + Date.now().toString(36) + "|" + Math.random().toString(36).slice(2,8);
+  const rng = makeRng(state.seed);
+
+  const theme6 = uniqueSample(rng, THEME, 6);
+  const neutral3 = uniqueSample(rng, NEUTRAL, 3);
+
+  const noTile = PARTICLES.find(t => t.surface === "の");
+  const others = PARTICLES.filter(t => t.surface !== "の");
+  const particle2 = uniqueSample(rng, others, 2);
+  const particles3 = [noTile, ...particle2];
+
+  const action3 = uniqueSample(rng, ACTIONS, 3);
+
+  const seen = new Set();
+  const tiles = [];
+  for(const t of [...theme6, ...neutral3, ...particles3, ...action3]){
+    if(!t) continue;
+    if(seen.has(t.surface)) continue;
+    seen.add(t.surface);
+    tiles.push(t);
+  }
+
+  state.roundTiles = tiles; // 15 (plus fixed separately)
+  state.artSeed = "art|" + Date.now().toString(36) + "|" + Math.random().toString(36).slice(2,7);
+  setStatus("New round ✓");
+  renderAll(true);
+}
+
+/* ===================== Builder logic ===================== */
+function allTilesWithFixed(){
+  const fixed = state.fixedToken;
+  return fixed ? [fixed, ...state.roundTiles] : [...state.roundTiles];
+}
+function findTileById(id){
+  for(const t of allTilesWithFixed()){
+    if(t.id === id) return t;
+  }
+  return null;
+}
+function lineMora(i){
+  return state.lines[i].reduce((sum, id)=> sum + (findTileById(id)?.mora || 0), 0);
+}
+function canPlace(lineIdx, tile){
+  if(!tile) return false;
+  if(state.used.has(tile.id)) return false;
+  const m = lineMora(lineIdx);
+  return (m + tile.mora) <= TARGET[lineIdx];
+}
+function placeTile(lineIdx, tile){
+  if(!tile) return;
+  if(!canPlace(lineIdx, tile)){
+    setStatus("Doesn't fit");
+    return;
+  }
+  state.lines[lineIdx].push(tile.id);
+  state.used.add(tile.id);
+  setStatus(`Placed on line ${lineIdx+1}`);
+  renderAll(false);
+}
+function removeTile(tileId){
+  for(let i=0;i<5;i++){
+    const idx = state.lines[i].indexOf(tileId);
+    if(idx !== -1){
+      state.lines[i].splice(idx,1);
+      state.used.delete(tileId);
+      setStatus("Removed");
+      renderAll(false);
+      return;
+    }
+  }
+}
+function clearLine(i){
+  for(const id of state.lines[i]) state.used.delete(id);
+  state.lines[i] = [];
+  setStatus(`Cleared line ${i+1}`);
+  renderAll(false);
+}
+function resetLayout(){
+  clearWarn();
+  state.used = new Set();
+  state.lines = [[],[],[],[],[]];
+  state.activeLine = 0;
+  setStatus("Reset ✓");
+  renderAll(false);
+}
+function validateFixedUsed(){
+  const f = state.fixedToken;
+  return !!(f && state.used.has(f.id));
+}
+
+/* ===================== Rendering (Left) ===================== */
+function renderPool(){
+  const tiles = allTilesWithFixed();
+  poolEl.innerHTML = "";
+  for(const t of tiles){
+    const div = document.createElement("div");
+    div.className = "tile" + (state.used.has(t.id) ? " used" : "");
+    const tagTxt = (t.kind==="fixed") ? "fixed" : t.kind;
+    const tagCls =
+      (t.kind==="theme") ? "tag theme" :
+      (t.kind==="neutral") ? "tag neutral" :
+      (t.kind==="particle") ? "tag particle" :
+      (t.kind==="action") ? "tag action" : "tag";
+
+    div.innerHTML = `
+      <div class="tileTop">
+        <span class="${tagCls}">${tagTxt}</span>
+        <span class="mora">${t.mora}</span>
+      </div>
+      <div class="word">${t.surface}</div>
+      <div class="mora">${t.reading}</div>
+    `;
+    div.addEventListener("click", ()=>{
+      if(state.used.has(t.id)) return;
+      placeTile(state.activeLine, t);
+    });
+    poolEl.appendChild(div);
+  }
+}
+function renderLines(){
+  linesEl.innerHTML = "";
+  for(let i=0;i<5;i++){
+    const card = document.createElement("div");
+    card.className = "lineCard" + (i===state.activeLine ? " active" : "");
+    const m = lineMora(i);
+    const ok = (m === TARGET[i]);
+    const badge = ok ? `<span class="badge good">${m}/${TARGET[i]} ✓</span>`
+                     : `<span class="badge ${m>TARGET[i]?'bad':''}">${m}/${TARGET[i]}</span>`;
+
+    const tokens = state.lines[i].map(id=>{
+      const t = findTileById(id);
+      return `<span class="token" data-token="${id}">${t?.surface || "?"}<small>${t?.mora ?? ""}</small></span>`;
+    }).join("");
+
+    card.innerHTML = `
+      <div class="lineHead">
+        <div class="label">Line ${i+1} • target ${TARGET[i]}</div>
+        ${badge}
+      </div>
+      <div class="tokens">${tokens || `<span class="label">Click tiles to add…</span>`}</div>
+      <div class="lineFoot">
+        <button class="mini btn ghost" data-act="select">Select</button>
+        <button class="mini btn ghost" data-act="clear">Clear</button>
+      </div>
+    `;
+
+    card.querySelector(`[data-act="select"]`).addEventListener("click", ()=>{
+      state.activeLine = i;
+      setStatus(`Selected line ${i+1}`);
+      renderAll(false);
+    });
+    card.querySelector(`[data-act="clear"]`).addEventListener("click", ()=> clearLine(i));
+    card.addEventListener("click", (e)=>{
+      const tok = e.target.closest(".token");
+      if(tok) removeTile(tok.dataset.token);
+    });
+
+    linesEl.appendChild(card);
+  }
+}
+function renderFull(){
+  const linesTxt = state.lines.map(arr => arr.map(id=> findTileById(id)?.surface || "").join(""));
+  const linesRead = state.lines.map(arr => arr.map(id=> findTileById(id)?.reading || "").join(""));
+  fullEl.textContent = linesTxt.join("\n");
+  meterEl.textContent = `meter: ${linesRead.map(r=>countMora(r)).join(" / ")}  (target: 5 / 7 / 5 / 7 / 7)`;
+  return {linesTxt, linesRead};
+}
+
+/* ===================== Metrics ===================== */
+function countKanji(str){
+  const m = (str||"").match(/[\u4E00-\u9FFF]/g);
+  return m ? m.length : 0;
+}
+function totalChars(str){
+  return (str||"").replace(/\s/g,"").length;
+}
+function computeMetrics(linesTxt, linesRead){
+  const joinedTxt = linesTxt.join("");
+  const joinedRead = linesRead.join("");
+
+  const k = countKanji(joinedTxt);
+  const tot = totalChars(joinedTxt);
+  const kanjiRatio = tot ? (k / tot) : 0;
+
+  let abs = 0, conc = 0, tokenCount = 0;
+  let softnessSum = 0;
+  const vowelSeq = [];
+  const vowelCounts = {a:0,i:0,u:0,e:0,o:0};
+
+  for(const arr of state.lines){
+    for(const id of arr){
+      const t = findTileById(id);
+      if(!t) continue;
+      tokenCount++;
+      if(t.isAbstract) abs++; else conc++;
+      softnessSum += (t.softness ?? 0.55);
+      for(const v of (t.vowels||[])){
+        vowelCounts[v] = (vowelCounts[v]||0)+1;
+        vowelSeq.push(v);
+      }
+    }
+  }
+  const softAvg = tokenCount ? softnessSum/tokenCount : 0.55;
+
+  const dk = countDakutenKana(joinedRead);
+  const kanaCount = (toHira(joinedRead).match(/[ぁ-ゖ]/g) || []).length;
+  const dakRate = kanaCount ? dk/kanaCount : 0;
+
+  const hiraChars = (toHira(joinedRead).match(/[ぁ-ゖ]/g) || []);
+  const vRuns = longestRun(vowelSeq);
+  const kRuns = longestRun(hiraChars);
+  const repScore = clamp01((vRuns.max-1)/5 * 0.55 + (kRuns.max-1)/6 * 0.45);
+
+  const flows = vowelFlowTransitions(vowelSeq);
+
+  // per-line vowels
+  const lineVowels = linesRead.map(r => readingVowels(r));
+  const lineVowelCounts = lineVowels.map(vs=>{
+    const c = {a:0,i:0,u:0,e:0,o:0};
+    for(const v of vs) c[v] = (c[v]||0)+1;
+    return c;
+  });
+
+  return {
+    kanjiRatio,k,tot,abs,conc,tokenCount,softAvg,
+    vowelCounts, vowelSeq,
+    dakRate, dk, kanaCount,
+    vRuns, kRuns, repScore,
+    flows,
+    linesRead, linesTxt,
+    lineVowelCounts
+  };
+}
+
+/* ===================== Visual reactions (Background) ===================== */
+function setRing(pct){
+  const C = 2*Math.PI*24;
+  const off = C * (1 - pct);
+  ringArc.setAttribute("stroke-dasharray", String(C));
+  ringArc.setAttribute("stroke-dashoffset", String(off));
+}
+function applyBackground(m){
+  const hueMap = {a:28,i:210,u:235,e:190,o:275};
+  const v = m.vowelCounts;
+  const total = VOWELS.reduce((s,k)=>s+(v[k]||0),0) || 1;
+
+  let hue = 220;
+  for(const k of VOWELS){
+    const w = (v[k]||0)/total;
+    hue += w * (hueMap[k]-220);
+  }
+  const sat = 0.95 + m.kanjiRatio * 0.85;
+  const blur = 18 + (m.abs/(m.tokenCount||1)) * 22;
+  const angle = 120 + (m.repScore) * 70;
+
+  const soft = m.softAvg;
+  const hA = (hue + 18 + soft*10) % 360;
+  const hB = (hue + 260 - soft*16 + 360) % 360;
+  const hC = (hue + 90 + (1-soft)*14) % 360;
+  const L = 16 + (m.conc/(m.tokenCount||1))*6 - (m.abs/(m.tokenCount||1))*3;
+
+  document.documentElement.style.setProperty("--bgA", `hsl(${hA} 74% ${L}%)`);
+  document.documentElement.style.setProperty("--bgB", `hsl(${hB} 70% ${Math.max(12,L-2)}%)`);
+  document.documentElement.style.setProperty("--bgC", `hsl(${hC} 76% ${Math.min(22,L+2)}%)`);
+  document.documentElement.style.setProperty("--sat", sat.toFixed(2));
+  document.documentElement.style.setProperty("--blur", `${blur.toFixed(1)}px`);
+  document.documentElement.style.setProperty("--angle", `${angle.toFixed(0)}deg`);
+}
+
+/* ===================== Right panel: Vowel palette bars ===================== */
+function vowelColor(v){
+  if(v==="a") return "rgba(255,159,10,0.95)";
+  if(v==="i") return "rgba(10,132,255,0.95)";
+  if(v==="u") return "rgba(191,90,242,0.95)";
+  if(v==="e") return "rgba(48,209,88,0.95)";
+  if(v==="o") return "rgba(255,45,85,0.95)";
+  return "rgba(255,255,255,0.25)";
+}
+function buildPaletteGradient(counts){
+  const total = VOWELS.reduce((s,k)=> s + (counts[k]||0), 0);
+  if(!total) return "linear-gradient(90deg, rgba(255,255,255,.10), rgba(255,255,255,.06))";
+
+  // order by descending weight but keep at least 3 stops
+  const entries = VOWELS.map(k=> [k, (counts[k]||0)/total]).sort((a,b)=> b[1]-a[1]);
+  const major = entries.filter(x=> x[1] > 0);
+  const keep = major.length ? major : entries.slice(0,3);
+
+  // accumulate stops
+  let pos = 0;
+  const stops = [];
+  for(const [k,w] of keep){
+    const span = Math.max(0.12, w);
+    const start = pos;
+    pos = Math.min(1, pos + span);
+    stops.push(`${vowelColor(k)} ${Math.round(start*100)}%`, `${vowelColor(k)} ${Math.round(pos*100)}%`);
+    if(pos >= 1) break;
+  }
+  // fill remainder with soft white tint
+  if(pos < 1){
+    stops.push(`rgba(255,255,255,.18) ${Math.round(pos*100)}%`, `rgba(255,255,255,.08) 100%`);
+  }
+  return `linear-gradient(90deg, ${stops.join(", ")})`;
+}
+function renderLinePalettes(m){
+  linePalettesEl.innerHTML = "";
+  for(let i=0;i<5;i++){
+    const c = m.lineVowelCounts[i] || {a:0,i:0,u:0,e:0,o:0};
+    const mora = countMora(m.linesRead[i]||"");
+    const row = document.createElement("div");
+    row.className = "lpRow";
+    row.innerHTML = `
+      <div class="lpLbl">L${i+1}</div>
+      <div class="lpBar" style="background:${buildPaletteGradient(c)}"></div>
+      <div class="lpMora">${mora}/${[5,7,5,7,7][i]}</div>
+    `;
+    linePalettesEl.appendChild(row);
+  }
+}
+
+/* ===================== Right panel: Vowel flow pills + rhythm ===================== */
+function renderFlowPills(flows){
+  flowPills.innerHTML = "";
+  if(!flows.length){
+    flowPills.innerHTML = `<span class="mono">No vowels yet.</span>`;
+    return;
+  }
+  for(const [key, count] of flows){
+    const a = key[0], b = key[key.length-1];
+    const el = document.createElement("span");
+    el.className = "pillMini";
+    el.innerHTML = `
+      <span style="display:inline-flex;gap:6px;align-items:center">
+        <span style="width:10px;height:10px;border-radius:3px;background:${vowelColor(a)}"></span>
+        <span style="font-family:var(--mono)">${key}</span>
+        <span style="width:10px;height:10px;border-radius:3px;background:${vowelColor(b)}"></span>
+      </span>
+      <strong style="color:#fff">${count}</strong>
+    `;
+    flowPills.appendChild(el);
+  }
+}
+function renderRhythmWave(linesRead){
+  const W = 320, H = 52;
+  rhythmSvg.innerHTML = "";
+  const rowH = H/5;
+  const maxSlots = 7;
+  const leftPad = 12;
+  const rightPad = 12;
+  const usableW = W - leftPad - rightPad;
+  const step = usableW/(maxSlots-1);
+
+  for(let i=0;i<5;i++){
+    const target = [5,7,5,7,7][i];
+    const m = countMora(linesRead[i]||"");
+    const y = rowH*i + rowH/2;
+
+    const base = document.createElementNS("http://www.w3.org/2000/svg","line");
+    base.setAttribute("x1", leftPad);
+    base.setAttribute("x2", W-rightPad);
+    base.setAttribute("y1", y);
+    base.setAttribute("y2", y);
+    base.setAttribute("stroke", "rgba(255,255,255,.10)");
+    base.setAttribute("stroke-width", "1");
+    rhythmSvg.appendChild(base);
+
+    for(let s=0;s<maxSlots;s++){
+      const cx = leftPad + step*s;
+      const cy = y;
+      const dot = document.createElementNS("http://www.w3.org/2000/svg","circle");
+      const isInTargetRange = s < target;
+      const isFilled = s < m;
+      dot.setAttribute("cx", cx);
+      dot.setAttribute("cy", cy);
+      dot.setAttribute("r", isInTargetRange ? 3.1 : 2.3);
+
+      let fill = "rgba(255,255,255,.10)";
+      if(isInTargetRange && !isFilled) fill = "rgba(255,255,255,.16)";
+      if(isFilled){
+        const col = ["rgba(10,132,255,.85)","rgba(191,90,242,.80)","rgba(48,209,88,.78)","rgba(255,159,10,.80)","rgba(255,45,85,.78)"][i];
+        fill = col;
+      }
+      dot.setAttribute("fill", fill);
+      dot.setAttribute("stroke", "rgba(255,255,255,.14)");
+      dot.setAttribute("stroke-width", "1");
+      rhythmSvg.appendChild(dot);
+    }
+  }
+}
+
+/* ===================== NEW: Gradient Artwork Generator ===================== */
+function rgbaFromVowel(v, a){
+  const col = {
+    a:[255,159,10],
+    i:[10,132,255],
+    u:[191,90,242],
+    e:[48,209,88],
+    o:[255,45,85]
+  }[v] || [255,255,255];
+  return `rgba(${col[0]},${col[1]},${col[2]},${a})`;
+}
+function topVowels(vowelCounts, n=3){
+  const total = VOWELS.reduce((s,k)=> s+(vowelCounts[k]||0), 0) || 1;
+  return VOWELS
+    .map(k=> ({k, w:(vowelCounts[k]||0)/total}))
+    .sort((a,b)=> b.w-a.w)
+    .slice(0,n);
+}
+function drawArtwork(m, forceNewSeed=false){
+  if(forceNewSeed){
+    state.artSeed = "art|" + Date.now().toString(36) + "|" + Math.random().toString(36).slice(2,7);
+  }
+  const rng = makeRng(state.artSeed + "|" + (m.linesRead.join("|")||""));
+
+  const w = artCanvas.width, h = artCanvas.height;
+  artCtx.clearRect(0,0,w,h);
+
+  // base: linear gradient from top vowels
+  const tops = topVowels(m.vowelCounts, 3);
+  const g = artCtx.createLinearGradient(0, 0, w, h);
+  let p = 0;
+  for(const t of tops){
+    g.addColorStop(p, rgbaFromVowel(t.k, 0.92));
+    p = Math.min(1, p + Math.max(0.25, t.w));
+    g.addColorStop(p, rgbaFromVowel(t.k, 0.75));
+    if(p >= 1) break;
+  }
+  if(p < 1){
+    g.addColorStop(1, "rgba(255,255,255,0.08)");
+  }
+  artCtx.fillStyle = g;
+  artCtx.fillRect(0,0,w,h);
+
+  // contrast & softness controls
+  const contrast = 0.25 + (m.dakRate * 1.1);           // dakuten makes it “sharp”
+  const haze = 0.18 + (m.softAvg * 0.32);              // softness adds “mist”
+  const flow = Math.min(1, (m.flows[0]?.[1] || 0) / 6); // dominant flow adds “direction”
+
+  // layered radial blobs (mesh-ish)
+  const blobCount = 6;
+  for(let i=0;i<blobCount;i++){
+    const v = pick(rng, VOWELS);
+    const cx = (0.12 + 0.76*rng()) * w;
+    const cy = (0.12 + 0.76*rng()) * h;
+    const r = (0.28 + 0.52*rng()) * Math.min(w,h);
+    const rg = artCtx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    rg.addColorStop(0, rgbaFromVowel(v, 0.42 + 0.25*rng()));
+    rg.addColorStop(1, rgbaFromVowel(v, 0.0));
+    artCtx.globalCompositeOperation = (i%2===0) ? "screen" : "overlay";
+    artCtx.fillStyle = rg;
+    artCtx.fillRect(0,0,w,h);
+  }
+
+  // subtle “flow streaks” based on transitions
+  artCtx.globalCompositeOperation = "soft-light";
+  artCtx.globalAlpha = 0.18 + 0.22*flow;
+  for(let i=0;i<12;i++){
+    const v = pick(rng, VOWELS);
+    const y = (rng()*1.1 - 0.05) * h;
+    const thickness = 14 + rng()*34;
+    const slant = (-0.2 + rng()*0.4) * w;
+    artCtx.beginPath();
+    artCtx.moveTo(-40, y);
+    artCtx.quadraticCurveTo(w*0.5 + slant, y + (rng()*0.3-0.15)*h, w+40, y + (rng()*0.25-0.12)*h);
+    artCtx.lineWidth = thickness;
+    artCtx.strokeStyle = rgbaFromVowel(v, 0.30);
+    artCtx.lineCap = "round";
+    artCtx.stroke();
+  }
+  artCtx.globalAlpha = 1;
+
+  // grain
+  artCtx.globalCompositeOperation = "overlay";
+  artCtx.globalAlpha = 0.10 + haze*0.12;
+  const noise = artCtx.getImageData(0,0,w,h);
+  for(let i=0;i<noise.data.length;i+=4){
+    const n = (rng()*2-1) * (10 + 26*haze);
+    noise.data[i] = Math.min(255, Math.max(0, noise.data[i] + n));
+    noise.data[i+1] = Math.min(255, Math.max(0, noise.data[i+1] + n));
+    noise.data[i+2] = Math.min(255, Math.max(0, noise.data[i+2] + n));
+  }
+  artCtx.putImageData(noise,0,0);
+
+  // vignette by contrast
+  artCtx.globalCompositeOperation = "multiply";
+  artCtx.globalAlpha = 0.12 + contrast*0.20;
+  const vg = artCtx.createRadialGradient(w*0.5, h*0.5, Math.min(w,h)*0.25, w*0.5, h*0.5, Math.min(w,h)*0.75);
+  vg.addColorStop(0, "rgba(0,0,0,0)");
+  vg.addColorStop(1, "rgba(0,0,0,0.75)");
+  artCtx.fillStyle = vg;
+  artCtx.fillRect(0,0,w,h);
+
+  artCtx.globalAlpha = 1;
+  artCtx.globalCompositeOperation = "source-over";
+
+  artNote.textContent = `seed: ${state.artSeed} • softness ${(m.softAvg*100|0)} • dakuten ${(m.dakRate*100|0)} • flow ${(flow*100|0)}`;
+}
+
+/* ===================== Panel render ===================== */
+function renderPanel(m, forceNewArt=false){
+  // poem on right
+  rightPoemEl.textContent = m.linesTxt.join("\n");
+  rightMeterEl.textContent = `meter: ${m.linesRead.map(r=>countMora(r)).join(" / ")}  (target: 5 / 7 / 5 / 7 / 7)`;
+
+  renderLinePalettes(m);
+
+  setRing(m.kanjiRatio);
+  kanjiPct.textContent = `${Math.round(m.kanjiRatio*100)}%`;
+  kanjiNote.textContent = `${m.k} / ${m.tot || 0}`;
+
+  const absPct = m.tokenCount ? (m.abs / m.tokenCount) : 0;
+  absBar.style.width = `${Math.round(absPct*100)}%`;
+  absNote.textContent = `abstract ${m.abs} • concrete ${m.conc}`;
+
+  dakBar.style.width = `${Math.round(m.dakRate*100)}%`;
+  dakNote.textContent = `${Math.round(m.dakRate*100)}%  (${m.dk}/${m.kanaCount || 0})`;
+
+  repBar.style.width = `${Math.round(m.repScore*100)}%`;
+  repNote.textContent = `vowel-run max ${m.vRuns.max} • kana-run max ${m.kRuns.max}`;
+
+  renderFlowPills(m.flows);
+  renderRhythmWave(m.linesRead);
+  rhythmNote.textContent = `filled mora per line: ${m.linesRead.map(r=>countMora(r)).join(" / ")}`;
+
+  drawArtwork(m, forceNewArt);
+}
+
+/* ===================== Orchestration ===================== */
+function renderAll(forceNewArt=false){
+  renderPool();
+  renderLines();
+  const {linesTxt, linesRead} = renderFull();
+  const m = computeMetrics(linesTxt, linesRead);
+  applyBackground(m);
+  renderPanel(m, forceNewArt);
+
+  const missingFixed = state.fixedToken && !validateFixedUsed();
+  const anyOver = [0,1,2,3,4].some(i=> lineMora(i) > TARGET[i]);
+  const anyIncomplete = [0,1,2,3,4].some(i=> lineMora(i) !== TARGET[i]);
+
+  if(anyOver){
+    showWarn("One or more lines exceed the mora target. Remove a token.");
+  }else if(missingFixed){
+    showWarn("Fixed word is not used yet. Place the Fixed tile at least once.");
+  }else{
+    clearWarn();
+  }
+  if(!anyOver && !missingFixed && !anyIncomplete){
+    setStatus("Complete ✓");
+  }
+}
+
+/* ===================== Buttons ===================== */
+document.getElementById("newRoundBtn").addEventListener("click", ()=>{
+  try{ newRound(); }
+  catch(e){ setStatus("Error"); showWarn(e.message || String(e)); }
+});
+document.getElementById("resetBtn").addEventListener("click", ()=> resetLayout());
+document.getElementById("copyBtn").addEventListener("click", async ()=>{
+  const text = fullEl.textContent || "";
+  if(!text.trim()){ setStatus("Nothing to copy"); return; }
+  if(state.fixedToken && !validateFixedUsed()){
+    setStatus("Fixed missing");
+    showWarn("Please place the Fixed tile at least once before copying.");
+    return;
+  }
+  try{
+    await navigator.clipboard.writeText(text);
+    setStatus("Copied ✓");
+  }catch{
+    setStatus("Copy failed");
+    showWarn("Copy failed due to browser permission. You can select & copy manually.");
+  }
+});
+
+/* ===================== Boot ===================== */
+(function boot(){
+  fixedSurfaceEl.value = "葡萄";
+  fixedReadingEl.value = "ぶどう";
+  refreshHint();
+  try{
+    newRound();
+    setStatus("Ready ✓");
+  }catch(e){
+    setStatus("Ready");
+    showWarn(e.message || String(e));
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1439 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tile Vibe Studio — Dark</title>
+  <style>
+    :root{
+      --bg0:#0b0d12;
+      --bg1:#0f1420;
+      --card: rgba(255,255,255,.06);
+      --card2: rgba(255,255,255,.08);
+      --text:#e7eaf0;
+      --muted:#a7afc2;
+      --line: rgba(255,255,255,.10);
+      --line2: rgba(255,255,255,.16);
+      --accent:#0a84ff;
+      --accent2:#2bd1ff;
+      --danger:#ff453a;
+      --ok:#30d158;
+      --shadow: 0 18px 48px rgba(0,0,0,.55);
+      --radius: 18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      color:var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display","SF Pro Text","Segoe UI", Arial;
+      background:
+        radial-gradient(900px 520px at 12% 0%, rgba(10,132,255,.18) 0%, transparent 60%),
+        radial-gradient(900px 520px at 85% 15%, rgba(43,209,255,.12) 0%, transparent 60%),
+        radial-gradient(1200px 800px at 50% 100%, rgba(255,149,0,.08) 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .wrap{max-width:1180px;margin:0 auto;padding:18px;}
+    header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:12px;}
+    h1{margin:0;font-size:20px;letter-spacing:0.2px}
+    .sub{color:var(--muted);font-size:12px;margin-top:4px;line-height:1.4}
+
+    .pill{
+      display:inline-flex;gap:8px;align-items:center;
+      padding:8px 12px;border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      backdrop-filter: blur(14px);
+      font-size:12px;color:var(--muted);
+      box-shadow: 0 10px 26px rgba(0,0,0,.35);
+    }
+
+    .grid{display:grid;grid-template-columns: 1.25fr 1fr;gap:14px}
+    @media (max-width: 960px){ .grid{grid-template-columns:1fr;} }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      padding:14px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .row.tight{gap:8px}
+    .label{color:var(--muted);font-size:12px}
+    .sep{height:1px;background:var(--line);margin:12px 0}
+
+    /* Dark Mac-ish controls */
+    button, select, input{
+      border:1px solid var(--line2);
+      padding:10px 12px;
+      border-radius: 12px;
+      font-size:13px;
+      outline:none;
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
+      color: var(--text);
+      box-shadow: 0 1px 0 rgba(255,255,255,.08) inset, 0 1px 2px rgba(0,0,0,.35);
+    }
+    input{min-width: 220px}
+    select{cursor:pointer}
+    button{
+      cursor:pointer;
+      transition: transform .05s ease, filter .15s ease, background .15s ease;
+      user-select:none;
+    }
+    button:hover{filter:brightness(1.06)}
+    button:active{transform: translateY(1px); filter:brightness(.98)}
+    button.primary{
+      background: linear-gradient(180deg, rgba(10,132,255,.95), rgba(10,132,255,.70));
+      border-color: rgba(10,132,255,.45);
+      color:#fff;
+      box-shadow: 0 1px 0 rgba(255,255,255,.12) inset, 0 18px 38px rgba(10,132,255,.18);
+    }
+    button.ghost{
+      background: rgba(255,255,255,.04);
+      box-shadow:none;
+    }
+    button.danger{
+      border-color: rgba(255,69,58,.55);
+      color: #ffd2cf;
+      background: rgba(255,69,58,.10);
+    }
+    .seg{
+      display:inline-flex;
+      border:1px solid var(--line2);
+      border-radius: 12px;
+      overflow:hidden;
+      background: rgba(255,255,255,.05);
+      box-shadow: 0 1px 0 rgba(255,255,255,.08) inset, 0 1px 2px rgba(0,0,0,.35);
+    }
+    .seg button{
+      border:none;
+      border-right:1px solid var(--line2);
+      border-radius:0;
+      padding:10px 12px;
+      background:transparent;
+      color:var(--muted);
+      box-shadow:none;
+    }
+    .seg button:last-child{border-right:none}
+    .seg button.on{
+      background: rgba(10,132,255,.18);
+      color: var(--accent2);
+      font-weight: 700;
+    }
+
+    canvas{
+      width:100%;height:auto;
+      border-radius: 16px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.25);
+      cursor: pointer;
+    }
+    .hint{color:var(--muted);font-size:12px;line-height:1.45;margin:10px 0 0}
+    .kvs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width: 560px){ .kvs{grid-template-columns:1fr} }
+    .kv{
+      border:1px solid var(--line);
+      border-radius:16px;padding:10px;
+      background: rgba(255,255,255,.05);
+    }
+    .kv .k{color:var(--muted);font-size:12px}
+    .kv .v{font-size:13px;margin-top:4px;word-break: break-all;font-family: var(--mono);color:#dbe2f3}
+
+    .lockHint{
+      display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+      color:var(--muted);font-size:12px;
+    }
+    .chip{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.05);
+      padding:6px 10px;border-radius:999px;
+    }
+
+    .paletteRow{
+      display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+    }
+    .sw{
+      width:22px;height:22px;border-radius:8px;
+      border:1px solid rgba(255,255,255,.18);
+      box-shadow: 0 1px 0 rgba(255,255,255,.08) inset, 0 10px 18px rgba(0,0,0,.35);
+    }
+
+    /* Gallery */
+    .gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    @media (max-width: 900px){ .gallery{grid-template-columns:repeat(2,1fr)} }
+    @media (max-width: 560px){ .gallery{grid-template-columns:1fr} }
+
+    .thumb{
+      border:1px solid var(--line);
+      border-radius: 18px;
+      overflow:hidden;
+      background: rgba(255,255,255,.05);
+      box-shadow: 0 18px 44px rgba(0,0,0,.45);
+    }
+    .thumb img{display:block;width:100%;height:auto}
+    .thumb .meta{padding:10px}
+    .thumb .title{font-size:13px;margin:0 0 6px 0;display:flex;align-items:center;gap:6px}
+    .star{color:#ffd60a}
+    .thumb .small{font-size:12px;color:var(--muted);margin:0}
+    .thumb .tags{font-size:12px;color:var(--muted);margin:8px 0 0;display:flex;flex-wrap:wrap;gap:6px}
+    .tagChip{
+      border:1px solid var(--line);
+      padding:4px 8px;border-radius:999px;
+      background: rgba(255,255,255,.04);
+    }
+    .thumb .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+    .thumb .actions button{padding:8px 10px;border-radius:12px}
+
+    .searchBar{
+      display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+    }
+    .searchBar input{flex:1;min-width:200px}
+
+    .badge{
+      font-size:12px;color:var(--muted);
+      padding:6px 10px;border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Tile Vibe Studio</h1>
+        <div class="sub">
+          Dark mode. Generate tiles → click to lock → shuffle unlocked → save with tags & favorites → searchable gallery.
+        </div>
+      </div>
+      <div class="pill" id="statusPill">Ready</div>
+    </header>
+
+    <div class="grid">
+      <!-- LEFT -->
+      <section class="card">
+        <div class="row" style="justify-content:space-between">
+          <div class="row tight">
+            <button id="genBtn" class="primary">Generate</button>
+            <button id="mutateBtn">Shuffle Unlocked</button>
+            <button id="unlockAllBtn" class="ghost">Unlock All</button>
+            <button id="exportBtn" class="ghost">Export PNG</button>
+          </div>
+
+          <div class="row tight">
+            <span class="label">Grid</span>
+            <select id="gridSel">
+              <option value="3">3 × 3</option>
+              <option value="6">6 × 6</option>
+              <option value="10">10 × 10</option>
+              <option value="18" selected>18 × 18</option>
+              <option value="24">24 × 24</option>
+              <option value="30">30 × 30</option>
+            </select>
+
+            <span class="label">Theme</span>
+            <select id="themeSel">
+              <option value="sunsetPhoto">Sunset (Photo)</option>
+              <option value="sunset3">Sunset (3-layer)</option>
+              <option value="tokyo" selected>Tokyo</option>
+              <option value="japan">Japan</option>
+              <option value="mountain">Mountain</option>
+              <option value="river">River</option>
+              <option value="sakura">Sakura</option>
+              <option value="plants">Plants</option>
+              <option value="flower">Flowers</option>
+              <option value="flags">Flags</option>
+              <option value="wild">Wild Random</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <!-- Image → Palette -->
+        <div class="row">
+          <input id="imgInput" type="file" accept="image/*" />
+          <span class="label">Colors</span>
+          <select id="colorCountSel">
+            <option value="6">6</option>
+            <option value="8" selected>8</option>
+            <option value="10">10</option>
+            <option value="12">12</option>
+          </select>
+          <button id="imgToPaletteBtn">Image → Palette</button>
+          <span class="badge" id="paletteModeBadge">No image palette</span>
+        </div>
+        <div class="paletteRow" id="palettePreview" style="margin-top:8px"></div>
+
+        <div class="sep"></div>
+
+        <canvas id="canvas" width="900" height="900" title="Click a tile to lock/unlock"></canvas>
+
+        <div class="sep"></div>
+
+        <div class="lockHint">
+          <span class="chip">Tip: Click tiles to lock 🔒</span>
+          <span class="chip">Locked tiles stay during “Shuffle Unlocked”</span>
+          <span class="chip">For your sunset photos: try Grid 24×24 + lock the horizon band</span>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="row">
+          <input id="nameInput" placeholder="Title (auto-suggested)" />
+          <button id="suggestBtn" class="ghost">Suggest Title</button>
+        </div>
+
+        <div class="row">
+          <input id="tagsInput" placeholder="Tags (e.g. #calm #tokyo / comma ok)" />
+          <div class="seg" aria-label="favorite toggle">
+            <button id="favOffBtn" class="on" type="button">☆</button>
+            <button id="favOnBtn" type="button">★</button>
+          </div>
+          <button id="saveBtn" class="primary">Save</button>
+          <button id="clearBtn" class="danger">Clear All</button>
+        </div>
+
+        <p class="hint">
+          <b>Sunset (Photo)</b> uses your extracted palette and forces a sunset structure: sky → horizon glow → silhouette.
+          <br/>If no image palette, it falls back to built-in sunset.
+        </p>
+
+        <div class="kvs">
+          <div class="kv">
+            <div class="k">Grid</div>
+            <div class="v" id="gridInfo">—</div>
+          </div>
+          <div class="kv">
+            <div class="k">Recipe (seed)</div>
+            <div class="v" id="seedInfo">—</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT -->
+      <section class="card">
+        <div class="row" style="justify-content:space-between">
+          <h2 style="margin:0;font-size:16px">Gallery</h2>
+          <div class="row tight">
+            <span class="label">Sort</span>
+            <select id="sortSel">
+              <option value="new" selected>Newest</option>
+              <option value="old">Oldest</option>
+              <option value="name">Name</option>
+              <option value="fav">Favorites</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="searchBar">
+          <input id="searchInput" placeholder="Search (title / tags)" />
+          <button id="onlyFavBtn">★ only</button>
+          <button id="resetFilterBtn" class="ghost">Reset</button>
+        </div>
+
+        <div class="sep"></div>
+
+        <div id="gallery" class="gallery"></div>
+        <p class="hint">Storage: localStorage (this browser only). Shareable cloud gallery can be added later.</p>
+      </section>
+    </div>
+  </div>
+
+<script>
+/* =========================
+   Seeded RNG
+========================= */
+function xmur3(str) {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return function() {
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    return (h ^= (h >>> 16)) >>> 0;
+  };
+}
+function sfc32(a, b, c, d) {
+  return function() {
+    a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0;
+    let t = (a + b) | 0;
+    a = b ^ (b >>> 9);
+    b = (c + (c << 3)) | 0;
+    c = (c << 21) | (c >>> 11);
+    d = (d + 1) | 0;
+    t = (t + d) | 0;
+    c = (c + t) | 0;
+    return (t >>> 0) / 4294967296;
+  };
+}
+function makeRng(seedStr){
+  const seed = xmur3(seedStr);
+  return sfc32(seed(), seed(), seed(), seed());
+}
+function randInt(rng, min, max){
+  return Math.floor(rng() * (max - min + 1)) + min;
+}
+function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+/* =========================
+   Color utils
+========================= */
+function hslToHex(h, s, l) {
+  s /= 100; l /= 100;
+  const k = n => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  const toHex = x => Math.round(255 * x).toString(16).padStart(2, "0");
+  return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
+}
+function hexToRgb(hex){
+  const h = hex.replace("#","").trim();
+  const full = h.length===3 ? h.split("").map(c=>c+c).join("") : h;
+  const n = parseInt(full,16);
+  return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 };
+}
+function rgbToHsl({r,g,b}){
+  r/=255; g/=255; b/=255;
+  const max=Math.max(r,g,b), min=Math.min(r,g,b);
+  let h=0,s=0,l=(max+min)/2;
+  const d=max-min;
+  if(d!==0){
+    s = d/(1-Math.abs(2*l-1));
+    switch(max){
+      case r: h = 60*(((g-b)/d)%6); break;
+      case g: h = 60*(((b-r)/d)+2); break;
+      case b: h = 60*(((r-g)/d)+4); break;
+    }
+  }
+  if(h<0) h+=360;
+  return {h,s:s*100,l:l*100};
+}
+function hexToHsl(hex){
+  const {r,g,b} = hexToRgb(hex);
+  return rgbToHsl({r,g,b});
+}
+function mixHex(a,b,t){
+  const A=hexToRgb(a), B=hexToRgb(b);
+  const r=Math.round(A.r+(B.r-A.r)*t);
+  const g=Math.round(A.g+(B.g-A.g)*t);
+  const b2=Math.round(A.b+(B.b-A.b)*t);
+  return "#" + [r,g,b2].map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+
+/* =========================
+   Theme palettes
+========================= */
+const FLOWER_BASE = [
+  ["#ff5d8f","#ff99c8","#ffd6ff","#bde0fe","#a2d2ff","#caffbf","#fdffb6"],
+  ["#ffadad","#ffd6a5","#fdffb6","#caffbf","#9bf6ff","#a0c4ff","#bdb2ff"],
+  ["#e63946","#ffb703","#fb8500","#8ecae6","#219ebc","#a8dadc","#f1faee"],
+  ["#6d597a","#b56576","#e56b6f","#eaac8b","#f2e9e4","#c9ada7","#4a4e69"],
+];
+const SAKURA_BASE = [
+  ["#ffd1dc","#ffb7c5","#ff9fb2","#ffe5ec","#f8edeb","#cdb4db","#a2d2ff"],
+  ["#fff1f2","#fecdd3","#fda4af","#fb7185","#f43f5e","#a7f3d0","#93c5fd"],
+];
+const PLANTS_BASE = [
+  ["#1b4332","#2d6a4f","#40916c","#52b788","#74c69d","#b7e4c7","#d8f3dc"],
+  ["#0b3d2e","#155d27","#1a7431","#208b3a","#25a244","#4ad66d","#b9fbc0"],
+];
+const MOUNTAIN_BASE = [
+  ["#0b1320","#1c2541","#3a506b","#5bc0be","#6fffe9","#e0fbfc","#f1faee"],
+  ["#2b2d42","#8d99ae","#edf2f4","#6c757d","#495057","#343a40","#ced4da"],
+];
+const RIVER_BASE = [
+  ["#001219","#005f73","#0a9396","#94d2bd","#e9d8a6","#ee9b00","#ca6702"],
+  ["#0b1d39","#1d3557","#457b9d","#a8dadc","#f1faee","#c7f9cc","#80ed99"],
+];
+const JAPAN_BASE = [
+  ["#ffffff","#bc002d","#111827","#e5e7eb","#0a84ff","#2a9d8f","#f4a261"],
+  ["#0b3d91","#ffffff","#bc002d","#2b2d42","#8d99ae","#edf2f4","#e63946"],
+];
+const TOKYO_BASE = [
+  ["#0b1020","#111827","#1f2937","#334155","#94a3b8","#e5e7eb","#ffffff"],
+  ["#111827","#0a84ff","#22c55e","#f97316","#eab308","#ef4444","#e5e7eb"],
+  ["#0b1020","#7c3aed","#ec4899","#22d3ee","#a3e635","#f59e0b","#f8fafc"],
+];
+const FLAGS = [
+  {name:"Tricolor", colors:["#0055a4","#ffffff","#ef4135"]},
+  {name:"Nordic", colors:["#002868","#ffffff","#d00c33"]},
+  {name:"RisingSun", colors:["#ffffff","#bc002d","#111827"]},
+  {name:"Brasil", colors:["#009c3b","#ffdf00","#002776","#ffffff"]},
+  {name:"Italia", colors:["#009246","#ffffff","#ce2b37"]},
+];
+
+function randomizePalette(base, rng, hShiftRange=18, sJ=10, lJ=10){
+  const shift = randInt(rng,-hShiftRange,hShiftRange);
+  return base.map(hex=>{
+    const hsl = hexToHsl(hex);
+    const h = (hsl.h + shift + randInt(rng,-12,12) + 360) % 360;
+    const s = clamp(hsl.s + randInt(rng,-sJ,sJ), 18, 98);
+    const l = clamp(hsl.l + randInt(rng,-lJ,lJ), 10, 92);
+    return hslToHex(h, s, l);
+  });
+}
+
+function buildPalette(theme, rng){
+  if(theme === "flower"){
+    const base = FLOWER_BASE[randInt(rng,0,FLOWER_BASE.length-1)];
+    return randomizePalette(base, rng, 18, 10, 10);
+  }
+  if(theme === "sakura"){
+    const base = SAKURA_BASE[randInt(rng,0,SAKURA_BASE.length-1)];
+    return randomizePalette(base, rng, 10, 8, 8);
+  }
+  if(theme === "plants"){
+    const base = PLANTS_BASE[randInt(rng,0,PLANTS_BASE.length-1)];
+    return randomizePalette(base, rng, 14, 10, 10);
+  }
+  if(theme === "mountain"){
+    const base = MOUNTAIN_BASE[randInt(rng,0,MOUNTAIN_BASE.length-1)];
+    return randomizePalette(base, rng, 16, 10, 10);
+  }
+  if(theme === "river"){
+    const base = RIVER_BASE[randInt(rng,0,RIVER_BASE.length-1)];
+    return randomizePalette(base, rng, 16, 10, 10);
+  }
+  if(theme === "japan"){
+    const base = JAPAN_BASE[randInt(rng,0,JAPAN_BASE.length-1)];
+    return randomizePalette(base, rng, 10, 8, 8);
+  }
+  if(theme === "tokyo"){
+    const base = TOKYO_BASE[randInt(rng,0,TOKYO_BASE.length-1)];
+    return randomizePalette(base, rng, 22, 14, 12);
+  }
+  if(theme === "flags"){
+    const pick = FLAGS[randInt(rng,0,FLAGS.length-1)];
+    return pick.colors.map(hex=>{
+      const hsl = hexToHsl(hex);
+      const h = (hsl.h + randInt(rng,-8,8) + 360) % 360;
+      const s = clamp(hsl.s + randInt(rng,-10,10), 20, 100);
+      const l = clamp(hsl.l + randInt(rng,-8,8), 8, 95);
+      return hslToHex(h, s, l);
+    });
+  }
+  // wild
+  const baseHue = randInt(rng, 0, 360);
+  const n = randInt(rng, 8, 14);
+  const pal = [];
+  for(let i=0;i<n;i++){
+    const h = (baseHue + randInt(rng,-180,180) + i*randInt(rng,0,60) + 360) % 360;
+    const s = randInt(rng, 12, 100);
+    const l = randInt(rng, 6, 92);
+    pal.push(hslToHex(h, s, l));
+  }
+  return pal;
+}
+
+/* =========================
+   Built-in Sunset (3-layer)
+========================= */
+function buildSunset3Palette(rng){
+  const skyA = hslToHex(randInt(rng, 190, 230), randInt(rng, 35, 70), randInt(rng, 55, 80));
+  const skyB = hslToHex(randInt(rng, 280, 330), randInt(rng, 35, 75), randInt(rng, 50, 76));
+  const horizonA = hslToHex(randInt(rng, 10, 35), randInt(rng, 65, 96), randInt(rng, 48, 72));
+  const horizonB = hslToHex(randInt(rng, 35, 55), randInt(rng, 65, 96), randInt(rng, 50, 75));
+  const nightA = hslToHex(randInt(rng, 215, 250), randInt(rng, 35, 70), randInt(rng, 8, 22));
+  const nightB = hslToHex(randInt(rng, 250, 285), randInt(rng, 35, 70), randInt(rng, 8, 24));
+  return { skyA, skyB, horizonA, horizonB, nightA, nightB };
+}
+
+/* =========================
+   Sunset (Photo) mode helpers
+========================= */
+function classifySunsetPalette(palette){
+  const sky = [];
+  const horizon = [];
+  const ground = [];
+
+  for(const hex of palette){
+    const {h,s,l} = hexToHsl(hex);
+
+    // ground: silhouette
+    if(l <= 22) { ground.push(hex); continue; }
+
+    // horizon: warm band (orange / gold / pinkish)
+    const isWarm = (h >= 5 && h <= 75) || (h >= 300 && h <= 350);
+    if(isWarm && s >= 18 && l >= 25) { horizon.push(hex); continue; }
+
+    // sky: cool-ish or low saturation (blue gray)
+    const isCool = (h >= 170 && h <= 305);
+    if(isCool || s < 25) { sky.push(hex); continue; }
+
+    sky.push(hex);
+  }
+
+  // fallback if classification is too sparse
+  const byLum = palette.slice().sort((a,b)=>hexToHsl(a).l - hexToHsl(b).l);
+  if(ground.length === 0) ground.push(byLum[0] || "#111111");
+  if(horizon.length === 0) horizon.push(byLum[Math.floor(byLum.length*0.65)] || "#f8a038");
+  if(sky.length === 0) sky.push(byLum[Math.floor(byLum.length*0.35)] || "#304050");
+
+  // ensure horizon has at least 2 options if possible
+  if(horizon.length === 1 && byLum.length > 3){
+    horizon.push(byLum[Math.floor(byLum.length*0.75)]);
+  }
+  return { sky, horizon, ground };
+}
+
+function pickSunsetColor(groups, yNorm, rng){
+  const {sky, horizon, ground} = groups;
+  const SKY_END = 0.55;
+  const HORIZON_END = 0.72;
+
+  const pick = (arr)=> arr[Math.floor(rng()*arr.length)];
+
+  if(yNorm < SKY_END){
+    if(rng() < 0.12) return pick(horizon);
+    return pick(sky);
+  }
+  if(yNorm < HORIZON_END){
+    if(rng() < 0.18) return pick(sky);
+    return pick(horizon);
+  }
+  if(rng() < 0.10) return pick(horizon); // city light vibe
+  return pick(ground);
+}
+
+/* =========================
+   Auto naming
+========================= */
+const NAME_BANK = {
+  flower:   {a:["Petal","Bloom","Orchid","Rose","Dahlia","Iris","Lilac","Bouquet"], m:["Whisper","Drift","Glow","Muse","Parade","Kiss","Mist"]},
+  sakura:   {a:["Sakura","Blossom","Hanami","Petal","Spring"], m:["Hush","Breeze","Veil","Glow","Rain","Drift"]},
+  plants:   {a:["Fern","Canopy","Moss","Leaf","Garden","Vine"], m:["Still","Pulse","Shade","Ritual","Dew","Trail"]},
+  mountain: {a:["Alpine","Summit","Ridge","Granite","Peak","Crag"], m:["Silence","Echo","Cold","Trail","Skyline","Drift"]},
+  river:    {a:["River","Current","Delta","Stream","Tide","Cascade"], m:["Flow","Glass","Whisper","Carry","Turn","Blue"]},
+  japan:    {a:["Shiro","Aka","Sumi","Kintsugi","Ukiyo","Wabi"], m:["Air","Calm","Signal","Story","Fold","Haze"]},
+  tokyo:    {a:["Tokyo","Neon","Shinjuku","Shibuya","Metro","Arcade"], m:["Rush","Static","Afterhours","Pulse","Mirage","Loop"]},
+  flags:    {a:["Banner","Tricolor","Emblem","Signal","Union","Standard"], m:["Anthem","Route","Beacon","March","Cadence"]},
+  sunset3:  {a:["Afterglow","Horizon","Dusk","Twilight","Ember","Sunset"], m:["Fade","Blush","Lull","Flare","Echo","Drift"]},
+  sunsetPhoto:{a:["Afterglow","Blue Hour","Horizon","Duskline","Ember","City Sunset"], m:["Fade","Gold Line","Quiet","Glow","Veil","Drift"]},
+  wild:     {a:["Chaos","Confetti","Prism","Glitch","Kaleido","Vortex"], m:["Storm","Spark","Shuffle","Noise","Orbit","Dare"]},
+};
+function suggestTitle(theme, rng){
+  const bank = NAME_BANK[theme] || NAME_BANK.wild;
+  const A = bank.a[randInt(rng,0,bank.a.length-1)];
+  const M = bank.m[randInt(rng,0,bank.m.length-1)];
+  const forms = [
+    `${A} ${M}`,
+    `${M} ${A}`,
+    `${A} / ${M}`,
+    `${A} Tiles`,
+  ];
+  return forms[randInt(rng,0,forms.length-1)];
+}
+
+/* =========================
+   Image → Palette
+========================= */
+function rgbToHex(r,g,b){
+  return "#" + [r,g,b].map(v=>v.toString(16).padStart(2,"0")).join("");
+}
+
+function extractPaletteFromImage(img, colorCount=8){
+  // Downsample + histogram quantization (fast, decent for vibe coding)
+  const s = 96;
+  const c = document.createElement("canvas");
+  c.width = s; c.height = s;
+  const x = c.getContext("2d", { willReadFrequently: true });
+
+  // cover-fit
+  const scale = Math.max(s / img.width, s / img.height);
+  const w = img.width * scale, h = img.height * scale;
+  const ox = (s - w)/2, oy = (s - h)/2;
+  x.drawImage(img, ox, oy, w, h);
+
+  const data = x.getImageData(0,0,s,s).data;
+
+  const bins = new Map();
+  for(let i=0;i<data.length;i+=4){
+    const a = data[i+3];
+    if(a < 200) continue;
+
+    let r=data[i], g=data[i+1], b=data[i+2];
+
+    // ignore extreme black/white noise but keep enough shadow for silhouette
+    const lum = 0.2126*r + 0.7152*g + 0.0722*b;
+    if(lum < 10 || lum > 250) continue;
+
+    // quantize: 5 bits per channel
+    r = (r >> 3) << 3;
+    g = (g >> 3) << 3;
+    b = (b >> 3) << 3;
+
+    const key = (r<<16) | (g<<8) | b;
+    bins.set(key, (bins.get(key)||0) + 1);
+  }
+
+  const sorted = [...bins.entries()].sort((a,b)=>b[1]-a[1]);
+
+  const picked = [];
+  const minDist = 42; // sunset likes nearby colors; lower = more gradient-y
+
+  function dist(c1,c2){
+    const r1=(c1>>16)&255,g1=(c1>>8)&255,b1=c1&255;
+    const r2=(c2>>16)&255,g2=(c2>>8)&255,b2=c2&255;
+    return Math.hypot(r1-r2,g1-g2,b1-b2);
+  }
+
+  for(const [key] of sorted){
+    if(picked.length >= colorCount) break;
+    if(picked.every(k=>dist(k,key) >= minDist)) picked.push(key);
+  }
+
+  // fallback if too strict
+  let i=0;
+  while(picked.length < colorCount && i < sorted.length){
+    const key = sorted[i++][0];
+    if(!picked.includes(key)) picked.push(key);
+  }
+
+  // ensure we have at least one dark for silhouettes
+  const hasDark = picked.some(k=>{
+    const r=(k>>16)&255,g=(k>>8)&255,b=k&255;
+    const lum = 0.2126*r + 0.7152*g + 0.0722*b;
+    return lum < 35;
+  });
+  if(!hasDark){
+    // add a dark-ish color by scanning sorted pixels for low luminance
+    for(const [key] of sorted){
+      const r=(key>>16)&255,g=(key>>8)&255,b=key&255;
+      const lum = 0.2126*r + 0.7152*g + 0.0722*b;
+      if(lum < 45){
+        picked[picked.length-1] = key;
+        break;
+      }
+    }
+  }
+
+  return picked.slice(0,colorCount).map(k=>{
+    const r=(k>>16)&255, g=(k>>8)&255, b=k&255;
+    return rgbToHex(r,g,b);
+  });
+}
+
+function renderPalettePreview(pal){
+  palettePreview.innerHTML = "";
+  if(!pal || !pal.length) return;
+  for(const c of pal){
+    const sw = document.createElement("div");
+    sw.className = "sw";
+    sw.style.background = c;
+    sw.title = c;
+    palettePreview.appendChild(sw);
+  }
+}
+
+/* =========================
+   App state
+========================= */
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+const statusPill = document.getElementById("statusPill");
+const themeSel = document.getElementById("themeSel");
+const gridSel = document.getElementById("gridSel");
+const gridInfo = document.getElementById("gridInfo");
+const seedInfo = document.getElementById("seedInfo");
+
+const genBtn = document.getElementById("genBtn");
+const mutateBtn = document.getElementById("mutateBtn");
+const unlockAllBtn = document.getElementById("unlockAllBtn");
+const exportBtn = document.getElementById("exportBtn");
+const saveBtn = document.getElementById("saveBtn");
+const clearBtn = document.getElementById("clearBtn");
+const suggestBtn = document.getElementById("suggestBtn");
+
+const nameInput = document.getElementById("nameInput");
+const tagsInput = document.getElementById("tagsInput");
+
+const favOffBtn = document.getElementById("favOffBtn");
+const favOnBtn = document.getElementById("favOnBtn");
+
+const galleryEl = document.getElementById("gallery");
+const sortSel = document.getElementById("sortSel");
+const searchInput = document.getElementById("searchInput");
+const onlyFavBtn = document.getElementById("onlyFavBtn");
+const resetFilterBtn = document.getElementById("resetFilterBtn");
+
+const imgInput = document.getElementById("imgInput");
+const imgToPaletteBtn = document.getElementById("imgToPaletteBtn");
+const colorCountSel = document.getElementById("colorCountSel");
+const palettePreview = document.getElementById("palettePreview");
+const paletteModeBadge = document.getElementById("paletteModeBadge");
+
+// current art
+let current = null; // {seed, rows, cols, tileSize, theme, colors2D, locked:Set<string>}
+let currentFav = false;
+let filterOnlyFav = false;
+
+// image palette state
+let imagePalette = null;
+
+function setStatus(text){ statusPill.textContent = text; }
+
+function setFavUI(isFav){
+  currentFav = !!isFav;
+  if(currentFav){
+    favOnBtn.classList.add("on");
+    favOffBtn.classList.remove("on");
+  }else{
+    favOffBtn.classList.add("on");
+    favOnBtn.classList.remove("on");
+  }
+}
+
+function parseTags(s){
+  const raw = (s||"").trim();
+  if(!raw) return [];
+  const parts = raw.replace(/，/g,",")
+    .split(/[\s,]+/g)
+    .map(x=>x.trim())
+    .filter(Boolean)
+    .map(x=> x.startsWith("#") ? x.slice(1) : x);
+  const uniq = [];
+  for(const p of parts){
+    const t = p.slice(0,24);
+    if(t && !uniq.includes(t)) uniq.push(t);
+  }
+  return uniq.slice(0,12);
+}
+
+function keyXY(x,y){ return `${x},${y}`; }
+
+function drawCurrent(){
+  const { rows, cols, tileSize, colors2D, locked } = current;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  const w = cols * tileSize;
+  const h = rows * tileSize;
+  const ox = Math.floor((canvas.width - w) / 2);
+  const oy = Math.floor((canvas.height - h) / 2);
+
+  // tiles + lock overlay
+  for (let y=0;y<rows;y++){
+    for (let x=0;x<cols;x++){
+      const px = ox + x*tileSize;
+      const py = oy + y*tileSize;
+
+      ctx.fillStyle = colors2D[y][x];
+      ctx.fillRect(px, py, tileSize, tileSize);
+
+      if(locked.has(keyXY(x,y))){
+        ctx.globalAlpha = 0.14;
+        ctx.fillStyle = "#000";
+        ctx.fillRect(px, py, tileSize, tileSize);
+        ctx.globalAlpha = 1;
+
+        ctx.globalAlpha = 0.72;
+        ctx.fillStyle = "#fff";
+        ctx.font = `${Math.max(10, Math.floor(tileSize*0.55))}px system-ui, -apple-system`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("🔒", px + tileSize/2, py + tileSize/2);
+        ctx.globalAlpha = 1;
+      }
+    }
+  }
+
+  // grid lines
+  ctx.globalAlpha = 0.16;
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 1;
+  for (let y=0;y<=rows;y++){
+    ctx.beginPath();
+    ctx.moveTo(ox, oy + y*tileSize);
+    ctx.lineTo(ox + w, oy + y*tileSize);
+    ctx.stroke();
+  }
+  for (let x=0;x<=cols;x++){
+    ctx.beginPath();
+    ctx.moveTo(ox + x*tileSize, oy);
+    ctx.lineTo(ox + x*tileSize, oy + h);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function generateArt(opts = {}) {
+  const size = parseInt(gridSel.value, 10) || 18;
+  const rows = opts.rows ?? size;
+  const cols = opts.cols ?? size;
+
+  const tileSize = Math.floor(canvas.width / cols);
+  const seed = opts.seed ?? (Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,8));
+  const theme = opts.theme ?? (themeSel.value || "tokyo");
+
+  const rng = makeRng(seed + "|" + theme + "|" + rows + "x" + cols);
+
+  const locked = new Set();
+  const colors2D = Array.from({length: rows}, () => Array.from({length: cols}, () => "#000000"));
+
+  // --- Theme generators ---
+  if(theme === "sunset3"){
+    const layers = buildSunset3Palette(rng);
+    const accents = [
+      hslToHex(randInt(rng, 40, 70), randInt(rng, 50, 95), randInt(rng, 70, 92)),
+      hslToHex(randInt(rng, 190, 230), randInt(rng, 10, 35), randInt(rng, 75, 92)),
+    ];
+    const horizonBand = Math.max(1, Math.floor(rows * 0.18));
+    const horizonStart = Math.floor(rows * 0.42);
+    const horizonEnd = Math.min(rows-1, horizonStart + horizonBand);
+
+    for(let y=0;y<rows;y++){
+      for(let x=0;x<cols;x++){
+        let col;
+        if(y < horizonStart){
+          const t = (horizonStart<=1) ? 0 : (y/(horizonStart-1));
+          col = mixHex(layers.skyA, layers.skyB, t);
+          if(rng() < 0.18) col = mixHex(col, layers.horizonA, rng()*0.25);
+        } else if(y <= horizonEnd){
+          const t = (horizonBand<=1) ? 0 : ((y-horizonStart)/(horizonEnd-horizonStart || 1));
+          col = mixHex(layers.horizonA, layers.horizonB, t);
+          if(rng() < 0.25) col = mixHex(col, layers.skyB, rng()*0.22);
+        } else {
+          const t = ((y-horizonEnd)/(rows-1-horizonEnd || 1));
+          col = mixHex(layers.nightA, layers.nightB, t);
+          if(rng() < 0.10) col = mixHex(col, layers.horizonB, rng()*0.18);
+          if(rng() < 0.035) col = accents[randInt(rng,0,accents.length-1)];
+        }
+        if(rng() < 0.22){
+          const hsl = hexToHsl(col);
+          col = hslToHex((hsl.h + randInt(rng,-8,8)+360)%360, clamp(hsl.s + randInt(rng,-10,10), 5, 100), clamp(hsl.l + randInt(rng,-10,10), 3, 97));
+        }
+        colors2D[y][x] = col;
+      }
+    }
+  }
+  else if(theme === "sunsetPhoto"){
+    // photo-driven sunset: needs imagePalette, otherwise fallback
+    if(imagePalette && imagePalette.length >= 3){
+      const groups = classifySunsetPalette(imagePalette);
+      for(let y=0;y<rows;y++){
+        for(let x=0;x<cols;x++){
+          const yNorm = y / (rows - 1 || 1);
+          let col = pickSunsetColor(groups, yNorm, rng);
+
+          // slight jitter for tile feel
+          if(rng() < 0.18){
+            const hsl = hexToHsl(col);
+            col = hslToHex((hsl.h + randInt(rng,-6,6)+360)%360, clamp(hsl.s + randInt(rng,-8,8), 5, 100), clamp(hsl.l + randInt(rng,-8,8), 2, 98));
+          }
+          colors2D[y][x] = col;
+        }
+      }
+    } else {
+      // fallback to built-in sunset3 if no image palette
+      const rr = makeRng(seed + "|sun3fallback");
+      const layers = buildSunset3Palette(rr);
+      const horizonBand = Math.max(1, Math.floor(rows * 0.18));
+      const horizonStart = Math.floor(rows * 0.42);
+      const horizonEnd = Math.min(rows-1, horizonStart + horizonBand);
+
+      for(let y=0;y<rows;y++){
+        for(let x=0;x<cols;x++){
+          let col;
+          if(y < horizonStart){
+            const t = (horizonStart<=1) ? 0 : (y/(horizonStart-1));
+            col = mixHex(layers.skyA, layers.skyB, t);
+          } else if(y <= horizonEnd){
+            const t = (horizonBand<=1) ? 0 : ((y-horizonStart)/(horizonEnd-horizonStart || 1));
+            col = mixHex(layers.horizonA, layers.horizonB, t);
+          } else {
+            const t = ((y-horizonEnd)/(rows-1-horizonEnd || 1));
+            col = mixHex(layers.nightA, layers.nightB, t);
+          }
+          colors2D[y][x] = col;
+        }
+      }
+      setStatus("No image palette → fallback sunset");
+    }
+  }
+  else {
+    // normal themes: if imagePalette exists, you can still use it by choosing Wild and extracting;
+    // but default uses theme palette
+    const palette = buildPalette(theme, rng);
+
+    // base fill
+    for(let y=0;y<rows;y++){
+      for(let x=0;x<cols;x++){
+        colors2D[y][x] = palette[randInt(rng,0,palette.length-1)];
+      }
+    }
+
+    // add structure
+    const styleRoll = rng();
+    if(styleRoll < 0.45){
+      const blobs = randInt(rng, 2, Math.max(3, Math.floor(size/3)));
+      for (let b=0;b<blobs;b++){
+        const cx = randInt(rng, 0, cols-1);
+        const cy = randInt(rng, 0, rows-1);
+        const radius = randInt(rng, 1, Math.max(2, Math.floor(size/6)));
+        const col = palette[randInt(rng, 0, palette.length - 1)];
+        for (let y=Math.max(0, cy-radius); y<=Math.min(rows-1, cy+radius); y++){
+          for (let x=Math.max(0, cx-radius); x<=Math.min(cols-1, cx+radius); x++){
+            if ((x-cx)*(x-cx)+(y-cy)*(y-cy) <= radius*radius && rng() < 0.78){
+              colors2D[y][x] = col;
+            }
+          }
+        }
+      }
+    } else if(styleRoll < 0.72){
+      const a = palette[randInt(rng,0,palette.length-1)];
+      const b = palette[randInt(rng,0,palette.length-1)];
+      const vertical = rng() < 0.5;
+      for(let y=0;y<rows;y++){
+        for(let x=0;x<cols;x++){
+          const t = vertical ? (y/(rows-1||1)) : (x/(cols-1||1));
+          const col = mixHex(a,b,t);
+          colors2D[y][x] = (rng()<0.22) ? palette[randInt(rng,0,palette.length-1)] : col;
+        }
+      }
+    } else {
+      const axis = rng() < 0.5 ? "v" : "h";
+      for(let y=0;y<rows;y++){
+        for(let x=0;x<cols;x++){
+          const nx = axis==="v" ? (cols-1-x) : x;
+          const ny = axis==="h" ? (rows-1-y) : y;
+          if(rng() < 0.55){
+            colors2D[ny][nx] = colors2D[y][x];
+          }
+        }
+      }
+    }
+  }
+
+  current = { seed, rows, cols, tileSize, theme, colors2D, locked };
+  drawCurrent();
+
+  gridInfo.textContent = `${rows} × ${cols}  (tile ${tileSize}px)`;
+  seedInfo.textContent = seed;
+
+  // auto title
+  const nameRng = makeRng(seed + "|name|" + theme);
+  nameInput.value = suggestTitle(theme, nameRng);
+
+  setFavUI(false);
+  setStatus("Generated");
+}
+
+function shuffleUnlocked(){
+  if (!current) return generateArt();
+  const rng = makeRng(current.seed + "|shuffle|" + Date.now().toString(36));
+  const { rows, cols, theme, locked } = current;
+
+  const replaceRate = 0.30;
+
+  // for sunsetPhoto, keep the sunset structure, only repaint unlocked tiles
+  if(theme === "sunsetPhoto" && imagePalette && imagePalette.length >= 3){
+    const groups = classifySunsetPalette(imagePalette);
+    for(let y=0;y<rows;y++){
+      for(let x=0;x<cols;x++){
+        if(locked.has(keyXY(x,y))) continue;
+        if(rng() > replaceRate) continue;
+
+        const yNorm = y / (rows - 1 || 1);
+        let col = pickSunsetColor(groups, yNorm, rng);
+        if(rng() < 0.18){
+          const hsl = hexToHsl(col);
+          col = hslToHex((hsl.h + randInt(rng,-6,6)+360)%360, clamp(hsl.s + randInt(rng,-8,8), 5, 100), clamp(hsl.l + randInt(rng,-8,8), 2, 98));
+        }
+        current.colors2D[y][x] = col;
+      }
+    }
+    drawCurrent();
+    setStatus("Shuffled (sunset photo)");
+    return;
+  }
+
+  // built-in sunset3 shuffle: re-sample by y band
+  if(theme === "sunset3"){
+    const rr = makeRng(current.seed + "|sun3|" + Date.now().toString(36));
+    const layers = buildSunset3Palette(rr);
+    const accents = ["#ffe8a3","#dbeafe"];
+    const horizonBand = Math.max(1, Math.floor(rows * 0.18));
+    const horizonStart = Math.floor(rows * 0.42);
+    const horizonEnd = Math.min(rows-1, horizonStart + horizonBand);
+
+    for(let y=0;y<rows;y++){
+      for(let x=0;x<cols;x++){
+        if(locked.has(keyXY(x,y))) continue;
+        if(rng() > replaceRate) continue;
+
+        let col;
+        if(y < horizonStart){
+          const t = (horizonStart<=1) ? 0 : (y/(horizonStart-1));
+          col = mixHex(layers.skyA, layers.skyB, t);
+          if(rr() < 0.18) col = mixHex(col, layers.horizonA, rr()*0.25);
+        } else if(y <= horizonEnd){
+          const t = (horizonBand<=1) ? 0 : ((y-horizonStart)/(horizonEnd-horizonStart || 1));
+          col = mixHex(layers.horizonA, layers.horizonB, t);
+          if(rr() < 0.25) col = mixHex(col, layers.skyB, rr()*0.22);
+        } else {
+          const t = ((y-horizonEnd)/(rows-1-horizonEnd || 1));
+          col = mixHex(layers.nightA, layers.nightB, t);
+          if(rr() < 0.10) col = mixHex(col, layers.horizonB, rr()*0.18);
+          if(rr() < 0.035) col = accents[randInt(rr,0,accents.length-1)];
+        }
+        if(rr() < 0.22){
+          const hsl = hexToHsl(col);
+          col = hslToHex((hsl.h + randInt(rr,-8,8)+360)%360, clamp(hsl.s + randInt(rr,-10,10), 5, 100), clamp(hsl.l + randInt(rr,-10,10), 3, 97));
+        }
+        current.colors2D[y][x] = col;
+      }
+    }
+    drawCurrent();
+    setStatus("Shuffled (sunset3)");
+    return;
+  }
+
+  // other themes: re-pick from theme palette
+  const palRng = makeRng(current.seed + "|palette|" + Date.now().toString(36));
+  const palette = buildPalette(theme === "sunsetPhoto" ? "tokyo" : theme, palRng);
+
+  for (let y=0;y<rows;y++){
+    for (let x=0;x<cols;x++){
+      if(locked.has(keyXY(x,y))) continue;
+      if(rng() > replaceRate) continue;
+      current.colors2D[y][x] = palette[randInt(rng,0,palette.length-1)];
+    }
+  }
+  drawCurrent();
+  setStatus("Shuffled (unlocked only)");
+}
+
+function unlockAll(){
+  if(!current) return;
+  current.locked.clear();
+  drawCurrent();
+  setStatus("Unlocked all");
+}
+
+/* =========================
+   Click-to-lock
+========================= */
+canvas.addEventListener("click", (e)=>{
+  if(!current) return;
+  const rect = canvas.getBoundingClientRect();
+  const cx = (e.clientX - rect.left) * (canvas.width / rect.width);
+  const cy = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+  const { rows, cols, tileSize } = current;
+  const w = cols * tileSize;
+  const h = rows * tileSize;
+  const ox = Math.floor((canvas.width - w) / 2);
+  const oy = Math.floor((canvas.height - h) / 2);
+
+  const x = Math.floor((cx - ox) / tileSize);
+  const y = Math.floor((cy - oy) / tileSize);
+  if(x < 0 || y < 0 || x >= cols || y >= rows) return;
+
+  const k = keyXY(x,y);
+  if(current.locked.has(k)) current.locked.delete(k);
+  else current.locked.add(k);
+
+  drawCurrent();
+  setStatus(current.locked.has(k) ? "Locked tile" : "Unlocked tile");
+});
+
+/* =========================
+   Export
+========================= */
+function exportPng(){
+  if (!current) generateArt();
+  const a = document.createElement("a");
+  const safeTitle = (nameInput.value || "tile-art").trim().replace(/[^a-zA-Z0-9_-]+/g,"-").slice(0,60);
+  a.download = `${safeTitle || "tile-art"}.png`;
+  a.href = canvas.toDataURL("image/png");
+  a.click();
+  setStatus("Exported");
+}
+
+/* =========================
+   Image → Palette events
+========================= */
+imgToPaletteBtn.addEventListener("click", ()=>{
+  const file = imgInput.files?.[0];
+  if(!file){ setStatus("Pick an image first"); return; }
+
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    const n = parseInt(colorCountSel.value,10) || 8;
+    imagePalette = extractPaletteFromImage(img, n);
+
+    renderPalettePreview(imagePalette);
+    paletteModeBadge.textContent = `Image palette: ${imagePalette.length} colors`;
+    paletteModeBadge.style.borderColor = "rgba(48,209,88,.45)";
+    paletteModeBadge.style.color = "#bff7cf";
+
+    URL.revokeObjectURL(url);
+    setStatus("Palette extracted ✓");
+
+    // If you're in Sunset(Photo), regenerate immediately
+    if(themeSel.value === "sunsetPhoto") generateArt();
+  };
+  img.onerror = () => setStatus("Failed to load image");
+  img.src = url;
+});
+
+/* =========================
+   Gallery storage
+========================= */
+const KEY = "tile_vibe_gallery_dark_v1";
+function loadGallery(){
+  try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
+  catch { return []; }
+}
+function saveGallery(items){
+  localStorage.setItem(KEY, JSON.stringify(items));
+}
+function nowISO(){ return new Date().toISOString(); }
+
+function saveCurrent(){
+  if (!current) generateArt();
+  const title = (nameInput.value || "").trim();
+  if (!title) { setStatus("Please enter a title"); nameInput.focus(); return; }
+
+  const tags = parseTags(tagsInput.value);
+  const thumb = canvas.toDataURL("image/png");
+
+  const item = {
+    id: crypto?.randomUUID?.() ?? (Date.now().toString(36) + Math.random().toString(36).slice(2,8)),
+    title,
+    tags,
+    favorite: currentFav,
+    createdAt: nowISO(),
+    thumb,
+    art: {
+      ...current,
+      locked: Array.from(current.locked),
+      // store imagePalette if you want reproducible sunsetPhoto later
+      imagePalette: imagePalette ? imagePalette.slice() : null
+    }
+  };
+
+  const items = loadGallery();
+  items.unshift(item);
+  saveGallery(items);
+
+  setStatus("Saved ✓");
+  renderGallery();
+}
+
+function clearAll(){
+  if (!confirm("Delete ALL saved works?")) return;
+  localStorage.removeItem(KEY);
+  renderGallery();
+  setStatus("Cleared");
+}
+
+/* =========================
+   Gallery UI
+========================= */
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function sortItems(items){
+  const mode = sortSel.value;
+  const copy = items.slice();
+  if (mode === "new") copy.sort((a,b)=> b.createdAt.localeCompare(a.createdAt));
+  if (mode === "old") copy.sort((a,b)=> a.createdAt.localeCompare(b.createdAt));
+  if (mode === "name") copy.sort((a,b)=> (a.title||"").localeCompare(b.title||""));
+  if (mode === "fav") copy.sort((a,b)=> (b.favorite===true) - (a.favorite===true) || b.createdAt.localeCompare(a.createdAt));
+  return copy;
+}
+function applyFilters(items){
+  const q = (searchInput.value||"").trim().toLowerCase();
+  let out = items;
+
+  if(filterOnlyFav){
+    out = out.filter(x=>x.favorite===true);
+  }
+  if(q){
+    out = out.filter(x=>{
+      const t = (x.title||"").toLowerCase();
+      const tags = (x.tags||[]).join(" ").toLowerCase();
+      return t.includes(q) || tags.includes(q);
+    });
+  }
+  return out;
+}
+
+function renderGallery(){
+  let items = loadGallery();
+  items = sortItems(items);
+  items = applyFilters(items);
+
+  galleryEl.innerHTML = "";
+
+  if (items.length === 0){
+    const p = document.createElement("p");
+    p.className = "hint";
+    p.textContent = "No items found. Generate something and Save.";
+    galleryEl.appendChild(p);
+    return;
+  }
+
+  for (const it of items){
+    const card = document.createElement("div");
+    card.className = "thumb";
+
+    const star = it.favorite ? `<span class="star">★</span>` : `<span style="color:#71798f">☆</span>`;
+    const tagsHtml = (it.tags||[]).map(t=>`<span class="tagChip">#${escapeHtml(t)}</span>`).join("");
+
+    card.innerHTML = `
+      <img src="${it.thumb}" alt="${escapeHtml(it.title)}" />
+      <div class="meta">
+        <p class="title">${star}<span>${escapeHtml(it.title)}</span></p>
+        <p class="small">${new Date(it.createdAt).toLocaleString()}</p>
+        <div class="tags">${tagsHtml || `<span class="tagChip">no tags</span>`}</div>
+        <div class="actions">
+          <button data-act="load" data-id="${it.id}">Load</button>
+          <button data-act="toggleFav" data-id="${it.id}">${it.favorite ? "Unfavorite" : "Favorite"}</button>
+          <button class="ghost" data-act="dup" data-id="${it.id}">Duplicate</button>
+          <button class="danger" data-act="del" data-id="${it.id}">Delete</button>
+        </div>
+      </div>
+    `;
+    galleryEl.appendChild(card);
+  }
+}
+
+galleryEl.addEventListener("click", (e)=>{
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  const act = btn.dataset.act;
+  const id = btn.dataset.id;
+  const items = loadGallery();
+  const idx = items.findIndex(x=>x.id===id);
+  if (idx < 0) return;
+
+  if (act === "load"){
+    const it = items[idx];
+    const art = it.art;
+
+    current = {
+      ...art,
+      locked: new Set(art.locked || [])
+    };
+
+    // restore imagePalette if present
+    imagePalette = art.imagePalette ? art.imagePalette.slice() : imagePalette;
+
+    if(imagePalette && imagePalette.length){
+      renderPalettePreview(imagePalette);
+      paletteModeBadge.textContent = `Image palette: ${imagePalette.length} colors`;
+      paletteModeBadge.style.borderColor = "rgba(48,209,88,.45)";
+      paletteModeBadge.style.color = "#bff7cf";
+    }
+
+    gridSel.value = String(current.rows);
+    themeSel.value = current.theme || "tokyo";
+    nameInput.value = it.title || "";
+    tagsInput.value = (it.tags||[]).map(t=>"#"+t).join(" ");
+    setFavUI(!!it.favorite);
+
+    drawCurrent();
+    gridInfo.textContent = `${current.rows} × ${current.cols}  (tile ${current.tileSize}px)`;
+    seedInfo.textContent = current.seed;
+    setStatus("Loaded");
+  }
+
+  if (act === "toggleFav"){
+    items[idx].favorite = !items[idx].favorite;
+    saveGallery(items);
+    renderGallery();
+    setStatus(items[idx].favorite ? "Favorited" : "Unfavorited");
+  }
+
+  if (act === "dup"){
+    const copy = structuredClone(items[idx]);
+    copy.id = crypto?.randomUUID?.() ?? (Date.now().toString(36) + Math.random().toString(36).slice(2,8));
+    copy.title = copy.title + " (copy)";
+    copy.createdAt = nowISO();
+    items.unshift(copy);
+    saveGallery(items);
+    renderGallery();
+    setStatus("Duplicated");
+  }
+
+  if (act === "del"){
+    if (!confirm("Delete this item?")) return;
+    items.splice(idx,1);
+    saveGallery(items);
+    renderGallery();
+    setStatus("Deleted");
+  }
+});
+
+/* =========================
+   UI events
+========================= */
+genBtn.addEventListener("click", ()=>generateArt());
+mutateBtn.addEventListener("click", shuffleUnlocked);
+unlockAllBtn.addEventListener("click", unlockAll);
+exportBtn.addEventListener("click", exportPng);
+
+saveBtn.addEventListener("click", saveCurrent);
+clearBtn.addEventListener("click", clearAll);
+
+suggestBtn.addEventListener("click", ()=>{
+  const theme = themeSel.value || "tokyo";
+  const rng = makeRng((current?.seed || Date.now().toString(36)) + "|name2|" + theme + "|" + Date.now().toString(36));
+  nameInput.value = suggestTitle(theme, rng);
+  setStatus("Title suggested");
+});
+
+gridSel.addEventListener("change", ()=>generateArt());
+themeSel.addEventListener("change", ()=>{
+  // if sunsetPhoto selected but no palette, guide user
+  if(themeSel.value === "sunsetPhoto" && (!imagePalette || imagePalette.length<3)){
+    setStatus("Sunset (Photo): pick an image → Image → Palette");
+  } else {
+    generateArt();
+  }
+});
+
+favOffBtn.addEventListener("click", ()=>setFavUI(false));
+favOnBtn.addEventListener("click", ()=>setFavUI(true));
+
+sortSel.addEventListener("change", renderGallery);
+searchInput.addEventListener("input", renderGallery);
+
+onlyFavBtn.addEventListener("click", ()=>{
+  filterOnlyFav = !filterOnlyFav;
+  onlyFavBtn.textContent = filterOnlyFav ? "★ only ✓" : "★ only";
+  setStatus(filterOnlyFav ? "Filter: favorites" : "Filter: all");
+  renderGallery();
+});
+
+resetFilterBtn.addEventListener("click", ()=>{
+  searchInput.value = "";
+  filterOnlyFav = false;
+  onlyFavBtn.textContent = "★ only";
+  sortSel.value = "new";
+  setStatus("Reset");
+  renderGallery();
+});
+
+/* =========================
+   Boot
+========================= */
+setFavUI(false);
+generateArt();
+renderGallery();
+</script>
+</body>
+</html>

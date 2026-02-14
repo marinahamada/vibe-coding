@@ -1,0 +1,1594 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gradient Vibe Studio</title>
+  <style>
+    :root{
+      --bg0:#0b0d12;
+      --bg1:#0f1420;
+      --card: rgba(255,255,255,.06);
+      --text:#e7eaf0;
+      --muted:#a7afc2;
+      --line: rgba(255,255,255,.10);
+      --line2: rgba(255,255,255,.16);
+      --accent:#0a84ff;
+      --accent2:#2bd1ff;
+      --danger:#ff453a;
+      --shadow: 0 18px 48px rgba(0,0,0,.55);
+      --radius: 18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      color:var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display","SF Pro Text","Segoe UI", Arial;
+      background:
+        radial-gradient(900px 520px at 12% 0%, rgba(10,132,255,.18) 0%, transparent 60%),
+        radial-gradient(900px 520px at 85% 15%, rgba(43,209,255,.12) 0%, transparent 60%),
+        radial-gradient(1200px 800px at 50% 100%, rgba(255,149,0,.08) 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .wrap{max-width:1280px;margin:0 auto;padding:18px;}
+    header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:12px;}
+    h1{margin:0;font-size:20px;letter-spacing:0.2px}
+    .sub{color:var(--muted);font-size:12px;margin-top:4px;line-height:1.4}
+    .pill{
+      display:inline-flex;gap:8px;align-items:center;
+      padding:8px 12px;border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      backdrop-filter: blur(14px);
+      font-size:12px;color:var(--muted);
+      box-shadow: 0 10px 26px rgba(0,0,0,.35);
+      white-space:nowrap;
+    }
+    .grid{display:grid;grid-template-columns: 1.2fr 1fr;gap:14px}
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr;} }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      padding:14px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .row.tight{gap:8px}
+    .label{color:var(--muted);font-size:12px}
+    .sep{height:1px;background:var(--line);margin:12px 0}
+
+    button, select, input{
+      border:1px solid var(--line2);
+      padding:10px 12px;
+      border-radius: 12px;
+      font-size:13px;
+      outline:none;
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
+      color: var(--text);
+      box-shadow: 0 1px 0 rgba(255,255,255,.08) inset, 0 1px 2px rgba(0,0,0,.35);
+    }
+    input{min-width: 220px}
+    select{cursor:pointer}
+    button{cursor:pointer;transition: transform .05s ease, filter .15s ease, background .15s ease;user-select:none;}
+    button:hover{filter:brightness(1.06)}
+    button:active{transform: translateY(1px); filter:brightness(.98)}
+    button.primary{
+      background: linear-gradient(180deg, rgba(10,132,255,.95), rgba(10,132,255,.70));
+      border-color: rgba(10,132,255,.45);
+      color:#fff;
+      box-shadow: 0 1px 0 rgba(255,255,255,.12) inset, 0 18px 38px rgba(10,132,255,.18);
+    }
+    button.ghost{background: rgba(255,255,255,.04);box-shadow:none;}
+    button.danger{border-color: rgba(255,69,58,.55);color: #ffd2cf;background: rgba(255,69,58,.10);}
+
+    .rangeWrap{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      padding:10px 12px;
+      border-radius: 14px;
+    }
+    .rangeWrap input[type="range"]{
+      border:none; box-shadow:none; background:transparent; padding:0;
+      width: 220px;
+    }
+    .num{
+      font-family: var(--mono);
+      color:#dbe2f3;
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.18);
+    }
+
+    canvas{
+      width:100%;height:auto;
+      border-radius: 16px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.25);
+    }
+
+    .hint{color:var(--muted);font-size:12px;line-height:1.45;margin:10px 0 0}
+
+    /* Palette editor */
+    .palEditor{
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.18);
+      border-radius: 16px;
+      padding:12px;
+    }
+    .stopBar{
+      position:relative;
+      height:34px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.12);
+      overflow:hidden;
+      background: rgba(255,255,255,.06);
+      box-shadow: 0 1px 0 rgba(255,255,255,.08) inset;
+      margin-bottom:10px;
+    }
+    .stopHandle{
+      position:absolute; top:50%;
+      width:16px; height:16px;
+      transform: translate(-50%,-50%);
+      border-radius: 999px;
+      border:2px solid rgba(255,255,255,.9);
+      box-shadow: 0 10px 22px rgba(0,0,0,.55);
+      cursor:grab;
+    }
+    .stopHandle:active{cursor:grabbing}
+    .stopList{display:grid;grid-template-columns: repeat(2, minmax(0,1fr)); gap:8px;}
+    @media (max-width: 560px){ .stopList{grid-template-columns:1fr} }
+    .stopItem{
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      padding:10px 10px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+    }
+    .stopLeft{display:flex; gap:10px; align-items:center;}
+    .chip{
+      width:22px; height:22px; border-radius:8px;
+      border:1px solid rgba(255,255,255,.18);
+      box-shadow: 0 1px 0 rgba(255,255,255,.08) inset, 0 10px 18px rgba(0,0,0,.35);
+    }
+    .stopMeta{display:flex; flex-direction:column; gap:2px;}
+    .stopMeta .small{font-size:12px;color:var(--muted);font-family:var(--mono)}
+    .stopMeta .tiny{font-size:11px;color:#7f8aa3;font-family:var(--mono)}
+    .stopBtns{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
+    .stopBtns button{padding:8px 10px;border-radius:12px}
+    input[type="color"]{
+      width:42px; height:36px; padding:0; border-radius:12px;
+      background:transparent; border:1px solid rgba(255,255,255,.16);
+    }
+
+    /* Gallery */
+    .gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    @media (max-width: 900px){ .gallery{grid-template-columns:repeat(2,1fr)} }
+    @media (max-width: 560px){ .gallery{grid-template-columns:1fr} }
+    .thumb{
+      border:1px solid var(--line);
+      border-radius: 18px;
+      overflow:hidden;
+      background: rgba(255,255,255,.05);
+      box-shadow: 0 18px 44px rgba(0,0,0,.45);
+    }
+    .thumb img{display:block;width:100%;height:auto}
+    .thumb .meta{padding:10px}
+    .thumb .title{font-size:13px;margin:0 0 6px 0;display:flex;align-items:center;gap:6px}
+    .star{color:#ffd60a}
+    .thumb .small{font-size:12px;color:var(--muted);margin:0}
+    .thumb .tags{font-size:12px;color:var(--muted);margin:8px 0 0;display:flex;flex-wrap:wrap;gap:6px}
+    .tagChip{
+      border:1px solid var(--line);
+      padding:4px 8px;border-radius:999px;
+      background: rgba(255,255,255,.04);
+    }
+    .thumb .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+    .thumb .actions button{padding:8px 10px;border-radius:12px}
+
+    .searchBar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+    .searchBar input{flex:1;min-width:200px}
+
+    .seg{
+      display:inline-flex;
+      border:1px solid var(--line2);
+      border-radius: 12px;
+      overflow:hidden;
+      background: rgba(255,255,255,.05);
+      box-shadow: 0 1px 0 rgba(255,255,255,.08) inset, 0 1px 2px rgba(0,0,0,.35);
+    }
+    .seg button{
+      border:none;
+      border-right:1px solid var(--line2);
+      border-radius:0;
+      padding:10px 12px;
+      background:transparent;
+      color:var(--muted);
+      box-shadow:none;
+    }
+    .seg button:last-child{border-right:none}
+    .seg button.on{
+      background: rgba(10,132,255,.18);
+      color: var(--accent2);
+      font-weight: 700;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Gradient Vibe Studio</h1>
+        <div class="sub">
+          Pinterest-style gradients: generate patterns → tweak palette stops → name & save → searchable gallery.
+        </div>
+      </div>
+      <div class="pill" id="statusPill">Ready</div>
+    </header>
+
+    <div class="grid">
+      <!-- LEFT -->
+      <section class="card">
+        <div class="row" style="justify-content:space-between">
+          <div class="row tight">
+            <button id="genBtn" class="primary">Generate</button>
+            <button id="variantBtn">New Variant</button>
+            <button id="exportBtn" class="ghost">Export PNG</button>
+          </div>
+
+          <div class="row tight">
+            <span class="label">Pattern</span>
+            <select id="patternSel">
+              <option value="airbrush" selected>Airbrush Soft</option>
+              <option value="mesh">Mesh / Blobs</option>
+              <option value="smear">Smear Strokes</option>
+              <option value="watercolor">Watercolor Bleed</option>
+              <option value="target">Target Rings</option>
+              <option value="aurora">Aurora Ribbons</option>
+              <option value="horizon">Horizon Sunset</option>
+              <option value="iridescent">Iridescent / Holo</option>
+              <option value="grainy">Grainy Film</option>
+              <option value="conic">Conic Swirl</option>
+              <option value="linear">Linear Multi-stop</option>
+            </select>
+
+            <span class="label">Paper</span>
+            <select id="paperSel">
+              <option value="off" selected>Off</option>
+              <option value="on">On</option>
+              <option value="fold">On + Fold</option>
+            </select>
+
+            <span class="label">Size</span>
+            <select id="sizeSel">
+              <option value="640">640</option>
+              <option value="900" selected>900</option>
+              <option value="1200">1200</option>
+              <option value="1600">1600</option>
+            </select>
+
+            <span class="label">Stops</span>
+            <select id="stopCountSel">
+              <option value="5">5</option>
+              <option value="7" selected>7</option>
+              <option value="9">9</option>
+              <option value="12">12</option>
+              <option value="16">16</option>
+              <option value="20">20</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="row">
+          <div class="rangeWrap">
+            <span class="label">Smoothness</span>
+            <input id="smoothRange" type="range" min="0" max="100" value="82" />
+            <span class="num" id="smoothVal">82</span>
+          </div>
+
+          <div class="rangeWrap">
+            <span class="label">Complexity</span>
+            <input id="complexRange" type="range" min="0" max="100" value="55" />
+            <span class="num" id="complexVal">55</span>
+          </div>
+
+          <div class="rangeWrap">
+            <span class="label">Contrast</span>
+            <input id="contrastRange" type="range" min="0" max="100" value="35" />
+            <span class="num" id="contrastVal">35</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="rangeWrap">
+            <span class="label">Grain</span>
+            <input id="grainRange" type="range" min="0" max="100" value="22" />
+            <span class="num" id="grainVal">22</span>
+          </div>
+
+          <div class="rangeWrap">
+            <span class="label">Vignette</span>
+            <input id="vignetteRange" type="range" min="0" max="100" value="10" />
+            <span class="num" id="vignetteVal">10</span>
+          </div>
+
+          <div class="rangeWrap">
+            <span class="label">Whiteness</span>
+            <input id="whiteRange" type="range" min="0" max="100" value="28" />
+            <span class="num" id="whiteVal">28</span>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <canvas id="canvas" width="900" height="900"></canvas>
+
+        <div class="sep"></div>
+
+        <!-- Palette editor -->
+        <div class="palEditor">
+          <div class="row" style="justify-content:space-between">
+            <div class="row tight">
+              <span class="label">Palette Editor</span>
+              <span class="label" style="color:#7f8aa3">Drag handles to move stops.</span>
+            </div>
+            <div class="row tight">
+              <button id="randPaletteBtn">Randomize Palette</button>
+              <button id="shuffleStopsBtn" class="ghost">Shuffle</button>
+              <button id="addStopBtn" class="ghost">+ Stop</button>
+              <button id="normalizeBtn" class="ghost">Even Spacing</button>
+            </div>
+          </div>
+
+          <div class="stopBar" id="stopBar"></div>
+          <div class="stopList" id="stopList"></div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="row">
+          <input id="nameInput" placeholder="Title (auto-suggested)" />
+          <button id="suggestBtn" class="ghost">Suggest Title</button>
+        </div>
+
+        <div class="row">
+          <input id="tagsInput" placeholder="Tags (e.g. #gradient #holo / comma ok)" />
+          <div class="seg" aria-label="favorite toggle">
+            <button id="favOffBtn" class="on" type="button">☆</button>
+            <button id="favOnBtn" type="button">★</button>
+          </div>
+          <button id="saveBtn" class="primary">Save</button>
+          <button id="clearBtn" class="danger">Clear All</button>
+        </div>
+
+        <p class="hint">
+          Tip: Generate → tweak palette stops → New Variant for shape changes (pattern parameters).
+        </p>
+      </section>
+
+      <!-- RIGHT -->
+      <section class="card">
+        <div class="row" style="justify-content:space-between">
+          <h2 style="margin:0;font-size:16px">Gallery</h2>
+          <div class="row tight">
+            <span class="label">Sort</span>
+            <select id="sortSel">
+              <option value="new" selected>Newest</option>
+              <option value="old">Oldest</option>
+              <option value="name">Name</option>
+              <option value="fav">Favorites</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="searchBar">
+          <input id="searchInput" placeholder="Search (title / tags)" />
+          <button id="onlyFavBtn">★ only</button>
+          <button id="resetFilterBtn" class="ghost">Reset</button>
+        </div>
+
+        <div class="sep"></div>
+
+        <div id="gallery" class="gallery"></div>
+        <p class="hint">Storage: localStorage (this browser only).</p>
+      </section>
+    </div>
+  </div>
+
+<script>
+/* ========= RNG ========= */
+function xmur3(str) {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return function() {
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    return (h ^= (h >>> 16)) >>> 0;
+  };
+}
+function sfc32(a, b, c, d) {
+  return function() {
+    a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0;
+    let t = (a + b) | 0;
+    a = b ^ (b >>> 9);
+    b = (c + (c << 3)) | 0;
+    c = (c << 21) | (c >>> 11);
+    d = (d + 1) | 0;
+    t = (t + d) | 0;
+    c = (c + t) | 0;
+    return (t >>> 0) / 4294967296;
+  };
+}
+function makeRng(seedStr){
+  const seed = xmur3(seedStr);
+  return sfc32(seed(), seed(), seed(), seed());
+}
+function randInt(rng, min, max){
+  return Math.floor(rng() * (max - min + 1)) + min;
+}
+function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+function lerp(a,b,t){ return a+(b-a)*t; }
+function smoothstep(t){ return t*t*(3-2*t); }
+
+/* ========= Color utils ========= */
+function hslToRgb(h,s,l){
+  s/=100; l/=100;
+  const c = (1 - Math.abs(2*l - 1)) * s;
+  const hp = h / 60;
+  const x = c * (1 - Math.abs((hp % 2) - 1));
+  let r=0,g=0,b=0;
+  if(0<=hp && hp<1){ r=c; g=x; b=0;}
+  else if(1<=hp && hp<2){ r=x; g=c; b=0;}
+  else if(2<=hp && hp<3){ r=0; g=c; b=x;}
+  else if(3<=hp && hp<4){ r=0; g=x; b=c;}
+  else if(4<=hp && hp<5){ r=x; g=0; b=c;}
+  else if(5<=hp && hp<6){ r=c; g=0; b=x;}
+  const m = l - c/2;
+  return { r: Math.round((r+m)*255), g: Math.round((g+m)*255), b: Math.round((b+m)*255) };
+}
+function rgbToHex(r,g,b){
+  return "#" + [r,g,b].map(v=>v.toString(16).padStart(2,"0")).join("");
+}
+function hexToRgb(hex){
+  const h = hex.replace("#","").trim();
+  const full = h.length===3 ? h.split("").map(c=>c+c).join("") : h;
+  const n = parseInt(full,16);
+  return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 };
+}
+function mixRgb(A,B,t){
+  return { r: Math.round(lerp(A.r,B.r,t)), g: Math.round(lerp(A.g,B.g,t)), b: Math.round(lerp(A.b,B.b,t)) };
+}
+function mulRgb(A,k){
+  return { r: clamp(Math.round(A.r*k),0,255), g: clamp(Math.round(A.g*k),0,255), b: clamp(Math.round(A.b*k),0,255) };
+}
+
+/* ========= Noise ========= */
+function makeValueNoise2D(seed){
+  const rng = makeRng(seed);
+  const perm = new Uint8Array(256);
+  for(let i=0;i<256;i++) perm[i]=i;
+  for(let i=255;i>0;i--){
+    const j = Math.floor(rng()*(i+1));
+    const t = perm[i]; perm[i]=perm[j]; perm[j]=t;
+  }
+  function hash(ix,iy){
+    return perm[(perm[(ix&255)] + (iy&255)) & 255] / 255;
+  }
+  function fade(t){ return t*t*(3-2*t); }
+  return function(x,y){
+    const x0=Math.floor(x), y0=Math.floor(y);
+    const x1=x0+1, y1=y0+1;
+    const sx=fade(x-x0), sy=fade(y-y0);
+    const n00=hash(x0,y0), n10=hash(x1,y0), n01=hash(x0,y1), n11=hash(x1,y1);
+    const ix0 = n00 + (n10-n00)*sx;
+    const ix1 = n01 + (n11-n01)*sx;
+    return ix0 + (ix1-ix0)*sy; // 0..1
+  };
+}
+function fbm(noise, x, y, octaves, lacunarity, gain){
+  let amp=0.5, freq=1.0, sum=0, norm=0;
+  for(let i=0;i<octaves;i++){
+    sum += amp * noise(x*freq, y*freq);
+    norm += amp;
+    freq *= lacunarity;
+    amp *= gain;
+  }
+  return sum / (norm || 1);
+}
+function warp(noise, x, y, strength){
+  const wx = (noise(x+13.1, y+7.7) - 0.5) * strength;
+  const wy = (noise(x+5.3, y+19.9) - 0.5) * strength;
+  return { x: x + wx, y: y + wy };
+}
+
+/* ========= Palette Stops ========= */
+function ensureStopBounds(stops){
+  stops.forEach(s=>{ s.pos = clamp(s.pos, 0, 1); });
+  stops.sort((a,b)=>a.pos-b.pos);
+  if(stops.length === 0) stops.push({pos:0,hex:"#ffffff"},{pos:1,hex:"#000000"});
+  stops[0].pos = 0;
+  stops[stops.length-1].pos = 1;
+  return stops;
+}
+function sampleStops(stops, t){
+  t = clamp(t,0,1);
+  let i = 0;
+  while(i < stops.length-1 && stops[i+1].pos < t) i++;
+  const a = stops[i];
+  const b = stops[Math.min(stops.length-1, i+1)];
+  if(!b || a===b) return hexToRgb(a.hex);
+  const span = (b.pos - a.pos) || 1e-9;
+  const f = (t - a.pos) / span;
+  const tt = smoothstep(clamp(f,0,1));
+  return mixRgb(hexToRgb(a.hex), hexToRgb(b.hex), tt);
+}
+function stopsToCss(stops){
+  const parts = stops.map(s=>`${s.hex} ${Math.round(s.pos*100)}%`);
+  return `linear-gradient(90deg, ${parts.join(", ")})`;
+}
+function evenPositions(n){
+  if(n <= 1) return [0];
+  const out = [];
+  for(let i=0;i<n;i++) out.push(i/(n-1));
+  return out;
+}
+
+/* ========= Random palette (Pinterest-ish) ========= */
+function randomStops(seed, count, pattern){
+  const rng = makeRng(seed + "|pal|" + pattern);
+
+  // Horizon bias: sky -> glow -> night
+  if(pattern === "horizon"){
+    const skyHue = randInt(rng, 190, 240);
+    const glowHue = randInt(rng, 20, 55);
+    const nightHue = randInt(rng, 240, 285);
+
+    const stops = [];
+    const positions = evenPositions(count);
+
+    for(let i=0;i<count;i++){
+      const p = positions[i];
+      let h,s,l;
+      if(p < 0.55){
+        h = clamp(skyHue + randInt(rng,-18,18),0,360);
+        s = randInt(rng, 30, 80);
+        l = randInt(rng, 18, 76);
+      }else if(p < 0.72){
+        h = clamp(glowHue + randInt(rng,-10,10),0,360);
+        s = randInt(rng, 55, 95);
+        l = randInt(rng, 35, 85);
+      }else{
+        h = clamp(nightHue + randInt(rng,-18,18),0,360);
+        s = randInt(rng, 28, 78);
+        l = randInt(rng, 6, 40);
+      }
+      const rgb = hslToRgb(h,s,l);
+      stops.push({pos:p, hex: rgbToHex(rgb.r,rgb.g,rgb.b)});
+    }
+    return ensureStopBounds(stops);
+  }
+
+  // Iridescent: hue drift
+  if(pattern === "iridescent"){
+    const base = randInt(rng, 0, 360);
+    const stops = [];
+    const positions = evenPositions(count);
+    for(let i=0;i<count;i++){
+      const p = positions[i];
+      const h = (base + i*randInt(rng, 18, 42) + randInt(rng,-25,25) + 360) % 360;
+      const s = randInt(rng, 55, 100);
+      const l = randInt(rng, 22, 88);
+      const rgb = hslToRgb(h,s,l);
+      stops.push({pos:p, hex: rgbToHex(rgb.r,rgb.g,rgb.b)});
+    }
+    if(count >= 7 && rng() < 0.5){
+      stops[randInt(rng,1,count-2)].hex = "#f8fbff";
+    }
+    return ensureStopBounds(stops);
+  }
+
+  // General cohesive + accent
+  const baseHue = randInt(rng, 0, 360);
+  const positions = evenPositions(count);
+  const stops = [];
+  const cohesive = Math.max(2, Math.floor(count * 0.75));
+
+  for(let i=0;i<count;i++){
+    let h,s,l;
+    if(i < cohesive){
+      h = (baseHue + randInt(rng, -80, 80) + i*randInt(rng, 0, 6) + 360) % 360;
+      s = randInt(rng, 25, 92);
+      l = randInt(rng, 10, 90);
+    }else{
+      h = randInt(rng, 0, 360);
+      s = randInt(rng, 18, 100);
+      l = randInt(rng, 8, 92);
+    }
+    const rgb = hslToRgb(h,s,l);
+    stops.push({pos:positions[i], hex: rgbToHex(rgb.r,rgb.g,rgb.b)});
+  }
+  return ensureStopBounds(stops);
+}
+
+/* ========= Pattern fields (returns t 0..1) ========= */
+function buildField(pattern, noise, W, H, params, rng){
+  const smooth = params.smooth;
+  const complex = params.complex;
+  const contrast = params.contrast;
+
+  // common knobs
+  const baseScale = lerp(0.0022, 0.0007, smooth);
+  const detailScale = lerp(0.010, 0.0035, smooth);
+  const oct = Math.round(lerp(6, 3, smooth));
+  const gain = lerp(0.55, 0.72, complex);
+  const lac = lerp(2.0, 2.4, complex);
+
+  const cx = W * (0.35 + rng()*0.30);
+  const cy = H * (0.35 + rng()*0.30);
+
+  if(pattern === "linear"){
+    const ang = rng()*Math.PI*2;
+    const ax = Math.cos(ang), ay = Math.sin(ang);
+    return (x,y)=>{
+      const nx = x/W, ny=y/H;
+      let t = (nx*ax + ny*ay + 1)/2;
+      const n = fbm(noise, x*baseScale, y*baseScale, oct, lac, gain);
+      t = clamp(lerp(t, n, 0.16*complex), 0, 1);
+      t = clamp((t-0.5)*(1+contrast*1.2)+0.5,0,1);
+      return t;
+    };
+  }
+
+  if(pattern === "conic"){
+    return (x,y)=>{
+      const dx = x - cx, dy = y - cy;
+      let t = (Math.atan2(dy,dx)+Math.PI)/(2*Math.PI);
+      const n = fbm(noise, x*detailScale, y*detailScale, 4, 2.2, 0.6);
+      t = clamp(t + (n-0.5)*0.22*complex, 0, 1);
+      t = clamp((t-0.5)*(1+contrast*0.9)+0.5,0,1);
+      return t;
+    };
+  }
+
+  if(pattern === "aurora"){
+    const bandAngle = rng()*Math.PI*2;
+    const bx = Math.cos(bandAngle), by = Math.sin(bandAngle);
+    const k1 = lerp(1.1, 2.4, complex);
+    return (x,y)=>{
+      const u = (x*bx + y*by) * lerp(0.0032, 0.0014, smooth);
+      const v = (x*(-by) + y*(bx)) * lerp(0.0026, 0.0011, smooth);
+      const w = fbm(noise, u*90, v*90, Math.round(lerp(5,3,smooth)), 2.1, 0.62);
+      let t = 0.5 + 0.35*Math.sin((u*1.7 + w*k1)*Math.PI*2);
+      t = clamp(lerp(t, smoothstep(clamp(t,0,1)), 0.55), 0, 1);
+      const drift = fbm(noise, x*detailScale, y*detailScale, 4, 2.2, 0.6);
+      t = clamp(t + (drift-0.5)*0.12*complex, 0, 1);
+      t = clamp((t-0.5)*(1+contrast*1.0)+0.5,0,1);
+      return t;
+    };
+  }
+
+  if(pattern === "horizon"){
+    const horizon = lerp(0.52, 0.72, rng());
+    const bandW = lerp(0.10, 0.18, (1-smooth));
+    return (x,y)=>{
+      const ny = y/H;
+      let t = ny;
+      const glow = Math.exp(-Math.pow((ny - horizon)/(bandW||0.0001), 2));
+      const n = fbm(noise, x*baseScale, y*baseScale, oct, lac, gain);
+      t = clamp(t + (n-0.5)*0.16*complex, 0, 1);
+      t = clamp(lerp(t, 0.55, glow*0.35), 0, 1);
+      t = clamp((t-0.5)*(1+contrast*1.2)+0.5,0,1);
+      return t;
+    };
+  }
+
+  /* ----- Pinterest-like extras ----- */
+  if(pattern === "airbrush"){
+    const warpAmt = lerp(40, 120, complex);
+    const scale = lerp(0.0016, 0.00075, smooth);
+    return (x,y)=>{
+      let sx = x*scale, sy = y*scale;
+      const w1 = warp(noise, sx*120, sy*120, warpAmt);
+      const n = fbm(noise, w1.x, w1.y, Math.round(lerp(6,4,smooth)), 2.1, 0.62);
+      let t = lerp(n, smoothstep(n), 0.78 + smooth*0.2);
+      t = clamp((t-0.5)*(1+contrast*0.55)+0.5, 0, 1);
+      return t;
+    };
+  }
+
+  if(pattern === "smear"){
+    const ang = rng()*Math.PI*2;
+    const ax = Math.cos(ang), ay = Math.sin(ang);
+    const bandFreq = lerp(1.6, 3.4, complex);
+    const scale = lerp(0.0020, 0.0010, smooth);
+    return (x,y)=>{
+      const u = (x*ax + y*ay) * scale;
+      const v = (x*(-ay) + y*(ax)) * scale;
+      const n = fbm(noise, u*140, v*140, 4, 2.1, 0.62);
+      let t = 0.5 + 0.35*Math.sin((u*bandFreq + n*1.6)*Math.PI*2);
+      t = lerp(t, smoothstep(clamp(t,0,1)), 0.68 + smooth*0.2);
+      t = clamp((t-0.5)*(1+contrast*0.8)+0.5, 0, 1);
+      return t;
+    };
+  }
+
+  if(pattern === "watercolor"){
+    const scale = lerp(0.0019, 0.00085, smooth);
+    const warpAmt = lerp(60, 180, complex);
+    return (x,y)=>{
+      let sx = x*scale, sy = y*scale;
+      const w1 = warp(noise, sx*110, sy*110, warpAmt);
+      const base = fbm(noise, w1.x, w1.y, 5, 2.05, 0.62);
+
+      const eps = 0.8;
+      const b2 = fbm(noise, w1.x+eps, w1.y, 5, 2.05, 0.62);
+      const b3 = fbm(noise, w1.x, w1.y+eps, 5, 2.05, 0.62);
+      const edge = clamp(Math.abs(b2-base) + Math.abs(b3-base), 0, 1);
+
+      let t = lerp(base, smoothstep(base), 0.60 + smooth*0.25);
+      t = clamp(t + (edge-0.12)*0.55*complex, 0, 1);
+      t = clamp((t-0.5)*(1+contrast*0.65)+0.5, 0, 1);
+      return t;
+    };
+  }
+
+  if(pattern === "target"){
+    const cx2 = W*(0.25 + rng()*0.5);
+    const cy2 = H*(0.25 + rng()*0.5);
+    const scale = lerp(0.015, 0.006, smooth);
+    const ring = lerp(2.4, 5.2, complex);
+    return (x,y)=>{
+      const dx = (x-cx2)*scale, dy=(y-cy2)*scale;
+      const d = Math.sqrt(dx*dx + dy*dy);
+      const n = fbm(noise, x*0.002, y*0.002, 3, 2.0, 0.6);
+      let t = 0.5 + 0.45*Math.sin((d*ring + n*1.2)*Math.PI*2);
+      t = lerp(t, smoothstep(clamp(t,0,1)), 0.55 + smooth*0.25);
+      t = clamp((t-0.5)*(1+contrast*0.9)+0.5,0,1);
+      return t;
+    };
+  }
+
+  /* ----- mesh / grainy / iridescent base ----- */
+  const heavyWarp = lerp(30, 150, complex);
+  const rings = (pattern === "mesh") ? lerp(0.0, 0.45, complex) : lerp(0.0, 0.22, complex);
+
+  return (x,y)=>{
+    let sx = x*baseScale, sy = y*baseScale;
+    const w1 = warp(noise, sx*120, sy*120, heavyWarp);
+    const w2 = warp(noise, w1.x*0.85, w1.y*0.85, heavyWarp*0.6);
+    const dx = w2.x, dy = w2.y;
+
+    let n = fbm(noise, dx, dy, Math.round(lerp(7,4,smooth)), lac, gain);
+
+    if(pattern === "iridescent"){
+      const wave = 0.5 + 0.5*Math.sin((n*2.6 + fbm(noise, dx*1.7, dy*1.7, 3, 2.0, 0.6))*Math.PI*2);
+      n = lerp(n, wave, 0.55);
+    }
+
+    if(rings>0){
+      const ddx = x - cx, ddy = y - cy;
+      const d = Math.sqrt(ddx*ddx + ddy*ddy) * lerp(0.010, 0.004, smooth);
+      const ring = 0.5 + 0.5*Math.sin((d + n*2.2)*Math.PI*2);
+      n = lerp(n, ring, rings*0.35);
+    }
+
+    n = clamp((n-0.5)*(1+contrast*1.6)+0.5, 0, 1);
+    if(smooth > 0.45) n = lerp(n, smoothstep(n), 0.55);
+    return n;
+  };
+}
+
+/* ========= Post effects ========= */
+function applyGrain(rgb, amount, rng){
+  if(amount<=0) return rgb;
+  const a = amount * 18;
+  const g = (rng()*2-1) * a;
+  return {
+    r: clamp(Math.round(rgb.r + g),0,255),
+    g: clamp(Math.round(rgb.g + g),0,255),
+    b: clamp(Math.round(rgb.b + g),0,255),
+  };
+}
+function vignetteFactor(x,y,W,H,amount){
+  if(amount<=0) return 1;
+  const nx = (x/W - 0.5);
+  const ny = (y/H - 0.5);
+  const d = Math.sqrt(nx*nx + ny*ny) / 0.7071;
+  const v = clamp(1 - d*d*amount*0.9, 0.2, 1);
+  return v;
+}
+function applyPaper(rgb, x, y, W, H, noise, amount, withFold){
+  if(amount<=0) return rgb;
+
+  const fx = fbm(noise, x*0.018, y*0.018, 2, 2.0, 0.6);
+  const fy = fbm(noise, x*0.06,  y*0.01,  2, 2.0, 0.6);
+  const fiber = (fx*0.55 + fy*0.45) - 0.5;
+  const k = 1 + fiber * (0.20*amount);
+  rgb = mulRgb(rgb, k);
+
+  if(withFold){
+    const nx = x/W, ny=y/H;
+    const c1 = Math.abs((nx*0.85 + ny*0.15) - 0.52);
+    const c2 = Math.abs((nx*0.25 + ny*0.75) - 0.60);
+    const crease = Math.exp(-Math.pow(c1/0.010,2)) + 0.7*Math.exp(-Math.pow(c2/0.012,2));
+    const creaseK = 1 - crease * (0.20*amount);
+    rgb = mulRgb(rgb, creaseK);
+  }
+  return rgb;
+}
+function applyWhiteness(rgb, w){
+  // w: 0..1
+  if(w<=0) return rgb;
+  const white = {r:255,g:255,b:255};
+  // slightly softer curve (more “powdery”)
+  const ww = Math.pow(w, 0.85);
+  return mixRgb(rgb, white, ww);
+}
+
+/* ========= Title suggestion ========= */
+const NAME_BANK = {
+  airbrush: ["Airbrush Bloom","Soft Dust","Powder Drift","Velvet Blur","Cloud Tint","Pastel Breath","Melted Daylight"],
+  mesh: ["Soft Bloom","Melted Color","Velvet Field","Pastel Drift","Liquid Light","Cloud Study","Satin Mist"],
+  smear: ["Smear Light","Brush Fade","Diagonal Hush","Soft Stroke","Painted Air","Ribbon Smear","Milk Sweep"],
+  watercolor: ["Water Bleed","Paper Wash","Wet Edge","Soft Stain","Blush Pool","Washed Light","Dye Drift"],
+  target: ["Target Glow","Soft Rings","Bullseye","Halo Study","Orbit Tint","Center Fade","Ring Bloom"],
+  aurora: ["Neon Veil","Aurora Tape","Ribbon Night","Polar Drift","Glow Band","Sky Ribbon","Electric Hush"],
+  horizon: ["Blue Hour","Afterglow","Horizon Fade","City Dusk","Where Night Begins","Duskline","Gold Line"],
+  iridescent: ["Holo Sheen","Iridescent Tide","Pearl Drift","Chromatic Skin","Prism Wave","Oil Slick","Luminous Film"],
+  grainy: ["Film Gradient","Grain Study","Analog Glow","Soft Noise","Dusty Light","Night Grain","Faded Bloom"],
+  conic: ["Chromatic Spin","Spiral Hue","Turntable","Rotation","Cone Light","Loop","Orbital"],
+  linear: ["Gradient Line","Sky Slide","Soft Shift","Slope","Drift Line","Fade Lane","Axis"],
+};
+function suggestTitle(pattern, rng){
+  const bank = NAME_BANK[pattern] || ["Gradient Study","Color Field","Vibe"];
+  const a = bank[randInt(rng,0,bank.length-1)];
+  const suffix = ["I","II","III","A","B","C"][randInt(rng,0,5)];
+  return rng() < 0.55 ? `${a} ${suffix}` : a;
+}
+
+/* ========= App wiring ========= */
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const statusPill = document.getElementById("statusPill");
+
+const patternSel = document.getElementById("patternSel");
+const paperSel = document.getElementById("paperSel");
+const sizeSel = document.getElementById("sizeSel");
+const stopCountSel = document.getElementById("stopCountSel");
+
+const smoothRange = document.getElementById("smoothRange");
+const complexRange = document.getElementById("complexRange");
+const contrastRange = document.getElementById("contrastRange");
+const grainRange = document.getElementById("grainRange");
+const vignetteRange = document.getElementById("vignetteRange");
+const whiteRange = document.getElementById("whiteRange");
+
+const smoothVal = document.getElementById("smoothVal");
+const complexVal = document.getElementById("complexVal");
+const contrastVal = document.getElementById("contrastVal");
+const grainVal = document.getElementById("grainVal");
+const vignetteVal = document.getElementById("vignetteVal");
+const whiteVal = document.getElementById("whiteVal");
+
+const genBtn = document.getElementById("genBtn");
+const variantBtn = document.getElementById("variantBtn");
+const exportBtn = document.getElementById("exportBtn");
+
+const stopBar = document.getElementById("stopBar");
+const stopList = document.getElementById("stopList");
+const randPaletteBtn = document.getElementById("randPaletteBtn");
+const shuffleStopsBtn = document.getElementById("shuffleStopsBtn");
+const addStopBtn = document.getElementById("addStopBtn");
+const normalizeBtn = document.getElementById("normalizeBtn");
+
+const nameInput = document.getElementById("nameInput");
+const tagsInput = document.getElementById("tagsInput");
+const suggestBtn = document.getElementById("suggestBtn");
+const saveBtn = document.getElementById("saveBtn");
+const clearBtn = document.getElementById("clearBtn");
+
+const favOffBtn = document.getElementById("favOffBtn");
+const favOnBtn = document.getElementById("favOnBtn");
+
+const galleryEl = document.getElementById("gallery");
+const sortSel = document.getElementById("sortSel");
+const searchInput = document.getElementById("searchInput");
+const onlyFavBtn = document.getElementById("onlyFavBtn");
+const resetFilterBtn = document.getElementById("resetFilterBtn");
+
+let currentFav = false;
+let filterOnlyFav = false;
+let current = null; // { seed, pattern, size, params, stops, thumb }
+
+/* ========= UI helpers ========= */
+function setStatus(text){ statusPill.textContent = text; }
+function setFavUI(isFav){
+  currentFav = !!isFav;
+  if(currentFav){
+    favOnBtn.classList.add("on");
+    favOffBtn.classList.remove("on");
+  }else{
+    favOffBtn.classList.add("on");
+    favOnBtn.classList.remove("on");
+  }
+}
+function parseTags(s){
+  const raw = (s||"").trim();
+  if(!raw) return [];
+  const parts = raw.replace(/，/g,",")
+    .split(/[\s,]+/g)
+    .map(x=>x.trim())
+    .filter(Boolean)
+    .map(x=> x.startsWith("#") ? x.slice(1) : x);
+  const uniq = [];
+  for(const p of parts){
+    const t = p.slice(0,24);
+    if(t && !uniq.includes(t)) uniq.push(t);
+  }
+  return uniq.slice(0,12);
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ========= Params ========= */
+function readParams(){
+  return {
+    smooth: parseInt(smoothRange.value,10)/100,
+    complex: parseInt(complexRange.value,10)/100,
+    contrast: parseInt(contrastRange.value,10)/100,
+    grain: parseInt(grainRange.value,10)/100,
+    vignette: parseInt(vignetteRange.value,10)/100,
+    white: parseInt(whiteRange.value,10)/100,
+  };
+}
+function updateParamLabels(){
+  smoothVal.textContent = smoothRange.value;
+  complexVal.textContent = complexRange.value;
+  contrastVal.textContent = contrastRange.value;
+  grainVal.textContent = grainRange.value;
+  vignetteVal.textContent = vignetteRange.value;
+  whiteVal.textContent = whiteRange.value;
+}
+
+/* ========= Palette Editor state ========= */
+let stops = ensureStopBounds(randomStops("boot", parseInt(stopCountSel.value,10)||7, patternSel.value));
+let dragIndex = -1;
+
+function normalizeStops(){
+  const n = stops.length;
+  if(n <= 1) return;
+  for(let i=0;i<n;i++) stops[i].pos = i/(n-1);
+  ensureStopBounds(stops);
+}
+function shuffleStopColors(){
+  const rng = makeRng((current?.seed || Date.now().toString(36)) + "|shuffle|" + Date.now().toString(36));
+  const colors = stops.map(s=>s.hex);
+  for(let i=colors.length-1;i>0;i--){
+    const j = Math.floor(rng()*(i+1));
+    const t = colors[i]; colors[i]=colors[j]; colors[j]=t;
+  }
+  stops.forEach((s,i)=> s.hex = colors[i]);
+}
+function renderStopEditor(){
+  ensureStopBounds(stops);
+  stopBar.style.background = stopsToCss(stops);
+  stopBar.innerHTML = "";
+
+  stops.forEach((s, idx)=>{
+    const h = document.createElement("div");
+    h.className = "stopHandle";
+    h.style.left = (s.pos*100) + "%";
+    h.style.background = s.hex;
+    h.title = `${idx+1}: ${s.hex} @ ${(s.pos*100).toFixed(1)}%`;
+    h.dataset.idx = String(idx);
+    stopBar.appendChild(h);
+  });
+
+  stopList.innerHTML = "";
+  stops.forEach((s, idx)=>{
+    const item = document.createElement("div");
+    item.className = "stopItem";
+    item.innerHTML = `
+      <div class="stopLeft">
+        <div class="chip" style="background:${s.hex}"></div>
+        <div class="stopMeta">
+          <div class="small">${escapeHtml(s.hex)}</div>
+          <div class="tiny">${(s.pos*100).toFixed(1)}%</div>
+        </div>
+      </div>
+      <div class="stopBtns">
+        <input type="color" value="${s.hex}" data-act="color" data-idx="${idx}">
+        <button class="ghost" data-act="left" data-idx="${idx}">◀</button>
+        <button class="ghost" data-act="right" data-idx="${idx}">▶</button>
+        <button class="danger" data-act="del" data-idx="${idx}">Del</button>
+      </div>
+    `;
+    stopList.appendChild(item);
+  });
+}
+
+/* ========= Stop dragging ========= */
+stopBar.addEventListener("mousedown", (e)=>{
+  const t = e.target.closest(".stopHandle");
+  if(!t) return;
+  dragIndex = parseInt(t.dataset.idx,10);
+});
+window.addEventListener("mouseup", ()=>{ dragIndex = -1; });
+window.addEventListener("mousemove", (e)=>{
+  if(dragIndex < 0) return;
+  const rect = stopBar.getBoundingClientRect();
+  const p = clamp((e.clientX - rect.left)/rect.width, 0, 1);
+  if(dragIndex===0) return;
+  if(dragIndex===stops.length-1) return;
+  stops[dragIndex].pos = p;
+  ensureStopBounds(stops);
+  renderStopEditor();
+  renderCurrent();
+});
+
+/* ========= Stop list actions ========= */
+stopList.addEventListener("input", (e)=>{
+  const el = e.target;
+  if(el?.dataset?.act === "color"){
+    const idx = parseInt(el.dataset.idx,10);
+    stops[idx].hex = el.value;
+    renderStopEditor();
+    renderCurrent();
+  }
+});
+stopList.addEventListener("click", (e)=>{
+  const btn = e.target.closest("button");
+  if(!btn) return;
+  const act = btn.dataset.act;
+  const idx = parseInt(btn.dataset.idx,10);
+
+  if(act === "del"){
+    if(stops.length <= 2) return;
+    if(idx===0 || idx===stops.length-1) return;
+    stops.splice(idx,1);
+    renderStopEditor();
+    renderCurrent();
+    return;
+  }
+  if(act === "left" && idx>1){
+    const t = stops[idx-1]; stops[idx-1]=stops[idx]; stops[idx]=t;
+    renderStopEditor(); renderCurrent(); return;
+  }
+  if(act === "right" && idx<stops.length-2){
+    const t = stops[idx+1]; stops[idx+1]=stops[idx]; stops[idx]=t;
+    renderStopEditor(); renderCurrent(); return;
+  }
+});
+
+/* ========= Render gradient ========= */
+function renderGradient({seed, pattern, size, params, stops}){
+  canvas.width = size;
+  canvas.height = size;
+
+  const rngPx = makeRng(seed + "|px");
+  const noise = makeValueNoise2D(seed + "|noise");
+  const W = size, H = size;
+
+  const field = buildField(pattern, noise, W, H, params, makeRng(seed+"|pattern"));
+
+  const img = ctx.createImageData(W,H);
+  const data = img.data;
+
+  let grainAmt = params.grain;
+  if(pattern === "grainy") grainAmt = clamp(grainAmt + 0.10, 0, 1);
+  if(pattern === "iridescent") grainAmt = clamp(grainAmt + 0.05, 0, 1);
+
+  const vignetteAmt = params.vignette;
+  const whiteAmt = params.white;
+
+  const paperMode = paperSel ? paperSel.value : "off";
+  const paperOn = (paperMode !== "off");
+  const paperFold = (paperMode === "fold");
+
+  let p = 0;
+  for(let y=0;y<H;y++){
+    for(let x=0;x<W;x++){
+      let t = field(x,y);
+      t = lerp(t, smoothstep(t), params.smooth*0.35);
+
+      let rgb = sampleStops(stops, t);
+
+      // whiteness (powdery / pastel)
+      rgb = applyWhiteness(rgb, whiteAmt);
+
+      // vignette
+      const vf = vignetteFactor(x,y,W,H,vignetteAmt);
+      rgb = mulRgb(rgb, vf);
+
+      // paper texture
+      if(paperOn){
+        rgb = applyPaper(rgb, x, y, W, H, noise, 0.65, paperFold);
+      }
+
+      // grain
+      rgb = applyGrain(rgb, grainAmt, rngPx);
+
+      data[p++] = rgb.r;
+      data[p++] = rgb.g;
+      data[p++] = rgb.b;
+      data[p++] = 255;
+    }
+  }
+
+  ctx.putImageData(img,0,0);
+  return canvas.toDataURL("image/png");
+}
+
+function renderCurrent(){
+  if(!current) return;
+  current.thumb = renderGradient({
+    seed: current.seed,
+    pattern: current.pattern,
+    size: current.size,
+    params: current.params,
+    stops: current.stops
+  });
+}
+
+/* ========= Generation orchestration ========= */
+function generate(seedOverride=null, isVariant=false){
+  const pattern = patternSel.value;
+  const size = parseInt(sizeSel.value,10) || 900;
+
+  let seed = seedOverride ?? (Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,8));
+  if(isVariant && current?.seed) seed = current.seed;
+
+  let params = readParams();
+
+  if(isVariant){
+    const rr = makeRng(seed+"|variant|"+Date.now().toString(36));
+    const nudge = (x)=> clamp(x + (rr()*2-1)*0.06, 0, 1);
+    params = {
+      smooth: nudge(params.smooth),
+      complex: nudge(params.complex),
+      contrast: nudge(params.contrast),
+      grain: nudge(params.grain),
+      vignette: nudge(params.vignette),
+      white: nudge(params.white),
+    };
+  }
+
+  const stopCount = parseInt(stopCountSel.value,10) || 7;
+  if(!isVariant || !stops || stops.length !== stopCount){
+    stops = ensureStopBounds(randomStops(seed, stopCount, pattern));
+    normalizeStops();
+  }
+
+  const thumb = renderGradient({seed, pattern, size, params, stops});
+
+  current = { seed, pattern, size, params, stops: structuredClone(stops), thumb };
+  renderStopEditor();
+
+  const nameRng = makeRng(seed + "|name|" + pattern);
+  nameInput.value = suggestTitle(pattern, nameRng);
+
+  setFavUI(false);
+  setStatus(isVariant ? "Variant generated" : "Generated");
+}
+
+function exportPng(){
+  if(!current) generate();
+  const a = document.createElement("a");
+  const safeTitle = (nameInput.value || "gradient").trim().replace(/[^a-zA-Z0-9_-]+/g,"-").slice(0,60);
+  a.download = `${safeTitle || "gradient"}.png`;
+  a.href = canvas.toDataURL("image/png");
+  a.click();
+  setStatus("Exported");
+}
+
+/* ========= Palette editor buttons ========= */
+randPaletteBtn.addEventListener("click", ()=>{
+  if(!current) generate();
+  const stopCount = parseInt(stopCountSel.value,10) || 7;
+  const pat = patternSel.value;
+  stops = ensureStopBounds(randomStops((current.seed+"|repal|"+Date.now().toString(36)), stopCount, pat));
+  normalizeStops();
+  current.stops = structuredClone(stops);
+  renderStopEditor();
+  current.params = readParams();
+  current.pattern = pat;
+  renderCurrent();
+  setStatus("Palette randomized");
+});
+shuffleStopsBtn.addEventListener("click", ()=>{
+  shuffleStopColors();
+  current.stops = structuredClone(stops);
+  renderStopEditor();
+  current.params = readParams();
+  renderCurrent();
+  setStatus("Stops shuffled");
+});
+addStopBtn.addEventListener("click", ()=>{
+  if(stops.length >= 24) return;
+  ensureStopBounds(stops);
+  let bestI = 0, bestGap = -1;
+  for(let i=0;i<stops.length-1;i++){
+    const gap = stops[i+1].pos - stops[i].pos;
+    if(gap > bestGap){ bestGap = gap; bestI = i; }
+  }
+  const mid = (stops[bestI].pos + stops[bestI+1].pos)/2;
+  const c = mixRgb(hexToRgb(stops[bestI].hex), hexToRgb(stops[bestI+1].hex), 0.5);
+  stops.splice(bestI+1, 0, {pos: mid, hex: rgbToHex(c.r,c.g,c.b)});
+  ensureStopBounds(stops);
+  current.stops = structuredClone(stops);
+  renderStopEditor();
+  current.params = readParams();
+  renderCurrent();
+  setStatus("Stop added");
+});
+normalizeBtn.addEventListener("click", ()=>{
+  normalizeStops();
+  current.stops = structuredClone(stops);
+  renderStopEditor();
+  current.params = readParams();
+  renderCurrent();
+  setStatus("Even spacing");
+});
+
+/* ========= Events ========= */
+function bindRange(r, out){
+  r.addEventListener("input", ()=>{ out.textContent = r.value; });
+}
+bindRange(smoothRange, smoothVal);
+bindRange(complexRange, complexVal);
+bindRange(contrastRange, contrastVal);
+bindRange(grainRange, grainVal);
+bindRange(vignetteRange, vignetteVal);
+bindRange(whiteRange, whiteVal);
+
+genBtn.addEventListener("click", ()=>generate(null,false));
+variantBtn.addEventListener("click", ()=>generate(null,true));
+exportBtn.addEventListener("click", exportPng);
+
+patternSel.addEventListener("change", ()=>generate(null,false));
+paperSel.addEventListener("change", ()=>{
+  if(!current) return generate(null,false);
+  current.params = readParams();
+  renderCurrent();
+  setStatus("Updated");
+});
+sizeSel.addEventListener("change", ()=>generate(null,false));
+stopCountSel.addEventListener("change", ()=>generate(null,false));
+
+[smoothRange, complexRange, contrastRange, grainRange, vignetteRange, whiteRange].forEach(el=>{
+  el.addEventListener("change", ()=>{
+    if(!current) return generate(null,false);
+    current.params = readParams();
+    current.pattern = patternSel.value;
+    current.size = parseInt(sizeSel.value,10) || 900;
+    current.stops = structuredClone(stops);
+    renderCurrent();
+    setStatus("Updated");
+  });
+});
+
+suggestBtn.addEventListener("click", ()=>{
+  const pattern = patternSel.value;
+  const rng = makeRng((current?.seed || Date.now().toString(36)) + "|name2|" + pattern + "|" + Date.now().toString(36));
+  nameInput.value = suggestTitle(pattern, rng);
+  setStatus("Title suggested");
+});
+
+saveBtn.addEventListener("click", saveCurrent);
+clearBtn.addEventListener("click", clearAll);
+
+favOffBtn.addEventListener("click", ()=>setFavUI(false));
+favOnBtn.addEventListener("click", ()=>setFavUI(true));
+
+sortSel.addEventListener("change", renderGallery);
+searchInput.addEventListener("input", renderGallery);
+
+onlyFavBtn.addEventListener("click", ()=>{
+  filterOnlyFav = !filterOnlyFav;
+  onlyFavBtn.textContent = filterOnlyFav ? "★ only ✓" : "★ only";
+  setStatus(filterOnlyFav ? "Filter: favorites" : "Filter: all");
+  renderGallery();
+});
+resetFilterBtn.addEventListener("click", ()=>{
+  searchInput.value = "";
+  filterOnlyFav = false;
+  onlyFavBtn.textContent = "★ only";
+  sortSel.value = "new";
+  setStatus("Reset");
+  renderGallery();
+});
+
+/* ========= Gallery storage ========= */
+const KEY = "gradient_vibe_gallery_v2_whiteness";
+function loadGallery(){
+  try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
+  catch { return []; }
+}
+function saveGallery(items){
+  localStorage.setItem(KEY, JSON.stringify(items));
+}
+function nowISO(){ return new Date().toISOString(); }
+
+function saveCurrent(){
+  if(!current) generate();
+  const title = (nameInput.value || "").trim();
+  if(!title){ setStatus("Please enter a title"); nameInput.focus(); return; }
+
+  const tags = parseTags(tagsInput.value);
+
+  current.stops = structuredClone(stops);
+  current.pattern = patternSel.value;
+  current.size = parseInt(sizeSel.value,10) || 900;
+  current.params = readParams();
+  current.thumb = canvas.toDataURL("image/png");
+
+  const item = {
+    id: crypto?.randomUUID?.() ?? (Date.now().toString(36) + Math.random().toString(36).slice(2,8)),
+    title,
+    tags,
+    favorite: currentFav,
+    createdAt: nowISO(),
+    thumb: current.thumb,
+    recipe: {
+      seed: current.seed,
+      pattern: current.pattern,
+      size: current.size,
+      params: current.params,
+      stops: current.stops,
+      paper: paperSel.value
+    }
+  };
+
+  const items = loadGallery();
+  items.unshift(item);
+  saveGallery(items);
+
+  setStatus("Saved ✓");
+  renderGallery();
+}
+function clearAll(){
+  if(!confirm("Delete ALL saved works?")) return;
+  localStorage.removeItem(KEY);
+  renderGallery();
+  setStatus("Cleared");
+}
+function sortItems(items){
+  const mode = sortSel.value;
+  const copy = items.slice();
+  if (mode === "new") copy.sort((a,b)=> b.createdAt.localeCompare(a.createdAt));
+  if (mode === "old") copy.sort((a,b)=> a.createdAt.localeCompare(b.createdAt));
+  if (mode === "name") copy.sort((a,b)=> (a.title||"").localeCompare(b.title||""));
+  if (mode === "fav") copy.sort((a,b)=> (b.favorite===true) - (a.favorite===true) || b.createdAt.localeCompare(a.createdAt));
+  return copy;
+}
+function applyFilters(items){
+  const q = (searchInput.value||"").trim().toLowerCase();
+  let out = items;
+  if(filterOnlyFav) out = out.filter(x=>x.favorite===true);
+  if(q){
+    out = out.filter(x=>{
+      const t = (x.title||"").toLowerCase();
+      const tags = (x.tags||[]).join(" ").toLowerCase();
+      return t.includes(q) || tags.includes(q);
+    });
+  }
+  return out;
+}
+function renderGallery(){
+  let items = loadGallery();
+  items = sortItems(items);
+  items = applyFilters(items);
+
+  galleryEl.innerHTML = "";
+
+  if(items.length === 0){
+    const p = document.createElement("p");
+    p.className = "hint";
+    p.textContent = "No items found. Generate something and Save.";
+    galleryEl.appendChild(p);
+    return;
+  }
+
+  for(const it of items){
+    const card = document.createElement("div");
+    card.className = "thumb";
+    const star = it.favorite ? `<span class="star">★</span>` : `<span style="color:#71798f">☆</span>`;
+    const tagsHtml = (it.tags||[]).map(t=>`<span class="tagChip">#${escapeHtml(t)}</span>`).join("");
+
+    card.innerHTML = `
+      <img src="${it.thumb}" alt="${escapeHtml(it.title)}" />
+      <div class="meta">
+        <p class="title">${star}<span>${escapeHtml(it.title)}</span></p>
+        <p class="small">${new Date(it.createdAt).toLocaleString()}</p>
+        <div class="tags">${tagsHtml || `<span class="tagChip">no tags</span>`}</div>
+        <div class="actions">
+          <button data-act="load" data-id="${it.id}">Load</button>
+          <button data-act="toggleFav" data-id="${it.id}">${it.favorite ? "Unfavorite" : "Favorite"}</button>
+          <button class="ghost" data-act="dup" data-id="${it.id}">Duplicate</button>
+          <button class="danger" data-act="del" data-id="${it.id}">Delete</button>
+        </div>
+      </div>
+    `;
+    galleryEl.appendChild(card);
+  }
+}
+galleryEl.addEventListener("click", (e)=>{
+  const btn = e.target.closest("button");
+  if(!btn) return;
+  const act = btn.dataset.act;
+  const id = btn.dataset.id;
+
+  const items = loadGallery();
+  const idx = items.findIndex(x=>x.id===id);
+  if(idx < 0) return;
+
+  if(act === "load"){
+    const it = items[idx];
+    const r = it.recipe;
+
+    patternSel.value = r.pattern;
+    sizeSel.value = String(r.size);
+
+    smoothRange.value = String(Math.round((r.params.smooth||0)*100));
+    complexRange.value = String(Math.round((r.params.complex||0)*100));
+    contrastRange.value = String(Math.round((r.params.contrast||0)*100));
+    grainRange.value = String(Math.round((r.params.grain||0)*100));
+    vignetteRange.value = String(Math.round((r.params.vignette||0)*100));
+    whiteRange.value = String(Math.round((r.params.white||0)*100));
+    updateParamLabels();
+
+    paperSel.value = r.paper || "off";
+
+    stops = ensureStopBounds(structuredClone(r.stops || randomStops(r.seed, parseInt(stopCountSel.value,10)||7, r.pattern)));
+    renderStopEditor();
+
+    current = { seed:r.seed, pattern:r.pattern, size:r.size, params:r.params, stops: structuredClone(stops), thumb: it.thumb };
+    renderCurrent();
+
+    nameInput.value = it.title || "";
+    tagsInput.value = (it.tags||[]).map(t=>"#"+t).join(" ");
+    setFavUI(!!it.favorite);
+
+    setStatus("Loaded");
+  }
+
+  if(act === "toggleFav"){
+    items[idx].favorite = !items[idx].favorite;
+    saveGallery(items);
+    renderGallery();
+    setStatus(items[idx].favorite ? "Favorited" : "Unfavorited");
+  }
+
+  if(act === "dup"){
+    const copy = structuredClone(items[idx]);
+    copy.id = crypto?.randomUUID?.() ?? (Date.now().toString(36) + Math.random().toString(36).slice(2,8));
+    copy.title = copy.title + " (copy)";
+    copy.createdAt = nowISO();
+    items.unshift(copy);
+    saveGallery(items);
+    renderGallery();
+    setStatus("Duplicated");
+  }
+
+  if(act === "del"){
+    if(!confirm("Delete this item?")) return;
+    items.splice(idx,1);
+    saveGallery(items);
+    renderGallery();
+    setStatus("Deleted");
+  }
+});
+
+/* ========= Boot ========= */
+updateParamLabels();
+setFavUI(false);
+generate(null,false);
+renderGallery();
+</script>
+</body>
+</html>
+
+/* ===== UI Upgrade Pack ===== */
+
+/* Make canvas dominant */
+.grid{ grid-template-columns: 1.35fr 0.95fr; }
+@media (max-width: 980px){ .grid{grid-template-columns:1fr;} }
+
+.card{ padding:16px; }
+
+/* Header */
+header{ align-items:center; }
+h1{ font-size:18px; letter-spacing:.2px; }
+.sub{ font-size:12px; opacity:.9; }
+
+/* Controls feel */
+button, select, input{
+  border-radius: 14px;
+  border-color: rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+}
+button.primary{
+  background: linear-gradient(180deg, rgba(10,132,255,.92), rgba(10,132,255,.62));
+}
+
+/* iOS-like sliders */
+.rangeWrap{
+  border-radius: 16px;
+  background: rgba(255,255,255,.035);
+}
+.rangeWrap input[type="range"]{
+  width: 240px;
+  height: 18px;
+  -webkit-appearance:none;
+  appearance:none;
+}
+.rangeWrap input[type="range"]::-webkit-slider-runnable-track{
+  height: 4px;
+  background: rgba(255,255,255,.18);
+  border-radius: 999px;
+}
+.rangeWrap input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  appearance:none;
+  width: 18px;height: 18px;
+  border-radius: 999px;
+  margin-top: -7px;
+  background: rgba(255,255,255,.92);
+  border: 1px solid rgba(0,0,0,.25);
+  box-shadow: 0 10px 20px rgba(0,0,0,.45);
+}
+
+/* Canvas card look */
+canvas{
+  border-radius: 20px;
+  border-color: rgba(255,255,255,.14);
+  box-shadow: 0 28px 70px rgba(0,0,0,.55);
+}
+
+/* Palette editor: cleaner */
+.palEditor{ background: rgba(0,0,0,.16); border-radius: 18px; }
+.stopItem{ border-radius: 16px; }
+.stopBtns button{ padding:8px 10px; }
+
+/* Gallery: more “Pinterest” */
+.gallery{ gap:12px; }
+.thumb{ border-radius: 22px; }
+.thumb .meta{ padding:12px; }
+.thumb .tags{ display:none; }            /* ←いったん消す（スッキリ） */
+.thumb .actions{ display:none; }         /* ←いったん消す（スッキリ） */
+
+/* Show actions on hover (desktop) */
+.thumb:hover .actions{ display:flex; }
+.thumb:hover .tags{ display:flex; }
+
+/* Small UI text */
+.label{ letter-spacing:.2px; }
+.num{ border-radius: 999px; }
+<button id="toggleControlsBtn" class="ghost">Hide Controls</button>
+.controlsHidden .palEditor,
+.controlsHidden .sep,
+.controlsHidden .row,
+.controlsHidden .rangeWrap,
+.controlsHidden #nameInput,
+.controlsHidden #tagsInput{
+  display:none;
+}
+.controlsHidden canvas{ margin-top: 0; }
+

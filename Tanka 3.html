@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tanka Maker — MVP+</title>
+  <style>
+    :root{
+      --bg0:#070812;
+      --bg1:#0b1224;
+      --card: rgba(255,255,255,.08);
+      --line: rgba(255,255,255,.14);
+      --line2: rgba(255,255,255,.20);
+      --text:#eef2ff;
+      --muted:#b9c1dd;
+
+      --blue:#0a84ff;
+      --pink:#ff2d55;
+      --purple:#bf5af2;
+      --green:#30d158;
+      --orange:#ff9f0a;
+
+      --shadow: 0 22px 70px rgba(0,0,0,.55);
+      --radius: 18px;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; padding:20px;
+      color:var(--text);
+      font-family: system-ui, -apple-system, "SF Pro Display","SF Pro Text","Segoe UI", Arial;
+      background:
+        radial-gradient(900px 520px at 10% 0%, rgba(10,132,255,.25) 0%, transparent 60%),
+        radial-gradient(900px 520px at 88% 8%, rgba(255,45,85,.16) 0%, transparent 55%),
+        radial-gradient(900px 520px at 70% 95%, rgba(48,209,88,.10) 0%, transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap{max-width:900px;margin:0 auto}
+    header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:14px}
+    h1{margin:0;font-size:18px;letter-spacing:.2px}
+    .sub{margin-top:6px;color:var(--muted);font-size:12px;line-height:1.4}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 12px;border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.07);
+      backdrop-filter: blur(14px);
+      font-size:12px;color:var(--muted);
+      box-shadow: 0 12px 28px rgba(0,0,0,.35);
+      white-space:nowrap;
+    }
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      padding:14px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .sep{height:1px;background:rgba(255,255,255,.10);margin:12px 0}
+    .label{color:var(--muted);font-size:12px}
+
+    input, button{
+      border-radius:14px;
+      border:1px solid var(--line2);
+      background: rgba(255,255,255,.07);
+      color: var(--text);
+      padding:10px 12px;
+      font-size:13px;
+      outline:none;
+      box-shadow: 0 1px 0 rgba(255,255,255,.10) inset, 0 1px 2px rgba(0,0,0,.35);
+    }
+    input{min-width: 240px}
+    input.small{min-width: 210px}
+    button{cursor:pointer;user-select:none;transition: transform .05s ease, filter .15s ease}
+    button:hover{filter:brightness(1.06)}
+    button:active{transform: translateY(1px); filter:brightness(.98)}
+
+    /* macOS-ish colorful buttons */
+    .btn{
+      position:relative;
+      border-color: rgba(255,255,255,.16);
+      background: rgba(255,255,255,.06);
+    }
+    .btn.primary{
+      background: linear-gradient(180deg, rgba(10,132,255,.95), rgba(10,132,255,.62));
+      border-color: rgba(10,132,255,.55);
+      color:#fff;
+      box-shadow: 0 1px 0 rgba(255,255,255,.15) inset, 0 18px 40px rgba(10,132,255,.22);
+    }
+    .btn.variant{
+      background: linear-gradient(180deg, rgba(191,90,242,.95), rgba(191,90,242,.62));
+      border-color: rgba(191,90,242,.55);
+      color:#fff;
+      box-shadow: 0 1px 0 rgba(255,255,255,.15) inset, 0 18px 40px rgba(191,90,242,.18);
+    }
+    .btn.copy{
+      background: linear-gradient(180deg, rgba(48,209,88,.92), rgba(48,209,88,.56));
+      border-color: rgba(48,209,88,.55);
+      color:#fff;
+      box-shadow: 0 1px 0 rgba(255,255,255,.15) inset, 0 18px 40px rgba(48,209,88,.16);
+    }
+    .hint{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.45;
+    }
+    .hint strong{color:#fff}
+    .tanka{
+      margin-top:12px;
+      white-space:pre-line;
+      background: rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius: 16px;
+      padding:12px 14px;
+      font-size:18px;
+      line-height:2.0;
+      min-height:140px;
+    }
+    .mono{
+      margin-top:10px;
+      font-family: var(--mono);
+      font-size:12px;
+      color: var(--muted);
+      white-space:pre-wrap;
+    }
+    .warning{
+      border:1px solid rgba(255,159,10,.35);
+      background: rgba(255,159,10,.10);
+      color:#ffe6c7;
+      padding:10px 12px;
+      border-radius: 14px;
+      font-size:12px;
+      line-height:1.45;
+      display:none;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Tanka Maker</h1>
+        <div class="sub">Type one fixed word. We always generate a proper 5–7–5–7–7 tanka (mora-accurate). Everything else is serendipity.</div>
+      </div>
+      <div class="pill" id="status">Ready</div>
+    </header>
+
+    <section class="card">
+      <div class="row">
+        <span class="label">Fixed word (surface)</span>
+        <input id="fixedSurface" placeholder="e.g., くるま / 車 / さくら" />
+
+        <span class="label">Reading (hiragana)</span>
+        <input id="fixedReading" class="small" placeholder="e.g., くるま" />
+
+        <span class="label" id="autoHint" style="margin-left:auto">Auto: kana OK</span>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="row">
+        <button id="genBtn" class="btn primary">Generate</button>
+        <button id="variantBtn" class="btn variant">New Variant</button>
+        <button id="copyBtn" class="btn copy">Copy</button>
+      </div>
+
+      <div class="hint" style="margin-top:10px">
+        • If you type <strong>kana</strong> (ひらがな/カタカナ), reading is optional.<br/>
+        • If you type <strong>kanji</strong> (e.g., 車), please also fill <strong>Reading</strong> (e.g., くるま).
+      </div>
+
+      <div class="warning" id="warningBox"></div>
+
+      <div class="tanka" id="out"></div>
+      <div class="mono" id="meter"></div>
+    </section>
+  </div>
+
+<script>
+/* ===== UI handles ===== */
+const statusEl = document.getElementById("status");
+const outEl = document.getElementById("out");
+const meterEl = document.getElementById("meter");
+const warnEl = document.getElementById("warningBox");
+const fixedSurfaceEl = document.getElementById("fixedSurface");
+const fixedReadingEl = document.getElementById("fixedReading");
+const autoHintEl = document.getElementById("autoHint");
+
+function setStatus(t){ statusEl.textContent = t; }
+function showWarn(msg){
+  warnEl.style.display = "block";
+  warnEl.textContent = msg;
+}
+function clearWarn(){
+  warnEl.style.display = "none";
+  warnEl.textContent = "";
+}
+
+/* ===== Error surface ===== */
+window.addEventListener("error", (e)=>{
+  const msg = (e?.error?.stack || e?.message || "Unknown error");
+  setStatus("ERROR");
+  showWarn("JavaScript error:\n" + msg);
+  console.error(e);
+});
+
+/* ===== Mora counting (kana reading only) ===== */
+const SMALL = new Set("ゃゅょぁぃぅぇぉゎャュョァィゥェォヮ".split(""));
+function toHira(str){
+  return (str||"").replace(/[\u30a1-\u30f6]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0x60));
+}
+function countMora(reading){
+  const s = toHira((reading||"").trim());
+  if(!s) return 0;
+  let n = 0;
+  for(const ch of s){
+    if(ch === "ー"){ n++; continue; }
+    if(SMALL.has(ch)) continue;
+    if(ch.match(/[ぁ-ゖ]/)) n++;
+  }
+  return n;
+}
+function isKanaOnly(s){
+  const h = toHira((s||"").trim());
+  return !!h && /^[ぁ-ゖー]+$/.test(h);
+}
+
+/* ===== RNG ===== */
+function xmur3(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=(h<<13)|(h>>>19);}return function(){h=Math.imul(h^(h>>>16),2246822507);h=Math.imul(h^(h>>>13),3266489909);return (h^=(h>>>16))>>>0;};}
+function sfc32(a,b,c,d){return function(){a>>>=0;b>>>=0;c>>>=0;d>>>=0;let t=(a+b)|0;a=b^(b>>>9);b=(c+(c<<3))|0;c=(c<<21)|(c>>>11);d=(d+1)|0;t=(t+d)|0;c=(c+t)|0;return (t>>>0)/4294967296;};}
+function makeRng(seed){const s=xmur3(seed);return sfc32(s(),s(),s(),s());}
+function randi(rng,min,max){return Math.floor(rng()*(max-min+1))+min;}
+function pick(rng, arr){return arr[randi(rng,0,arr.length-1)];}
+
+/* ===== Word bank (surface + reading in hiragana) ===== */
+function W(surface, reading){ return {surface, reading}; }
+
+const NOUN = [
+  // 1–2 mora
+  W("め","め"), W("て","て"), W("ゆめ","ゆめ"), W("そら","そら"), W("うみ","うみ"),
+  W("みち","みち"), W("かげ","かげ"), W("いろ","いろ"), W("こえ","こえ"),
+  W("はな","はな"), W("くも","くも"), W("なみ","なみ"), W("かぜ","かぜ"),
+  W("よる","よる"), W("あさ","あさ"), W("ひる","ひる"), W("まど","まど"), W("まち","まち"),
+  W("つき","つき"), W("ほし","ほし"), W("あめ","あめ"), W("ゆき","ゆき"),
+
+  // 3 mora
+  W("ひかり","ひかり"), W("あかり","あかり"), W("けしき","けしき"), W("におい","におい"),
+  W("きおく","きおく"), W("てがみ","てがみ"), W("とけい","とけい"), W("ためいき","ためいき"),
+  W("こころ","こころ"), W("しずく","しずく"), W("こよい","こよい"), W("よあけ","よあけ"),
+  W("ゆうぐれ","ゆうぐれ"), W("まほう","まほう"),
+
+  // 4–5 mora
+  W("しずけさ","しずけさ"), W("なつかしさ","なつかしさ"), W("さくらいろ","さくらいろ"),
+  W("ほおずき","ほおずき"), W("まちあかり","まちあかり"), W("はるかぜ","はるかぜ"),
+  W("よぞら","よぞら"), W("ほしぞら","ほしぞら"),
+
+  // 6 mora+ (rare spice)
+  W("ゆめのつづき","ゆめのつづき"),
+  W("しずかなみち","しずかなみち"),
+];
+
+
+const VERB = [
+  // 2 mora
+  W("ある","ある"), W("いる","いる"), W("みる","みる"), W("まつ","まつ"), W("ねる","ねる"),
+  W("とぶ","とぶ"), W("さく","さく"),
+
+  // 3–4 mora
+  W("ゆれる","ゆれる"), W("ながれる","ながれる"), W("ほどける","ほどける"),
+  W("みつける","みつける"), W("おもいだす","おもいだす"),
+  W("ひらく","ひらく"), W("とじる","とじる"), W("うすれる","うすれる"),
+  W("のこる","のこる"), W("まざる","まざる"), W("にじむ","にじむ"),
+
+  // conjunctive forms (connect nicely)
+  W("みて","みて"), W("まって","まって"), W("ゆれて","ゆれて"), W("ながれて","ながれて"),
+  W("ほどけて","ほどけて"), W("ひらいて","ひらいて"), W("とじて","とじて"),
+  W("のこり","のこり"), W("にじんで","にじんで"),
+];
+
+
+const ADJ = [
+  // 3–5 mora mostly (good for meter)
+  W("やさしい","やさしい"),
+  W("さびしい","さびしい"),
+  W("あたたかい","あたたかい"),
+  W("つめたい","つめたい"),
+  W("ひそやか","ひそやか"),
+  W("まぶしい","まぶしい"),
+  W("なつかしい","なつかしい"),
+  W("ゆるやか","ゆるやか"),
+  W("あたらしい","あたらしい"),
+  W("くらい","くらい"),
+  W("あおい","あおい"),
+  W("あかい","あかい"),
+  W("ながい","ながい"),
+  W("ちいさい","ちいさい"),
+  W("おおきい","おおきい"),
+];
+
+
+const PART = [
+  W("の","の"), W("は","は"), W("が","が"), W("を","を"), W("に","に"), W("で","で"),
+  W("と","と"), W("も","も"), W("や","や"), W("へ","へ"),
+  W("から","から"), W("まで","まで"), W("だけ","だけ"), W("さえ","さえ"), W("こそ","こそ")
+];
+
+const CONN = [
+  W("そして","そして"),
+  W("けれど","けれど"),
+  W("それでも","それでも"),
+  W("だから","だから"),
+  W("いつか","いつか"),
+  W("いま","いま"),
+  W("もしも","もしも")
+];
+
+
+const TARGET = [5,7,5,7,7];
+
+const TEMPLATES = [
+  ["noun","part","noun"],
+  ["noun","part","verb"],
+  ["adj","noun"],
+  ["noun","verb"],
+  ["conn","noun","part","noun"],
+  ["noun","part","adj","noun"],
+  ["noun","part","noun","part","verb"],
+  ["conn","noun","verb"]
+];
+
+function poolFor(slot){
+  if(slot==="noun") return NOUN;
+  if(slot==="verb") return VERB;
+  if(slot==="adj")  return ADJ;
+  if(slot==="part") return PART;
+  if(slot==="conn") return CONN;
+  return NOUN;
+}
+function tokenMora(tok){ return countMora(tok.reading); }
+
+/* ===== Fixed word validation (A) ===== */
+function getFixedToken(){
+  const surface = (fixedSurfaceEl.value||"").trim();
+  const readingInput = (fixedReadingEl.value||"").trim();
+
+  if(!surface){
+    throw new Error("Please enter a fixed word.");
+  }
+
+  // If surface is kana, reading can be auto.
+  if(isKanaOnly(surface)){
+    autoHintEl.textContent = "Auto: kana OK";
+    const r = toHira(surface);
+    if(countMora(r) <= 0) throw new Error("Could not read the fixed word. Use hiragana.");
+    return {surface, reading: r};
+  }
+
+  // Surface contains non-kana (likely kanji). Require reading.
+  autoHintEl.textContent = "Kanji detected → reading required";
+  if(!readingInput){
+    throw new Error("Kanji detected. Please fill Reading in hiragana (e.g., 車 → くるま).");
+  }
+  const r = toHira(readingInput);
+  if(!isKanaOnly(r) || countMora(r) <= 0){
+    throw new Error("Reading must be hiragana/katakana (recommended: hiragana).");
+  }
+  return {surface, reading: r};
+}
+
+/* ===== Line builder (NO 'aaaa' fallback) ===== */
+function buildLineExact(targetMora, rng, fixedTok=null){
+  for(let attempt=0; attempt<1100; attempt++){
+    let tpl = pick(rng, TEMPLATES).slice();
+    if(fixedTok){
+      tpl.splice(randi(rng, 0, tpl.length), 0, "fixed");
+    }
+    const out = [];
+    let rem = targetMora;
+
+    function dfs(i){
+      if(i===tpl.length) return rem===0;
+
+      const slot = tpl[i];
+      if(slot==="fixed"){
+        const m = tokenMora(fixedTok);
+        if(m<=0 || m>rem) return false;
+        out.push(fixedTok); rem -= m;
+        const ok = dfs(i+1);
+        if(ok) return true;
+        rem += m; out.pop();
+        return false;
+      }
+
+      const pool = poolFor(slot);
+      const tries = (slot==="part") ? 12 : 22;
+
+      for(let k=0;k<tries;k++){
+        const tok = pool[randi(rng,0,pool.length-1)];
+        const m = tokenMora(tok);
+        if(m<=0 || m>rem) continue;
+        if(i===tpl.length-1 && slot==="part") continue;
+
+        out.push(tok); rem -= m;
+        if(dfs(i+1)) return true;
+        rem += m; out.pop();
+      }
+      return false;
+    }
+
+    if(dfs(0)){
+      const text = out.map(t=>t.surface).join("")
+        .replace(/(の)\1+/g,"の").replace(/(は)\1+/g,"は").replace(/(が)\1+/g,"が")
+        .replace(/(を)\1+/g,"を").replace(/(に)\1+/g,"に").replace(/(で)\1+/g,"で")
+        .replace(/(と)\1+/g,"と");
+      const reading = out.map(t=>t.reading).join("");
+      return {text, reading};
+    }
+  }
+
+  // No weird fallback text: show a real error.
+  throw new Error("Generation failed (rare). Please click Generate / New Variant again.");
+}
+
+/* ===== Generate tanka ===== */
+let lastSeedBase = null;
+let lastFixed = null;
+
+function generateTanka(seedBase, fixedTok){
+  const rng = makeRng(seedBase);
+  const fixedLine = randi(rng, 0, 4);
+
+  const lines = [];
+  for(let i=0;i<5;i++){
+    const needFixed = (i===fixedLine) ? fixedTok : null;
+    lines.push(buildLineExact(TARGET[i], makeRng(seedBase + "|L|" + i), needFixed));
+  }
+
+  // Ensure fixed surface appears (safety)
+  const whole = lines.map(l=>l.text).join("\n");
+  if(!whole.includes(fixedTok.surface)){
+    // force into line 3 (5 mora)
+    lines[2] = buildLineExact(5, makeRng(seedBase + "|force"), fixedTok);
+  }
+  return lines;
+}
+
+function show(lines){
+  const text = lines.map(l=>l.text).join("\n");
+  const meters = lines.map((l)=>countMora(l.reading)).join(" / ");
+  outEl.textContent = text;
+  meterEl.textContent = `meter: ${meters}  (target: 5 / 7 / 5 / 7 / 7)`;
+}
+
+function doGenerate(isVariant){
+  clearWarn();
+  const fixedTok = getFixedToken();
+  const base = (fixedTok.reading || "fixed") + "|mvp2";
+  const seedBase = isVariant && lastSeedBase
+    ? (lastSeedBase + "|v|" + Date.now().toString(36))
+    : (base + "|" + Date.now().toString(36) + "|" + Math.random().toString(36).slice(2,8));
+
+  const lines = generateTanka(seedBase, fixedTok);
+
+  lastSeedBase = seedBase;
+  lastFixed = fixedTok;
+
+  show(lines);
+  setStatus(isVariant ? "Variant ✓" : "Generated ✓");
+}
+
+/* ===== Buttons ===== */
+document.getElementById("genBtn").addEventListener("click", ()=>{
+  try{ doGenerate(false); }catch(e){ setStatus("Error"); showWarn(e.message || String(e)); }
+});
+document.getElementById("variantBtn").addEventListener("click", ()=>{
+  try{
+    // If no previous generation, just generate.
+    if(!lastSeedBase) doGenerate(false);
+    else doGenerate(true);
+  }catch(e){ setStatus("Error"); showWarn(e.message || String(e)); }
+});
+document.getElementById("copyBtn").addEventListener("click", async ()=>{
+  const text = outEl.textContent || "";
+  if(!text){ setStatus("Nothing to copy"); return; }
+  try{
+    await navigator.clipboard.writeText(text);
+    setStatus("Copied ✓");
+  }catch{
+    setStatus("Copy failed (permission)");
+    showWarn("Copy failed due to browser permission. Try selecting the text manually.");
+  }
+});
+
+/* ===== Live hint for kanji/kana ===== */
+function refreshHint(){
+  const s = (fixedSurfaceEl.value||"").trim();
+  if(!s){ autoHintEl.textContent = "Auto: kana OK"; return; }
+  if(isKanaOnly(s)){
+    autoHintEl.textContent = "Auto: kana OK";
+  }else{
+    autoHintEl.textContent = "Kanji detected → reading required";
+  }
+}
+fixedSurfaceEl.addEventListener("input", refreshHint);
+refreshHint();
+
+/* boot */
+try{
+  fixedSurfaceEl.value = "よる";
+  fixedReadingEl.value = "";
+  doGenerate(false);
+  setStatus("Ready ✓");
+}catch(e){
+  setStatus("Ready");
+}
+</script>
+</body>
+</html>

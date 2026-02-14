@@ -1,0 +1,1334 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Gradient Vibe Studio — Dark</title>
+  <style>
+    :root{
+      --bg0:#0b0d12;
+      --bg1:#0f1420;
+      --card: rgba(255,255,255,.06);
+      --text:#e7eaf0;
+      --muted:#a7afc2;
+      --line: rgba(255,255,255,.10);
+      --line2: rgba(255,255,255,.16);
+      --accent:#0a84ff;
+      --accent2:#2bd1ff;
+      --danger:#ff453a;
+      --ok:#30d158;
+      --shadow: 0 18px 48px rgba(0,0,0,.55);
+      --radius: 18px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      color:var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display","SF Pro Text","Segoe UI", Arial;
+      background:
+        radial-gradient(900px 520px at 12% 0%, rgba(10,132,255,.18) 0%, transparent 60%),
+        radial-gradient(900px 520px at 85% 15%, rgba(43,209,255,.12) 0%, transparent 60%),
+        radial-gradient(1200px 800px at 50% 100%, rgba(255,149,0,.08) 0%, transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .wrap{max-width:1200px;margin:0 auto;padding:18px;}
+    header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:12px;}
+    h1{margin:0;font-size:20px;letter-spacing:0.2px}
+    .sub{color:var(--muted);font-size:12px;margin-top:4px;line-height:1.4}
+    .pill{
+      display:inline-flex;gap:8px;align-items:center;
+      padding:8px 12px;border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      backdrop-filter: blur(14px);
+      font-size:12px;color:var(--muted);
+      box-shadow: 0 10px 26px rgba(0,0,0,.35);
+      white-space:nowrap;
+    }
+    .grid{display:grid;grid-template-columns: 1.15fr 1fr;gap:14px}
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr;} }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      padding:14px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .row.tight{gap:8px}
+    .label{color:var(--muted);font-size:12px}
+    .sep{height:1px;background:var(--line);margin:12px 0}
+
+    button, select, input, .slider{
+      border:1px solid var(--line2);
+      padding:10px 12px;
+      border-radius: 12px;
+      font-size:13px;
+      outline:none;
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
+      color: var(--text);
+      box-shadow: 0 1px 0 rgba(255,255,255,.08) inset, 0 1px 2px rgba(0,0,0,.35);
+    }
+    input{min-width: 220px}
+    select{cursor:pointer}
+    button{
+      cursor:pointer;
+      transition: transform .05s ease, filter .15s ease, background .15s ease;
+      user-select:none;
+    }
+    button:hover{filter:brightness(1.06)}
+    button:active{transform: translateY(1px); filter:brightness(.98)}
+    button.primary{
+      background: linear-gradient(180deg, rgba(10,132,255,.95), rgba(10,132,255,.70));
+      border-color: rgba(10,132,255,.45);
+      color:#fff;
+      box-shadow: 0 1px 0 rgba(255,255,255,.12) inset, 0 18px 38px rgba(10,132,255,.18);
+    }
+    button.ghost{
+      background: rgba(255,255,255,.04);
+      box-shadow:none;
+    }
+    button.danger{
+      border-color: rgba(255,69,58,.55);
+      color: #ffd2cf;
+      background: rgba(255,69,58,.10);
+    }
+
+    .rangeWrap{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      padding:10px 12px;
+      border-radius: 14px;
+    }
+    .rangeWrap input[type="range"]{
+      border:none; box-shadow:none; background:transparent; padding:0;
+      width: 220px;
+    }
+    .num{
+      font-family: var(--mono);
+      color:#dbe2f3;
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.18);
+    }
+
+    canvas{
+      width:100%;height:auto;
+      border-radius: 16px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.25);
+    }
+    .hint{color:var(--muted);font-size:12px;line-height:1.45;margin:10px 0 0}
+    .paletteRow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+    .sw{
+      width:22px;height:22px;border-radius:8px;
+      border:1px solid rgba(255,255,255,.18);
+      box-shadow: 0 1px 0 rgba(255,255,255,.08) inset, 0 10px 18px rgba(0,0,0,.35);
+    }
+    .badge{
+      font-size:12px;color:var(--muted);
+      padding:6px 10px;border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+    }
+
+    /* Gallery */
+    .gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    @media (max-width: 900px){ .gallery{grid-template-columns:repeat(2,1fr)} }
+    @media (max-width: 560px){ .gallery{grid-template-columns:1fr} }
+    .thumb{
+      border:1px solid var(--line);
+      border-radius: 18px;
+      overflow:hidden;
+      background: rgba(255,255,255,.05);
+      box-shadow: 0 18px 44px rgba(0,0,0,.45);
+    }
+    .thumb img{display:block;width:100%;height:auto}
+    .thumb .meta{padding:10px}
+    .thumb .title{font-size:13px;margin:0 0 6px 0;display:flex;align-items:center;gap:6px}
+    .star{color:#ffd60a}
+    .thumb .small{font-size:12px;color:var(--muted);margin:0}
+    .thumb .tags{font-size:12px;color:var(--muted);margin:8px 0 0;display:flex;flex-wrap:wrap;gap:6px}
+    .tagChip{
+      border:1px solid var(--line);
+      padding:4px 8px;border-radius:999px;
+      background: rgba(255,255,255,.04);
+    }
+    .thumb .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+    .thumb .actions button{padding:8px 10px;border-radius:12px}
+
+    .searchBar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+    .searchBar input{flex:1;min-width:200px}
+
+    .seg{
+      display:inline-flex;
+      border:1px solid var(--line2);
+      border-radius: 12px;
+      overflow:hidden;
+      background: rgba(255,255,255,.05);
+      box-shadow: 0 1px 0 rgba(255,255,255,.08) inset, 0 1px 2px rgba(0,0,0,.35);
+    }
+    .seg button{
+      border:none;
+      border-right:1px solid var(--line2);
+      border-radius:0;
+      padding:10px 12px;
+      background:transparent;
+      color:var(--muted);
+      box-shadow:none;
+    }
+    .seg button:last-child{border-right:none}
+    .seg button.on{
+      background: rgba(10,132,255,.18);
+      color: var(--accent2);
+      font-weight: 700;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Gradient Vibe Studio</h1>
+        <div class="sub">
+          Dark mode. Generate gradients (tie-dye / ink bleed / radial / etc.) → export PNG → save to searchable gallery.
+        </div>
+      </div>
+      <div class="pill" id="statusPill">Ready</div>
+    </header>
+
+    <div class="grid">
+      <!-- LEFT -->
+      <section class="card">
+        <div class="row" style="justify-content:space-between">
+          <div class="row tight">
+            <button id="genBtn" class="primary">Generate</button>
+            <button id="variantBtn">New Variant</button>
+            <button id="exportBtn" class="ghost">Export PNG</button>
+          </div>
+
+          <div class="row tight">
+            <span class="label">Mode</span>
+            <select id="modeSel">
+              <option value="tieDye" selected>Tie-Dye (Cloud)</option>
+              <option value="inkBleed">Ink Bleed (Watercolor)</option>
+              <option value="radial">Radial</option>
+              <option value="linear">Linear</option>
+              <option value="conic">Conic</option>
+              <option value="aurora">Aurora Bands</option>
+              <option value="sunsetBands">Sunset Bands</option>
+            </select>
+
+            <span class="label">Size</span>
+            <select id="sizeSel">
+              <option value="640">640</option>
+              <option value="900" selected>900</option>
+              <option value="1200">1200</option>
+              <option value="1600">1600</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <!-- Image → Palette -->
+        <div class="row">
+          <input id="imgInput" type="file" accept="image/*" />
+          <span class="label">Colors</span>
+         <select id="colorCountSel">
+  <option value="5">5</option>
+  <option value="7" selected>7</option>
+  <option value="9">9</option>
+  <option value="12">12</option>
+  <option value="16">16</option>
+  <option value="20">20</option>
+  <option value="24">24</option>
+  <option value="30">30</option>
+  <option value="40">40</option>
+  <option value="50">50</option>
+</select>
+
+          <button id="imgToPaletteBtn">Image → Palette</button>
+          <span class="badge" id="paletteBadge">No image palette</span>
+        </div>
+        <div class="paletteRow" id="palettePreview" style="margin-top:8px"></div>
+
+        <div class="sep"></div>
+
+        <div class="row">
+          <div class="rangeWrap">
+            <span class="label">Smoothness</span>
+            <input id="smoothRange" type="range" min="0" max="100" value="72" />
+            <span class="num" id="smoothVal">72</span>
+          </div>
+
+          <div class="rangeWrap">
+            <span class="label">Complexity</span>
+            <input id="complexRange" type="range" min="0" max="100" value="60" />
+            <span class="num" id="complexVal">60</span>
+          </div>
+
+          <div class="rangeWrap">
+            <span class="label">Contrast</span>
+            <input id="contrastRange" type="range" min="0" max="100" value="55" />
+            <span class="num" id="contrastVal">55</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="rangeWrap">
+            <span class="label">Grain</span>
+            <input id="grainRange" type="range" min="0" max="100" value="20" />
+            <span class="num" id="grainVal">20</span>
+          </div>
+
+          <div class="rangeWrap">
+            <span class="label">Vignette</span>
+            <input id="vignetteRange" type="range" min="0" max="100" value="18" />
+            <span class="num" id="vignetteVal">18</span>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <canvas id="canvas" width="900" height="900"></canvas>
+
+        <div class="sep"></div>
+
+        <div class="row">
+          <input id="nameInput" placeholder="Title (auto-suggested)" />
+          <button id="suggestBtn" class="ghost">Suggest Title</button>
+        </div>
+
+        <div class="row">
+          <input id="tagsInput" placeholder="Tags (e.g. #gradient #calm / comma ok)" />
+          <div class="seg" aria-label="favorite toggle">
+            <button id="favOffBtn" class="on" type="button">☆</button>
+            <button id="favOnBtn" type="button">★</button>
+          </div>
+          <button id="saveBtn" class="primary">Save</button>
+          <button id="clearBtn" class="danger">Clear All</button>
+        </div>
+
+        <p class="hint">
+          Tip: Use <b>Image → Palette</b> with your sunset photos, then try <b>Sunset Bands</b> or <b>Ink Bleed</b> with high Smoothness.
+        </p>
+      </section>
+
+      <!-- RIGHT -->
+      <section class="card">
+        <div class="row" style="justify-content:space-between">
+          <h2 style="margin:0;font-size:16px">Gallery</h2>
+          <div class="row tight">
+            <span class="label">Sort</span>
+            <select id="sortSel">
+              <option value="new" selected>Newest</option>
+              <option value="old">Oldest</option>
+              <option value="name">Name</option>
+              <option value="fav">Favorites</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="searchBar">
+          <input id="searchInput" placeholder="Search (title / tags)" />
+          <button id="onlyFavBtn">★ only</button>
+          <button id="resetFilterBtn" class="ghost">Reset</button>
+        </div>
+
+        <div class="sep"></div>
+
+        <div id="gallery" class="gallery"></div>
+        <p class="hint">Storage: localStorage (this browser only). Cloud sharing can be added later.</p>
+      </section>
+    </div>
+  </div>
+
+<script>
+/* =========================
+   Seeded RNG
+========================= */
+function xmur3(str) {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return function() {
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    return (h ^= (h >>> 16)) >>> 0;
+  };
+}
+function sfc32(a, b, c, d) {
+  return function() {
+    a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0;
+    let t = (a + b) | 0;
+    a = b ^ (b >>> 9);
+    b = (c + (c << 3)) | 0;
+    c = (c << 21) | (c >>> 11);
+    d = (d + 1) | 0;
+    t = (t + d) | 0;
+    c = (c + t) | 0;
+    return (t >>> 0) / 4294967296;
+  };
+}
+function makeRng(seedStr){
+  const seed = xmur3(seedStr);
+  return sfc32(seed(), seed(), seed(), seed());
+}
+function randInt(rng, min, max){
+  return Math.floor(rng() * (max - min + 1)) + min;
+}
+function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+/* =========================
+   Color utils
+========================= */
+function hexToRgb(hex){
+  const h = hex.replace("#","").trim();
+  const full = h.length===3 ? h.split("").map(c=>c+c).join("") : h;
+  const n = parseInt(full,16);
+  return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 };
+}
+function rgbToHsl({r,g,b}){
+  r/=255; g/=255; b/=255;
+  const max=Math.max(r,g,b), min=Math.min(r,g,b);
+  let h=0,s=0,l=(max+min)/2;
+  const d=max-min;
+  if(d!==0){
+    s = d/(1-Math.abs(2*l-1));
+    switch(max){
+      case r: h = 60*(((g-b)/d)%6); break;
+      case g: h = 60*(((b-r)/d)+2); break;
+      case b: h = 60*(((r-g)/d)+4); break;
+    }
+  }
+  if(h<0) h+=360;
+  return {h,s:s*100,l:l*100};
+}
+function hslToRgb(h,s,l){
+  s/=100; l/=100;
+  const c = (1 - Math.abs(2*l - 1)) * s;
+  const hp = h / 60;
+  const x = c * (1 - Math.abs((hp % 2) - 1));
+  let r=0,g=0,b=0;
+  if(0<=hp && hp<1){ r=c; g=x; b=0;}
+  else if(1<=hp && hp<2){ r=x; g=c; b=0;}
+  else if(2<=hp && hp<3){ r=0; g=c; b=x;}
+  else if(3<=hp && hp<4){ r=0; g=x; b=c;}
+  else if(4<=hp && hp<5){ r=x; g=0; b=c;}
+  else if(5<=hp && hp<6){ r=c; g=0; b=x;}
+  const m = l - c/2;
+  return { r: Math.round((r+m)*255), g: Math.round((g+m)*255), b: Math.round((b+m)*255) };
+}
+function rgbToHex(r,g,b){
+  return "#" + [r,g,b].map(v=>v.toString(16).padStart(2,"0")).join("");
+}
+function lerp(a,b,t){ return a+(b-a)*t; }
+function smoothstep(t){ return t*t*(3-2*t); }
+function mixRgb(A,B,t){
+  return { r: Math.round(lerp(A.r,B.r,t)), g: Math.round(lerp(A.g,B.g,t)), b: Math.round(lerp(A.b,B.b,t)) };
+}
+function addRgb(A,B){
+  return { r: clamp(A.r+B.r,0,255), g: clamp(A.g+B.g,0,255), b: clamp(A.b+B.b,0,255) };
+}
+function mulRgb(A,k){
+  return { r: clamp(Math.round(A.r*k),0,255), g: clamp(Math.round(A.g*k),0,255), b: clamp(Math.round(A.b*k),0,255) };
+}
+
+/* =========================
+   Palette sources
+========================= */
+const BUILTIN = {
+  tokyoSunset: ["#1c2541","#3a506b","#6b7fa3","#f6c56b","#f2a24b","#c86b2b","#1a1a1a"],
+  aurora: ["#0b1020","#123a5f","#2bd1ff","#a3e635","#22c55e","#7c3aed","#ec4899"],
+  ink: ["#0b1020","#1f2937","#334155","#94a3b8","#eab308","#f97316","#ef4444"],
+  calm: ["#0b1320","#1c2541","#3a506b","#5bc0be","#6fffe9","#e0fbfc"],
+};
+
+function randomHuePalette(rng, n=7){
+  const base = randInt(rng,0,360);
+  const pal = [];
+  for(let i=0;i<n;i++){
+    const h = (base + randInt(rng,-110,110) + i*randInt(rng,0,40) + 360) % 360;
+    const s = randInt(rng, 35, 95);
+    const l = randInt(rng, 20, 85);
+    const rgb = hslToRgb(h,s,l);
+    pal.push(rgbToHex(rgb.r,rgb.g,rgb.b));
+  }
+  return pal;
+}
+
+/* =========================
+   Image → Palette extraction
+========================= */
+function extractPaletteFromImage(img, colorCount=7){
+  const s = 96;
+  const c = document.createElement("canvas");
+  c.width = s; c.height = s;
+  const x = c.getContext("2d", { willReadFrequently: true });
+
+  const scale = Math.max(s / img.width, s / img.height);
+  const w = img.width * scale, h = img.height * scale;
+  const ox = (s - w)/2, oy = (s - h)/2;
+  x.drawImage(img, ox, oy, w, h);
+
+  const data = x.getImageData(0,0,s,s).data;
+  const bins = new Map();
+
+  for(let i=0;i<data.length;i+=4){
+    const a = data[i+3];
+    if(a < 200) continue;
+
+    let r=data[i], g=data[i+1], b=data[i+2];
+    const lum = 0.2126*r + 0.7152*g + 0.0722*b;
+
+    // keep more mid tones; avoid extreme clipped pixels
+    if(lum < 8 || lum > 252) continue;
+
+    r = (r >> 3) << 3;
+    g = (g >> 3) << 3;
+    b = (b >> 3) << 3;
+
+    const key = (r<<16) | (g<<8) | b;
+    bins.set(key, (bins.get(key)||0) + 1);
+  }
+
+  const sorted = [...bins.entries()].sort((a,b)=>b[1]-a[1]);
+
+  const picked = [];
+  const minDist = 40;
+  function dist(c1,c2){
+    const r1=(c1>>16)&255,g1=(c1>>8)&255,b1=c1&255;
+    const r2=(c2>>16)&255,g2=(c2>>8)&255,b2=c2&255;
+    return Math.hypot(r1-r2,g1-g2,b1-b2);
+  }
+
+  for(const [key] of sorted){
+    if(picked.length >= colorCount) break;
+    if(picked.every(k=>dist(k,key) >= minDist)) picked.push(key);
+  }
+  let i=0;
+  while(picked.length < colorCount && i < sorted.length){
+    const key = sorted[i++][0];
+    if(!picked.includes(key)) picked.push(key);
+  }
+
+  return picked.slice(0,colorCount).map(k=>{
+    const r=(k>>16)&255, g=(k>>8)&255, b=k&255;
+    return rgbToHex(r,g,b);
+  });
+}
+
+function renderPalettePreview(pal, el){
+  el.innerHTML = "";
+  if(!pal || !pal.length) return;
+  for(const c of pal){
+    const sw = document.createElement("div");
+    sw.className = "sw";
+    sw.style.background = c;
+    sw.title = c;
+    el.appendChild(sw);
+  }
+}
+
+/* =========================
+   Gradient field generation
+   We generate a color per pixel using "fields"
+========================= */
+
+// ---- 2D Value Noise (simple, fast) ----
+function makeValueNoise2D(seed){
+  const rng = makeRng(seed);
+  const perm = new Uint8Array(256);
+  for(let i=0;i<256;i++) perm[i]=i;
+  for(let i=255;i>0;i--){
+    const j = Math.floor(rng()*(i+1));
+    const t = perm[i]; perm[i]=perm[j]; perm[j]=t;
+  }
+  function hash(ix,iy){
+    return perm[(perm[(ix&255)] + (iy&255)) & 255] / 255;
+  }
+  function fade(t){ return t*t*(3-2*t); }
+  return function(x,y){
+    const x0=Math.floor(x), y0=Math.floor(y);
+    const x1=x0+1, y1=y0+1;
+    const sx=fade(x-x0), sy=fade(y-y0);
+    const n00=hash(x0,y0), n10=hash(x1,y0), n01=hash(x0,y1), n11=hash(x1,y1);
+    const ix0 = n00 + (n10-n00)*sx;
+    const ix1 = n01 + (n11-n01)*sx;
+    return ix0 + (ix1-ix0)*sy; // 0..1
+  };
+}
+
+// Fractal noise
+function fbm(noise, x, y, octaves, lacunarity, gain){
+  let amp=0.5, freq=1.0, sum=0, norm=0;
+  for(let i=0;i<octaves;i++){
+    sum += amp * noise(x*freq, y*freq);
+    norm += amp;
+    freq *= lacunarity;
+    amp *= gain;
+  }
+  return sum / (norm || 1);
+}
+
+// ---- Palette sampling ----
+function paletteStopsFromHex(hexes){
+  const rgbs = hexes.map(h=>hexToRgb(h));
+  return rgbs;
+}
+function samplePalette(rgbs, t){
+  if(rgbs.length===1) return rgbs[0];
+  const n = rgbs.length;
+  const x = clamp(t,0,1) * (n-1);
+  const i = Math.floor(x);
+  const f = x - i;
+  const a = rgbs[i];
+  const b = rgbs[Math.min(n-1, i+1)];
+  const tt = smoothstep(f);
+  return mixRgb(a,b,tt);
+}
+
+// ---- Domain warp ----
+function warp(noise, x, y, strength){
+  const wx = (noise(x+13.1, y+7.7) - 0.5) * strength;
+  const wy = (noise(x+5.3, y+19.9) - 0.5) * strength;
+  return { x: x + wx, y: y + wy };
+}
+
+/* =========================
+   Modes (return t in 0..1, plus extra mix)
+========================= */
+function modeField(mode, noise, W, H, params, rng){
+  const cx = W * (0.35 + rng()*0.30);
+  const cy = H * (0.35 + rng()*0.30);
+
+  // user params
+  const smooth = params.smooth;     // 0..1
+  const complex = params.complex;   // 0..1
+  const contrast = params.contrast; // 0..1
+
+  // internal scales
+  const baseScale = lerp(0.0022, 0.0007, smooth);           // smoother -> larger blobs
+  const detailScale = lerp(0.010, 0.0035, smooth);          // detail layer
+  const oct = Math.round(lerp(6, 3, smooth));               // smoother -> fewer octaves
+  const warpStrength = lerp(0.0, 90.0, complex);            // more complex -> more warp
+  const gain = lerp(0.55, 0.72, complex);
+  const lac = lerp(2.0, 2.4, complex);
+
+  const angle = rng() * Math.PI * 2;
+  const ax = Math.cos(angle), ay = Math.sin(angle);
+
+  // helpers
+  function normXY(x,y){
+    return { nx: (x/W), ny: (y/H) };
+  }
+
+  if(mode === "linear"){
+    return (x,y)=>{
+      const {nx,ny} = normXY(x,y);
+      let t = nx*ax + ny*ay;
+      t = (t + 1) / 2;
+      t = clamp(t,0,1);
+      // add gentle noise
+      const n = fbm(noise, x*baseScale, y*baseScale, oct, lac, gain);
+      t = clamp(lerp(t, n, 0.18*complex), 0, 1);
+      t = clamp((t-0.5)*(1+contrast*1.2)+0.5,0,1);
+      return t;
+    };
+  }
+
+  if(mode === "radial"){
+    return (x,y)=>{
+      const dx = x - cx, dy = y - cy;
+      let d = Math.sqrt(dx*dx + dy*dy) / Math.sqrt(W*W + H*H);
+      d = clamp(d*1.8, 0, 1);
+      // warp the distance field for more organic rings
+      const n = fbm(noise, x*baseScale, y*baseScale, oct, lac, gain);
+      let t = clamp(d + (n-0.5)*0.22*complex, 0, 1);
+      t = clamp((t-0.5)*(1+contrast*1.2)+0.5,0,1);
+      return t;
+    };
+  }
+
+  if(mode === "conic"){
+    return (x,y)=>{
+      const dx = x - cx, dy = y - cy;
+      let ang = Math.atan2(dy, dx); // -pi..pi
+      let t = (ang + Math.PI) / (2*Math.PI);
+      // warp by noise
+      const n = fbm(noise, x*detailScale, y*detailScale, oct, lac, gain);
+      t = clamp(t + (n-0.5)*0.20*complex, 0, 1);
+      // make it more gradienty, less bandy
+      t = clamp((t-0.5)*(1+contrast*0.8)+0.5,0,1);
+      return t;
+    };
+  }
+
+  if(mode === "aurora"){
+    // banded flow across the canvas, like ribbons
+    const bandAngle = rng()*Math.PI*2;
+    const bx = Math.cos(bandAngle), by = Math.sin(bandAngle);
+    const k1 = lerp(1.2, 2.2, complex);
+    return (x,y)=>{
+      // base along a direction, plus sin bands
+      const u = (x*bx + y*by) * lerp(0.0035, 0.0015, smooth);
+      const v = (x*(-by) + y*(bx)) * lerp(0.0028, 0.0012, smooth);
+      const w = fbm(noise, u*90, v*90, Math.round(lerp(5,3,smooth)), 2.1, 0.62);
+      let t = 0.5 + 0.35*Math.sin((u*1.7 + w*k1)*Math.PI*2);
+      // keep it in 0..1 and soften
+      t = clamp(lerp(t, smoothstep(clamp(t,0,1)), 0.55), 0, 1);
+      // add drift noise
+      const drift = fbm(noise, x*detailScale, y*detailScale, 4, 2.2, 0.6);
+      t = clamp(t + (drift-0.5)*0.12*complex, 0, 1);
+      t = clamp((t-0.5)*(1+contrast*1.0)+0.5,0,1);
+      return t;
+    };
+  }
+
+  if(mode === "sunsetBands"){
+    // A vertical-ish band: sky -> horizon glow -> night, but as smooth gradients
+    const horizon = lerp(0.50, 0.70, rng());
+    const bandW = lerp(0.10, 0.20, (1-smooth));
+    return (x,y)=>{
+      const ny = y/H;
+      // 0..1 top->bottom
+      let t = ny;
+
+      // push a warm "glow" band near horizon
+      const glow = Math.exp(-Math.pow((ny - horizon)/(bandW||0.0001), 2));
+      // incorporate noise so it feels alive, not flat
+      const n = fbm(noise, x*baseScale, y*baseScale, oct, lac, gain);
+      t = clamp(t + (n-0.5)*0.18*complex, 0, 1);
+
+      // fold into palette position: glow makes mid-range more prominent
+      t = clamp(lerp(t, 0.55, glow*0.35), 0, 1);
+
+      // contrast curve
+      t = clamp((t-0.5)*(1+contrast*1.2)+0.5,0,1);
+      return t;
+    };
+  }
+
+  // tieDye / inkBleed are more like "cloud fields" with heavy domain warp
+  if(mode === "tieDye" || mode === "inkBleed"){
+    const heavyWarp = lerp(30, 140, complex);
+    const rings = (mode==="tieDye") ? lerp(0.0, 0.6, complex) : lerp(0.0, 0.35, complex);
+
+    return (x,y)=>{
+      // normalized coords for stable look
+      let sx = x*baseScale;
+      let sy = y*baseScale;
+
+      // domain warp(s)
+      const w1 = warp(noise, sx*120, sy*120, heavyWarp);
+      const w2 = warp(noise, w1.x*0.85, w1.y*0.85, heavyWarp*0.6);
+      const dx = w2.x, dy = w2.y;
+
+      // base fbm cloud
+      let n = fbm(noise, dx, dy, Math.round(lerp(7,4,smooth)), lac, gain);
+      // inkBleed: smoother pooling, less high-frequency
+      if(mode==="inkBleed"){
+        const pool = fbm(noise, dx*0.6, dy*0.6, 4, 2.0, 0.62);
+        n = lerp(n, pool, 0.55 + 0.25*smooth);
+        // watercolor edge: apply a soft threshold then blur effect by easing
+        n = smoothstep(clamp(n,0,1));
+      }
+
+      // tieDye: add gentle concentric feel
+      if(mode==="tieDye" && rings>0){
+        const ddx = x - cx, ddy = y - cy;
+        const d = Math.sqrt(ddx*ddx + ddy*ddy) * lerp(0.010, 0.004, smooth);
+        const ring = 0.5 + 0.5*Math.sin((d + n*2.2)*Math.PI*2);
+        n = lerp(n, ring, rings*0.35);
+      }
+
+      // push contrast & soften
+      n = clamp((n-0.5)*(1+contrast*1.6)+0.5, 0, 1);
+      if(smooth > 0.45){
+        n = lerp(n, smoothstep(n), 0.55);
+      }
+      return n;
+    };
+  }
+
+  // default
+  return (x,y)=> fbm(noise, x*baseScale, y*baseScale, oct, lac, gain);
+}
+
+/* =========================
+   Post effects: grain, vignette
+========================= */
+function applyGrain(rgb, amount, rng){
+  if(amount<=0) return rgb;
+  const a = amount * 18; // max ~18
+  const g = (rng()*2-1) * a;
+  return {
+    r: clamp(Math.round(rgb.r + g),0,255),
+    g: clamp(Math.round(rgb.g + g),0,255),
+    b: clamp(Math.round(rgb.b + g),0,255),
+  };
+}
+function vignetteFactor(x,y,W,H,amount){
+  if(amount<=0) return 1;
+  const nx = (x/W - 0.5);
+  const ny = (y/H - 0.5);
+  const d = Math.sqrt(nx*nx + ny*ny) / 0.7071; // ~0..1
+  const v = clamp(1 - d*d*amount*0.9, 0.2, 1);
+  return v;
+}
+
+/* =========================
+   Title suggestion
+========================= */
+const NAME_BANK = {
+  tieDye: ["Tide Dye","Cloud Bloom","Prismatic Drift","Melted Velvet","Dye Ritual","Soft Vortex","Color Mist"],
+  inkBleed: ["Ink Bloom","Bleeding Light","Watercolor Pool","Wet Paper","Sumi Haze","Spill Study","Silent Ink"],
+  radial: ["Radial Calm","Halo","Orbit","Soft Core","Circle Fade","Pulse Ring","Lumen"],
+  linear: ["Gradient Line","Sky Slide","Soft Shift","Slope","Drift Line","Fade Lane","Axis"],
+  conic: ["Spiral Hue","Conic Orbit","Turntable","Chromatic Spin","Rotation","Cone Light","Loop"],
+  aurora: ["Aurora Tape","Neon Veil","Ribbon Night","Polar Drift","Glow Band","Sky Ribbon","Electric Hush"],
+  sunsetBands: ["Gold Line","Blue Hour","Afterglow","Horizon Fade","City Dusk","Duskline","Where Night Begins"],
+};
+function suggestTitle(mode, rng){
+  const bank = NAME_BANK[mode] || ["Gradient Study","Color Field","Vibe"];
+  const a = bank[randInt(rng,0,bank.length-1)];
+  const suffix = ["I","II","III","A","B","C"][randInt(rng,0,5)];
+  return rng() < 0.55 ? `${a} ${suffix}` : a;
+}
+
+/* =========================
+   App wiring
+========================= */
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const statusPill = document.getElementById("statusPill");
+
+const modeSel = document.getElementById("modeSel");
+const sizeSel = document.getElementById("sizeSel");
+
+const smoothRange = document.getElementById("smoothRange");
+const complexRange = document.getElementById("complexRange");
+const contrastRange = document.getElementById("contrastRange");
+const grainRange = document.getElementById("grainRange");
+const vignetteRange = document.getElementById("vignetteRange");
+
+const smoothVal = document.getElementById("smoothVal");
+const complexVal = document.getElementById("complexVal");
+const contrastVal = document.getElementById("contrastVal");
+const grainVal = document.getElementById("grainVal");
+const vignetteVal = document.getElementById("vignetteVal");
+
+const genBtn = document.getElementById("genBtn");
+const variantBtn = document.getElementById("variantBtn");
+const exportBtn = document.getElementById("exportBtn");
+
+const imgInput = document.getElementById("imgInput");
+const imgToPaletteBtn = document.getElementById("imgToPaletteBtn");
+const colorCountSel = document.getElementById("colorCountSel");
+const paletteBadge = document.getElementById("paletteBadge");
+const palettePreview = document.getElementById("palettePreview");
+
+const nameInput = document.getElementById("nameInput");
+const tagsInput = document.getElementById("tagsInput");
+const suggestBtn = document.getElementById("suggestBtn");
+const saveBtn = document.getElementById("saveBtn");
+const clearBtn = document.getElementById("clearBtn");
+
+const favOffBtn = document.getElementById("favOffBtn");
+const favOnBtn = document.getElementById("favOnBtn");
+
+const galleryEl = document.getElementById("gallery");
+const sortSel = document.getElementById("sortSel");
+const searchInput = document.getElementById("searchInput");
+const onlyFavBtn = document.getElementById("onlyFavBtn");
+const resetFilterBtn = document.getElementById("resetFilterBtn");
+
+let imagePalette = null;
+let currentFav = false;
+let filterOnlyFav = false;
+
+let current = null; // { seed, mode, size, params, palette, thumb }
+
+/* =========================
+   UI helpers
+========================= */
+function setStatus(text){ statusPill.textContent = text; }
+function setFavUI(isFav){
+  currentFav = !!isFav;
+  if(currentFav){
+    favOnBtn.classList.add("on");
+    favOffBtn.classList.remove("on");
+  }else{
+    favOffBtn.classList.add("on");
+    favOnBtn.classList.remove("on");
+  }
+}
+function parseTags(s){
+  const raw = (s||"").trim();
+  if(!raw) return [];
+  const parts = raw.replace(/，/g,",")
+    .split(/[\s,]+/g)
+    .map(x=>x.trim())
+    .filter(Boolean)
+    .map(x=> x.startsWith("#") ? x.slice(1) : x);
+  const uniq = [];
+  for(const p of parts){
+    const t = p.slice(0,24);
+    if(t && !uniq.includes(t)) uniq.push(t);
+  }
+  return uniq.slice(0,12);
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* =========================
+   Palette picking
+========================= */
+function getActivePalette(seed){
+  // priority: image palette -> built-in per mode -> random
+  if(imagePalette && imagePalette.length >= 3) return imagePalette.slice();
+  const mode = modeSel.value;
+  if(mode === "sunsetBands") return BUILTIN.tokyoSunset.slice();
+  if(mode === "inkBleed") return BUILTIN.ink.slice();
+  if(mode === "aurora") return BUILTIN.aurora.slice();
+  if(mode === "tieDye") return randomHuePalette(makeRng(seed+"|pal"), 7);
+  return BUILTIN.calm.slice();
+}
+
+/* =========================
+   Render gradient
+========================= */
+function renderGradient({seed, mode, size, params, paletteHex}){
+  canvas.width = size;
+  canvas.height = size;
+
+  const rng = makeRng(seed + "|px");
+  const noise = makeValueNoise2D(seed + "|noise");
+
+  const pal = paletteStopsFromHex(paletteHex);
+  const W = size, H = size;
+
+  // compute field function for mode
+  const field = modeField(mode, noise, W, H, params, makeRng(seed+"|mode"));
+
+  const img = ctx.createImageData(W,H);
+  const data = img.data;
+
+  // params
+  const grainAmt = params.grain;       // 0..1
+  const vignetteAmt = params.vignette; // 0..1
+
+  // Pixel loop
+  // Note: 1600 can be heavier; it's okay for "Generate" but not spam-click
+  let p = 0;
+  for(let y=0;y<H;y++){
+    for(let x=0;x<W;x++){
+      let t = field(x,y); // 0..1
+
+      // slight additional smoothing curve (higher smooth -> more continuous)
+      // smoothness is already used in field; this is an extra polish.
+      t = lerp(t, smoothstep(t), params.smooth*0.35);
+
+      let rgb = samplePalette(pal, t);
+
+      // vignette
+      const vf = vignetteFactor(x,y,W,H,vignetteAmt);
+      rgb = mulRgb(rgb, vf);
+
+      // grain
+      rgb = applyGrain(rgb, grainAmt, rng);
+
+      data[p++] = rgb.r;
+      data[p++] = rgb.g;
+      data[p++] = rgb.b;
+      data[p++] = 255;
+    }
+  }
+
+  ctx.putImageData(img,0,0);
+  return canvas.toDataURL("image/png");
+}
+
+/* =========================
+   Generation orchestration
+========================= */
+function readParams(){
+  const smooth = parseInt(smoothRange.value,10)/100;
+  const complex = parseInt(complexRange.value,10)/100;
+  const contrast = parseInt(contrastRange.value,10)/100;
+  const grain = parseInt(grainRange.value,10)/100;
+  const vignette = parseInt(vignetteRange.value,10)/100;
+  return { smooth, complex, contrast, grain, vignette };
+}
+
+function updateParamLabels(){
+  smoothVal.textContent = smoothRange.value;
+  complexVal.textContent = complexRange.value;
+  contrastVal.textContent = contrastRange.value;
+  grainVal.textContent = grainRange.value;
+  vignetteVal.textContent = vignetteRange.value;
+}
+
+function generate(seedOverride=null, isVariant=false){
+  const mode = modeSel.value;
+  const size = parseInt(sizeSel.value,10) || 900;
+
+  // seed strategy:
+  // Generate: new seed always; Variant: keep seed but tweak palette order or minor params
+  let seed = seedOverride ?? (Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,8));
+  if(isVariant && current?.seed) seed = current.seed;
+
+  let params = readParams();
+
+  // Variant: nudge complexity/contrast slightly, rotate palette
+  let paletteHex = getActivePalette(seed);
+
+  if(isVariant){
+    const rr = makeRng(seed+"|variant|"+Date.now().toString(36));
+    const nudge = (x)=> clamp(x + (rr()*2-1)*0.06, 0, 1);
+    params = {
+      smooth: nudge(params.smooth),
+      complex: nudge(params.complex),
+      contrast: nudge(params.contrast),
+      grain: nudge(params.grain),
+      vignette: nudge(params.vignette),
+    };
+    // rotate palette
+    const k = randInt(rr, 0, paletteHex.length-1);
+    paletteHex = paletteHex.slice(k).concat(paletteHex.slice(0,k));
+    // sometimes reverse for different direction
+    if(rr() < 0.35) paletteHex.reverse();
+  }
+
+  const thumb = renderGradient({seed, mode, size, params, paletteHex});
+
+  current = { seed, mode, size, params, paletteHex, thumb };
+
+  // auto title
+  const nameRng = makeRng(seed + "|name|" + mode);
+  nameInput.value = suggestTitle(mode, nameRng);
+
+  setFavUI(false);
+  setStatus(isVariant ? "Variant generated" : "Generated");
+}
+
+/* =========================
+   Export
+========================= */
+function exportPng(){
+  if(!current) generate();
+  const a = document.createElement("a");
+  const safeTitle = (nameInput.value || "gradient").trim().replace(/[^a-zA-Z0-9_-]+/g,"-").slice(0,60);
+  a.download = `${safeTitle || "gradient"}.png`;
+  a.href = canvas.toDataURL("image/png");
+  a.click();
+  setStatus("Exported");
+}
+
+/* =========================
+   Image → Palette events
+========================= */
+imgToPaletteBtn.addEventListener("click", ()=>{
+  const file = imgInput.files?.[0];
+  if(!file){ setStatus("Pick an image first"); return; }
+
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    const n = parseInt(colorCountSel.value,10) || 7;
+    imagePalette = extractPaletteFromImage(img, n);
+
+    renderPalettePreview(imagePalette, palettePreview);
+    paletteBadge.textContent = `Image palette: ${imagePalette.length} colors`;
+    paletteBadge.style.borderColor = "rgba(48,209,88,.45)";
+    paletteBadge.style.color = "#bff7cf";
+
+    URL.revokeObjectURL(url);
+    setStatus("Palette extracted ✓");
+
+    // regenerate with same mode using the image palette
+    generate(null, false);
+  };
+  img.onerror = () => setStatus("Failed to load image");
+  img.src = url;
+});
+
+/* =========================
+   Gallery storage
+========================= */
+const KEY = "gradient_vibe_gallery_dark_v1";
+function loadGallery(){
+  try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
+  catch { return []; }
+}
+function saveGallery(items){
+  localStorage.setItem(KEY, JSON.stringify(items));
+}
+function nowISO(){ return new Date().toISOString(); }
+
+function saveCurrent(){
+  if(!current) generate();
+  const title = (nameInput.value || "").trim();
+  if(!title){ setStatus("Please enter a title"); nameInput.focus(); return; }
+
+  const tags = parseTags(tagsInput.value);
+
+  const item = {
+    id: crypto?.randomUUID?.() ?? (Date.now().toString(36) + Math.random().toString(36).slice(2,8)),
+    title,
+    tags,
+    favorite: currentFav,
+    createdAt: nowISO(),
+    thumb: current.thumb,
+    recipe: {
+      seed: current.seed,
+      mode: current.mode,
+      size: current.size,
+      params: current.params,
+      paletteHex: current.paletteHex,
+      // store image palette if present so it's reproducible
+      imagePalette: imagePalette ? imagePalette.slice() : null
+    }
+  };
+
+  const items = loadGallery();
+  items.unshift(item);
+  saveGallery(items);
+
+  setStatus("Saved ✓");
+  renderGallery();
+}
+
+function clearAll(){
+  if(!confirm("Delete ALL saved works?")) return;
+  localStorage.removeItem(KEY);
+  renderGallery();
+  setStatus("Cleared");
+}
+
+/* =========================
+   Gallery UI
+========================= */
+function sortItems(items){
+  const mode = sortSel.value;
+  const copy = items.slice();
+  if (mode === "new") copy.sort((a,b)=> b.createdAt.localeCompare(a.createdAt));
+  if (mode === "old") copy.sort((a,b)=> a.createdAt.localeCompare(b.createdAt));
+  if (mode === "name") copy.sort((a,b)=> (a.title||"").localeCompare(b.title||""));
+  if (mode === "fav") copy.sort((a,b)=> (b.favorite===true) - (a.favorite===true) || b.createdAt.localeCompare(a.createdAt));
+  return copy;
+}
+function applyFilters(items){
+  const q = (searchInput.value||"").trim().toLowerCase();
+  let out = items;
+
+  if(filterOnlyFav) out = out.filter(x=>x.favorite===true);
+
+  if(q){
+    out = out.filter(x=>{
+      const t = (x.title||"").toLowerCase();
+      const tags = (x.tags||[]).join(" ").toLowerCase();
+      return t.includes(q) || tags.includes(q);
+    });
+  }
+  return out;
+}
+function renderGallery(){
+  let items = loadGallery();
+  items = sortItems(items);
+  items = applyFilters(items);
+
+  galleryEl.innerHTML = "";
+
+  if(items.length === 0){
+    const p = document.createElement("p");
+    p.className = "hint";
+    p.textContent = "No items found. Generate something and Save.";
+    galleryEl.appendChild(p);
+    return;
+  }
+
+  for(const it of items){
+    const card = document.createElement("div");
+    card.className = "thumb";
+    const star = it.favorite ? `<span class="star">★</span>` : `<span style="color:#71798f">☆</span>`;
+    const tagsHtml = (it.tags||[]).map(t=>`<span class="tagChip">#${escapeHtml(t)}</span>`).join("");
+
+    card.innerHTML = `
+      <img src="${it.thumb}" alt="${escapeHtml(it.title)}" />
+      <div class="meta">
+        <p class="title">${star}<span>${escapeHtml(it.title)}</span></p>
+        <p class="small">${new Date(it.createdAt).toLocaleString()}</p>
+        <div class="tags">${tagsHtml || `<span class="tagChip">no tags</span>`}</div>
+        <div class="actions">
+          <button data-act="load" data-id="${it.id}">Load</button>
+          <button data-act="toggleFav" data-id="${it.id}">${it.favorite ? "Unfavorite" : "Favorite"}</button>
+          <button class="ghost" data-act="dup" data-id="${it.id}">Duplicate</button>
+          <button class="danger" data-act="del" data-id="${it.id}">Delete</button>
+        </div>
+      </div>
+    `;
+    galleryEl.appendChild(card);
+  }
+}
+
+galleryEl.addEventListener("click", (e)=>{
+  const btn = e.target.closest("button");
+  if(!btn) return;
+  const act = btn.dataset.act;
+  const id = btn.dataset.id;
+
+  const items = loadGallery();
+  const idx = items.findIndex(x=>x.id===id);
+  if(idx < 0) return;
+
+  if(act === "load"){
+    const it = items[idx];
+    const r = it.recipe;
+
+    // restore image palette if it was saved
+    imagePalette = r.imagePalette ? r.imagePalette.slice() : imagePalette;
+
+    if(imagePalette && imagePalette.length){
+      renderPalettePreview(imagePalette, palettePreview);
+      paletteBadge.textContent = `Image palette: ${imagePalette.length} colors`;
+      paletteBadge.style.borderColor = "rgba(48,209,88,.45)";
+      paletteBadge.style.color = "#bff7cf";
+    }
+
+    // restore controls
+    modeSel.value = r.mode;
+    sizeSel.value = String(r.size);
+
+    smoothRange.value = String(Math.round((r.params.smooth||0)*100));
+    complexRange.value = String(Math.round((r.params.complex||0)*100));
+    contrastRange.value = String(Math.round((r.params.contrast||0)*100));
+    grainRange.value = String(Math.round((r.params.grain||0)*100));
+    vignetteRange.value = String(Math.round((r.params.vignette||0)*100));
+    updateParamLabels();
+
+    // render exactly
+    renderGradient({
+      seed: r.seed,
+      mode: r.mode,
+      size: r.size,
+      params: r.params,
+      paletteHex: r.paletteHex
+    });
+
+    current = { seed:r.seed, mode:r.mode, size:r.size, params:r.params, paletteHex:r.paletteHex, thumb: it.thumb };
+
+    nameInput.value = it.title || "";
+    tagsInput.value = (it.tags||[]).map(t=>"#"+t).join(" ");
+    setFavUI(!!it.favorite);
+
+    setStatus("Loaded");
+  }
+
+  if(act === "toggleFav"){
+    items[idx].favorite = !items[idx].favorite;
+    saveGallery(items);
+    renderGallery();
+    setStatus(items[idx].favorite ? "Favorited" : "Unfavorited");
+  }
+
+  if(act === "dup"){
+    const copy = structuredClone(items[idx]);
+    copy.id = crypto?.randomUUID?.() ?? (Date.now().toString(36) + Math.random().toString(36).slice(2,8));
+    copy.title = copy.title + " (copy)";
+    copy.createdAt = nowISO();
+    items.unshift(copy);
+    saveGallery(items);
+    renderGallery();
+    setStatus("Duplicated");
+  }
+
+  if(act === "del"){
+    if(!confirm("Delete this item?")) return;
+    items.splice(idx,1);
+    saveGallery(items);
+    renderGallery();
+    setStatus("Deleted");
+  }
+});
+
+/* =========================
+   UI events
+========================= */
+function bindRange(r, out){
+  r.addEventListener("input", ()=>{
+    out.textContent = r.value;
+  });
+}
+bindRange(smoothRange, smoothVal);
+bindRange(complexRange, complexVal);
+bindRange(contrastRange, contrastVal);
+bindRange(grainRange, grainVal);
+bindRange(vignetteRange, vignetteVal);
+
+genBtn.addEventListener("click", ()=>generate(null,false));
+variantBtn.addEventListener("click", ()=>generate(null,true));
+exportBtn.addEventListener("click", exportPng);
+
+modeSel.addEventListener("change", ()=>generate(null,false));
+sizeSel.addEventListener("change", ()=>generate(null,false));
+[smoothRange, complexRange, contrastRange, grainRange, vignetteRange].forEach(el=>{
+  el.addEventListener("change", ()=>generate(null,false));
+});
+
+suggestBtn.addEventListener("click", ()=>{
+  const mode = modeSel.value;
+  const rng = makeRng((current?.seed || Date.now().toString(36)) + "|name2|" + mode + "|" + Date.now().toString(36));
+  nameInput.value = suggestTitle(mode, rng);
+  setStatus("Title suggested");
+});
+
+document.getElementById("saveBtn").addEventListener("click", saveCurrent);
+clearBtn.addEventListener("click", clearAll);
+
+favOffBtn.addEventListener("click", ()=>setFavUI(false));
+favOnBtn.addEventListener("click", ()=>setFavUI(true));
+
+sortSel.addEventListener("change", renderGallery);
+searchInput.addEventListener("input", renderGallery);
+
+onlyFavBtn.addEventListener("click", ()=>{
+  filterOnlyFav = !filterOnlyFav;
+  onlyFavBtn.textContent = filterOnlyFav ? "★ only ✓" : "★ only";
+  setStatus(filterOnlyFav ? "Filter: favorites" : "Filter: all");
+  renderGallery();
+});
+resetFilterBtn.addEventListener("click", ()=>{
+  searchInput.value = "";
+  filterOnlyFav = false;
+  onlyFavBtn.textContent = "★ only";
+  sortSel.value = "new";
+  setStatus("Reset");
+  renderGallery();
+});
+
+/* =========================
+   Boot
+========================= */
+updateParamLabels();
+setFavUI(false);
+generate(null,false);
+renderGallery();
+</script>
+</body>
+</html>

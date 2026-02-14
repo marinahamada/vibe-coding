@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tanka Tiles (Stable)</title>
+  <style>
+    body{
+      margin:0; padding:16px;
+      font-family: system-ui, -apple-system, "SF Pro Text", "SF Pro Display", "Segoe UI", Arial;
+      background:#0b0d12; color:#e7eaf0;
+    }
+    .wrap{max-width:980px;margin:0 auto}
+    .card{
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:16px;
+      padding:14px;
+      margin-bottom:14px;
+    }
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    input, select, button, textarea{
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.16);
+      color:#e7eaf0;
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:13px;
+      outline:none;
+    }
+    button{cursor:pointer}
+    button.primary{
+      background:#0a84ff;
+      border-color: rgba(10,132,255,.6);
+      color:white;
+    }
+    .muted{color:#a7afc2;font-size:12px;line-height:1.5}
+    .sep{height:1px;background:rgba(255,255,255,.10);margin:12px 0}
+
+    .lanes{display:flex;flex-direction:column;gap:10px}
+    .lane{
+      background: rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:14px;
+      padding:10px;
+    }
+    .laneHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .meter{font-size:12px;color:#a7afc2}
+    .tiles{display:flex;gap:8px;flex-wrap:wrap}
+
+    .tile{
+      min-width:90px;
+      padding:10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.05);
+      cursor:pointer;
+      position:relative;
+    }
+    .tile.locked{
+      border-color: rgba(255,255,255,.34);
+      background: rgba(255,255,255,.08);
+    }
+    .badge{
+      position:absolute; top:8px; right:8px;
+      font-size:11px; padding:4px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.25);
+      color:#a7afc2;
+    }
+    .w{font-size:14px}
+    .m{font-size:11px;color:#a7afc2;margin-top:6px}
+
+    .dot{display:inline-block;width:10px;height:10px;border-radius:999px;margin-right:8px;vertical-align:middle}
+    .noun{background:#64d2ff}
+    .verb{background:#bf5af2}
+    .adj{background:#ff9f0a}
+    .part{background:#8e8e93}
+    .conn{background:#30d158}
+
+    .tanka{
+      white-space:pre-line;
+      background: rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:14px;
+      padding:12px;
+      font-size:18px;
+      line-height:2.0;
+      min-height:120px;
+      margin-top:10px;
+    }
+    textarea{width:100%;min-height:90px}
+    .errorBox{
+      white-space:pre-wrap;
+      color:#ffd2cf;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      font-size:12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px;">
+        <div>
+          <div style="font-size:18px;font-weight:600">短歌タイル（安定版）</div>
+          <div class="muted">まずは「タイルが確実に出る」ことだけに全振りしたバージョン。</div>
+        </div>
+        <div id="status" class="muted">Ready</div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="row">
+        <span class="muted">Fixed word</span>
+        <input id="fixedSurface" placeholder="例：くるま（ひらがな推奨）" />
+        <select id="readingMode">
+          <option value="auto" selected>Auto</option>
+          <option value="manual">Manual reading</option>
+        </select>
+        <input id="fixedReading" placeholder="よみ（ひらがな）" style="display:none" />
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="row">
+        <button id="rollBtn" class="primary">Roll Tiles</button>
+        <button id="rerollBtn">Reroll Unlocked</button>
+        <button id="unlockBtn">Unlock All</button>
+        <button id="finishBtn" class="primary">Finish</button>
+        <button id="copyBtn">Copy</button>
+      </div>
+
+      <div class="sep"></div>
+
+      <div id="lanes" class="lanes"></div>
+
+      <div class="sep"></div>
+
+      <div class="muted">Result</div>
+      <div id="tanka" class="tanka"></div>
+      <div id="meter" class="muted" style="margin-top:8px"></div>
+    </div>
+
+    <div class="card">
+      <div class="muted">Errors (もし止まったらここに出ます)</div>
+      <div id="err" class="errorBox"></div>
+    </div>
+  </div>
+
+<script>
+/*** ===== error surface ===== ***/
+const statusEl = document.getElementById("status");
+const errEl = document.getElementById("err");
+function setStatus(t){ statusEl.textContent = t; }
+function showErr(e){
+  const msg = (e && (e.stack || e.message)) ? (e.stack || e.message) : String(e);
+  errEl.textContent = msg;
+  console.error(e);
+}
+window.addEventListener("error", (e)=> showErr(e.error || e));
+
+/*** ===== mora counter (kana only) ===== ***/
+const SMALL = new Set("ゃゅょぁぃぅぇぉゎャュョァィゥェォヮ".split(""));
+function toHira(str){
+  return (str||"").replace(/[\u30a1-\u30f6]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0x60));
+}
+function countMora(reading){
+  const s = toHira((reading||"").trim());
+  if(!s) return 0;
+  let n = 0;
+  for(const ch of s){
+    if(ch === "ー"){ n++; continue; }
+    if(SMALL.has(ch)) continue;
+    if(ch.match(/[ぁ-ゖ]/)) n++;
+  }
+  return n;
+}
+
+/*** ===== RNG ===== ***/
+function xmur3(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=(h<<13)|(h>>>19);}return function(){h=Math.imul(h^(h>>>16),2246822507);h=Math.imul(h^(h>>>13),3266489909);return (h^=(h>>>16))>>>0;};}
+function sfc32(a,b,c,d){return function(){a>>>=0;b>>>=0;c>>>=0;d>>>=0;let t=(a+b)|0;a=b^(b>>>9);b=(c+(c<<3))|0;c=(c<<21)|(c>>>11);d=(d+1)|0;t=(t+d)|0;c=(c+t)|0;return (t>>>0)/4294967296;};}
+function makeRng(seed){const s=xmur3(seed);return sfc32(s(),s(),s(),s());}
+function randi(rng,min,max){return Math.floor(rng()*(max-min+1))+min;}
+function pick(rng, arr){return arr[randi(rng,0,arr.length-1)];}
+
+/*** ===== word bank (small but works) ===== ***/
+function W(surface, reading, cat){ return {surface, reading, cat}; }
+const BANK = {
+  noun:[W("くも","くも","noun"),W("まち","まち","noun"),W("つき","つき","noun"),W("はな","はな","noun"),W("よる","よる","noun"),W("ひかり","ひかり","noun"),W("なみ","なみ","noun")],
+  verb:[W("ゆれる","ゆれる","verb"),W("ながれる","ながれる","verb"),W("ほどける","ほどける","verb"),W("おもいだす","おもいだす","verb")],
+  adj:[W("やさしい","やさしい","adj"),W("さびしい","さびしい","adj"),W("あたたかい","あたたかい","adj")],
+  part:[W("の","の","part"),W("は","は","part"),W("が","が","part"),W("を","を","part"),W("に","に","part"),W("で","で","part"),W("と","と","part")],
+  conn:[W("そして","そして","conn"),W("けれど","けれど","conn"),W("いま","いま","conn")]
+};
+const TEMPLATES = [
+  ["noun","part","noun"],
+  ["noun","part","verb"],
+  ["adj","noun"],
+  ["noun","verb"],
+  ["conn","noun","part","noun"],
+  ["noun","part","adj","noun"]
+];
+
+/*** ===== model ===== ***/
+const TARGET = [5,7,5,7,7];
+let lanesModel = [];
+let currentText = "";
+
+const lanesEl = document.getElementById("lanes");
+const tankaEl = document.getElementById("tanka");
+const meterEl = document.getElementById("meter");
+const fixedSurface = document.getElementById("fixedSurface");
+const fixedReading = document.getElementById("fixedReading");
+const readingMode = document.getElementById("readingMode");
+
+readingMode.addEventListener("change", ()=>{
+  fixedReading.style.display = readingMode.value==="manual" ? "inline-block" : "none";
+});
+
+function getFixed(){
+  const s = (fixedSurface.value||"").trim();
+  if(!s) return null;
+  if(readingMode.value==="manual"){
+    const r = (fixedReading.value||"").trim();
+    if(!r) return null;
+    if(countMora(r)<=0) return null;
+    return {surface:s, reading:toHira(r), cat:"noun"};
+  }
+  const r = toHira(s);
+  if(countMora(r)<=0) return null;
+  return {surface:s, reading:r, cat:"noun"};
+}
+
+function tokenMora(tok){ return countMora(tok.reading); }
+
+function buildTokensExact(target, rng, requiredTok=null){
+  for(let attempt=0; attempt<600; attempt++){
+    let tpl = pick(rng, TEMPLATES).slice();
+    if(requiredTok){
+      tpl.splice(randi(rng,0,tpl.length), 0, "fixed");
+    }
+    const out = [];
+    let rem = target;
+
+    function dfs(i){
+      if(i===tpl.length) return rem===0;
+      const slot = tpl[i];
+      let pool = [];
+      if(slot==="fixed") pool=[requiredTok];
+      else pool = BANK[slot] || BANK.noun;
+
+      const tries = 18;
+      for(let k=0;k<tries;k++){
+        const tok = pool[randi(rng,0,pool.length-1)];
+        const m = tokenMora(tok);
+        if(m<=0 || m>rem) continue;
+        if(i===tpl.length-1 && slot==="part") continue;
+        out.push(tok); rem -= m;
+        if(dfs(i+1)) return true;
+        rem += m; out.pop();
+      }
+      return false;
+    }
+
+    if(dfs(0)) return out;
+  }
+  return [{surface:"あ".repeat(target), reading:"あ".repeat(target), cat:"noun"}];
+}
+
+function rollAll(seed){
+  const rng = makeRng(seed);
+  const fixed = getFixed();
+  const fixedLane = fixed ? randi(rng,0,4) : -1;
+
+  lanesModel = TARGET.map((t,i)=>{
+    const r = makeRng(seed + "|lane|" + i);
+    const toks = buildTokensExact(t, r, (i===fixedLane ? fixed : null));
+    return {target:t, tiles: toks.map(tok=>({tok, locked:false}))};
+  });
+
+  render();
+  tankaEl.textContent = "";
+  meterEl.textContent = "";
+  currentText = "";
+  setStatus("Rolled ✓ (click tile to lock)");
+}
+
+function rerollUnlocked(seed){
+  if(!lanesModel.length) return rollAll(seed);
+  const rng = makeRng(seed);
+
+  for(let i=0;i<lanesModel.length;i++){
+    const lane = lanesModel[i];
+    const locked = lane.tiles.filter(x=>x.locked).map(x=>x.tok);
+    const lockedM = locked.reduce((s,t)=>s+tokenMora(t),0);
+    if(lockedM>lane.target){
+      lane.tiles.forEach(x=>x.locked=false);
+    }
+    const locked2 = lane.tiles.filter(x=>x.locked).map(x=>x.tok);
+    const lockedM2 = locked2.reduce((s,t)=>s+tokenMora(t),0);
+    const rem = lane.target-lockedM2;
+
+    const r = makeRng(seed + "|laneR|" + i);
+    const newToks = rem>0 ? buildTokensExact(rem, r, null) : [];
+    lane.tiles = [...locked2.map(tok=>({tok, locked:true})), ...newToks.map(tok=>({tok, locked:false}))];
+  }
+  render();
+  setStatus("Rerolled unlocked ✓");
+}
+
+function unlockAll(){
+  lanesModel.forEach(l=>l.tiles.forEach(t=>t.locked=false));
+  render();
+  setStatus("Unlocked all");
+}
+
+function laneText(lane){
+  let text = lane.tiles.map(x=>x.tok.surface).join("");
+  text = text.replace(/(の)\1+/g,"の").replace(/(は)\1+/g,"は").replace(/(が)\1+/g,"が");
+  return text;
+}
+function laneReading(lane){ return lane.tiles.map(x=>x.tok.reading).join(""); }
+function laneMora(lane){ return countMora(laneReading(lane)); }
+
+function finish(){
+  const ok = lanesModel.every(l=>laneMora(l)===l.target);
+  if(!ok){ setStatus("Not complete yet → reroll/unlock"); return; }
+  const fixed = getFixed();
+  const text = lanesModel.map(l=>laneText(l)).join("\n");
+  if(fixed && !text.includes(fixed.surface)){
+    setStatus("Fixed word missing → Roll again");
+    return;
+  }
+  currentText = text;
+  tankaEl.textContent = text;
+  meterEl.textContent = "meter: " + lanesModel.map(l=>laneMora(l)).join(" / ") + " (5 / 7 / 5 / 7 / 7)";
+  setStatus("Finished ✓");
+}
+
+function render(){
+  lanesEl.innerHTML = "";
+  lanesModel.forEach((lane, i)=>{
+    const m = laneMora(lane);
+    const wrap = document.createElement("div");
+    wrap.className = "lane";
+    wrap.innerHTML = `
+      <div class="laneHead">
+        <div class="muted">Line ${i+1} (target ${lane.target})</div>
+        <div class="meter">${m} / ${lane.target}</div>
+      </div>
+      <div class="tiles" data-lane="${i}"></div>
+    `;
+    const tilesEl = wrap.querySelector(".tiles");
+    lane.tiles.forEach((t, j)=>{
+      const tile = document.createElement("div");
+      tile.className = "tile " + (t.locked ? "locked": "");
+      tile.dataset.lane = i;
+      tile.dataset.idx = j;
+      tile.innerHTML = `
+        <div class="badge">${t.locked ? "LOCK" : t.tok.cat.toUpperCase()}</div>
+        <div class="w"><span class="dot ${t.tok.cat}"></span>${t.tok.surface}</div>
+        <div class="m">${t.tok.reading} • ${countMora(t.tok.reading)} mora</div>
+      `;
+      tilesEl.appendChild(tile);
+    });
+    lanesEl.appendChild(wrap);
+  });
+}
+
+lanesEl.addEventListener("click",(e)=>{
+  const el = e.target.closest(".tile");
+  if(!el) return;
+  const li = parseInt(el.dataset.lane,10);
+  const ti = parseInt(el.dataset.idx,10);
+  lanesModel[li].tiles[ti].locked = !lanesModel[li].tiles[ti].locked;
+  render();
+});
+
+/*** ===== buttons ===== ***/
+document.getElementById("rollBtn").addEventListener("click", ()=> {
+  try{
+    // If user types kanji in auto mode, warn
+    const f = getFixed();
+    if((fixedSurface.value||"").trim() && !f){
+      setStatus("固定語が読めない → ひらがな or Manual reading");
+      return;
+    }
+    rollAll("seed|" + Date.now().toString(36));
+  }catch(e){ showErr(e); }
+});
+document.getElementById("rerollBtn").addEventListener("click", ()=> { try{ rerollUnlocked("seed|" + Date.now().toString(36)); }catch(e){ showErr(e); } });
+document.getElementById("unlockBtn").addEventListener("click", ()=> { try{ unlockAll(); }catch(e){ showErr(e); } });
+document.getElementById("finishBtn").addEventListener("click", ()=> { try{ finish(); }catch(e){ showErr(e); } });
+document.getElementById("copyBtn").addEventListener("click", async ()=> {
+  try{
+    if(!currentText){ setStatus("Finish first"); return; }
+    await navigator.clipboard.writeText(currentText);
+    setStatus("Copied ✓");
+  }catch(e){ showErr(e); }
+});
+
+/*** boot ***/
+try{
+  rollAll("boot|" + Date.now().toString(36));
+  setStatus("Ready ✓");
+}catch(e){ showErr(e); }
+</script>
+</body>
+</html>

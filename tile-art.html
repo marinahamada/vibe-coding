@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tile Vibe Studio</title>
+  <style>
+    :root { --bg:#0b0c10; --panel:#12141b; --text:#e8eaf0; --muted:#9aa3b2; --line:#222634; --btn:#1f2433; }
+    *{box-sizing:border-box;font-family: ui-sans-serif, system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", "Segoe UI", Arial;}
+    body{margin:0;background:linear-gradient(180deg,#07080c, #0b0c10);color:var(--text);}
+    .wrap{max-width:1100px;margin:0 auto;padding:18px;}
+    header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px;}
+    h1{margin:0;font-size:20px;letter-spacing:0.2px}
+    .sub{color:var(--muted);font-size:12px;margin-top:4px}
+    .grid{display:grid;grid-template-columns: 1.3fr 1fr;gap:14px}
+    @media (max-width: 900px){ .grid{grid-template-columns:1fr;}}
+    .card{background:rgba(18,20,27,.9);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .row > *{margin:0}
+    button, select, input{
+      background:var(--btn);color:var(--text);border:1px solid var(--line);
+      padding:10px 12px;border-radius:12px;font-size:13px;outline:none;
+    }
+    button{cursor:pointer}
+    button:hover{filter:brightness(1.08)}
+    button:active{transform:translateY(1px)}
+    input{width:220px}
+    canvas{width:100%;height:auto;border-radius:14px;border:1px solid var(--line);background:#0d0f14}
+    .hint{color:var(--muted);font-size:12px;line-height:1.4}
+    .pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-size:12px}
+    .gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    @media (max-width: 900px){ .gallery{grid-template-columns:repeat(2,1fr)} }
+    @media (max-width: 560px){ .gallery{grid-template-columns:1fr} }
+    .thumb{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#0d0f14}
+    .thumb img{display:block;width:100%;height:auto}
+    .thumb .meta{padding:10px}
+    .thumb .title{font-size:13px;margin:0 0 6px 0}
+    .thumb .small{font-size:12px;color:var(--muted);margin:0}
+    .thumb .actions{display:flex;gap:8px;margin-top:10px}
+    .danger{border-color:#3b1e24;background:#1a0f12}
+    .danger:hover{filter:brightness(1.1)}
+    .ghost{background:transparent}
+    .sep{height:1px;background:var(--line);margin:12px 0}
+    .kvs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media (max-width: 560px){ .kvs{grid-template-columns:1fr} }
+    .kv{border:1px solid var(--line);border-radius:14px;padding:10px}
+    .kv .k{color:var(--muted);font-size:12px}
+    .kv .v{font-size:13px;margin-top:4px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Tile Vibe Studio</h1>
+        <div class="sub">ランダムなタイル作品を生成 → 命名 → 保存（localStorage）</div>
+      </div>
+      <div class="pill" id="statusPill">Ready</div>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <div class="row" style="justify-content:space-between">
+          <div class="row">
+            <button id="genBtn">Generate</button>
+            <button id="mutateBtn" class="ghost">Shuffle a bit</button>
+            <button id="exportBtn" class="ghost">Export PNG</button>
+          </div>
+          <div class="row">
+            <label class="hint">Palette</label>
+            <select id="paletteSel">
+              <option value="pastel">Pastel</option>
+              <option value="mono">Monochrome</option>
+              <option value="neon">Neon</option>
+              <option value="earth">Earth</option>
+              <option value="jp">Japan-ish</option>
+              <option value="free">Free (HSL)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <canvas id="canvas" width="900" height="900"></canvas>
+
+        <div class="sep"></div>
+
+        <div class="row">
+          <input id="nameInput" placeholder="作品名（例：Midnight Confetti）" />
+          <button id="saveBtn">Name & Save</button>
+          <button id="clearBtn" class="danger">Clear All</button>
+        </div>
+        <p class="hint">
+          Tips: <br />
+          ・Shuffle a bit は約20%だけ差し替え（「惜しい」時に便利）<br />
+          ・Export PNG は今の作品を画像で保存（スマホ壁紙にも）<br />
+        </p>
+
+        <div class="kvs">
+          <div class="kv">
+            <div class="k">Grid</div>
+            <div class="v" id="gridInfo">—</div>
+          </div>
+          <div class="kv">
+            <div class="k">Seed</div>
+            <div class="v" id="seedInfo">—</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="row" style="justify-content:space-between">
+          <h2 style="margin:0;font-size:16px">Gallery</h2>
+          <div class="row">
+            <label class="hint">Sort</label>
+            <select id="sortSel">
+              <option value="new">Newest</option>
+              <option value="old">Oldest</option>
+              <option value="name">Name</option>
+            </select>
+          </div>
+        </div>
+        <div class="sep"></div>
+        <div id="gallery" class="gallery"></div>
+        <p class="hint">保存先：このブラウザの localStorage（簡易）</p>
+      </section>
+    </div>
+  </div>
+
+<script>
+/** ------------------------------
+ *  Tiny RNG (seeded)
+ * ------------------------------ */
+function xmur3(str) {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return function() {
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    return (h ^= (h >>> 16)) >>> 0;
+  };
+}
+function sfc32(a, b, c, d) {
+  return function() {
+    a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0;
+    let t = (a + b) | 0;
+    a = b ^ (b >>> 9);
+    b = (c + (c << 3)) | 0;
+    c = (c << 21) | (c >>> 11);
+    d = (d + 1) | 0;
+    t = (t + d) | 0;
+    c = (c + t) | 0;
+    return (t >>> 0) / 4294967296;
+  };
+}
+function makeRng(seedStr){
+  const seed = xmur3(seedStr);
+  return sfc32(seed(), seed(), seed(), seed());
+}
+function randInt(rng, min, max){
+  return Math.floor(rng() * (max - min + 1)) + min;
+}
+
+/** ------------------------------
+ *  Palettes
+ * ------------------------------ */
+const PRESETS = {
+  pastel: ["#F6C1C7","#F9E2AE","#BDE0FE","#CDB4DB","#B7E4C7","#FFD6A5","#E0FBFC"],
+  mono:   ["#0B0C10","#12141B","#1F2433","#2B3247","#3B435E","#A9B1C3","#E8EAF0"],
+  neon:   ["#00F5D4","#00BBF9","#F15BB5","#FEE440","#9B5DE5","#FF6B6B","#4DFF4D"],
+  earth:  ["#3A5A40","#588157","#A3B18A","#DAD7CD","#7F5539","#B08968","#E6CCB2"],
+  jp:     ["#0B3D91","#E63946","#F1FAEE","#A8DADC","#457B9D","#2A9D8F","#F4A261"]
+};
+function hslToHex(h, s, l) {
+  s /= 100; l /= 100;
+  const k = n => (n + h / 30) % 12;
+  const a = s * Math.min(l, 1 - l);
+  const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+  const toHex = x => Math.round(255 * x).toString(16).padStart(2, "0");
+  return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
+}
+
+/** ------------------------------
+ *  Art state
+ * ------------------------------ */
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+const statusPill = document.getElementById("statusPill");
+const paletteSel = document.getElementById("paletteSel");
+const gridInfo = document.getElementById("gridInfo");
+const seedInfo = document.getElementById("seedInfo");
+
+const genBtn = document.getElementById("genBtn");
+const mutateBtn = document.getElementById("mutateBtn");
+const exportBtn = document.getElementById("exportBtn");
+const saveBtn = document.getElementById("saveBtn");
+const clearBtn = document.getElementById("clearBtn");
+const nameInput = document.getElementById("nameInput");
+
+const galleryEl = document.getElementById("gallery");
+const sortSel = document.getElementById("sortSel");
+
+let current = null; // {seed, rows, cols, tileSize, paletteKey, colors2D}
+
+function setStatus(text){ statusPill.textContent = text; }
+
+function generateArt(opts = {}) {
+  const rows = opts.rows ?? 18;
+  const cols = opts.cols ?? 18;
+  const tileSize = Math.floor(canvas.width / cols);
+  const seed = opts.seed ?? (Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,8));
+  const paletteKey = opts.paletteKey ?? paletteSel.value;
+  const rng = makeRng(seed + "|" + paletteKey);
+
+  // pick palette
+  let palette = PRESETS[paletteKey];
+  if (!palette) {
+    // "free": HSL-controlled random palette
+    palette = [];
+    const baseHue = randInt(rng, 0, 360);
+    for (let i=0;i<8;i++){
+      const h = (baseHue + randInt(rng, -50, 50) + i*randInt(rng, 10, 35)) % 360;
+      const s = randInt(rng, 40, 80);
+      const l = randInt(rng, 35, 70);
+      palette.push(hslToHex((h+360)%360, s, l));
+    }
+  }
+
+  // tiles
+  const colors2D = Array.from({length: rows}, () => Array.from({length: cols}, () => {
+    return palette[randInt(rng, 0, palette.length - 1)];
+  }));
+
+  // optional: add simple "cluster" effect to feel more like artwork
+  // a few random blobs
+  const blobs = randInt(rng, 3, 8);
+  for (let b=0;b<blobs;b++){
+    const cx = randInt(rng, 0, cols-1);
+    const cy = randInt(rng, 0, rows-1);
+    const radius = randInt(rng, 2, 5);
+    const col = palette[randInt(rng, 0, palette.length - 1)];
+    for (let y=Math.max(0, cy-radius); y<=Math.min(rows-1, cy+radius); y++){
+      for (let x=Math.max(0, cx-radius); x<=Math.min(cols-1, cx+radius); x++){
+        if ((x-cx)*(x-cx)+(y-cy)*(y-cy) <= radius*radius && rng() < 0.75){
+          colors2D[y][x] = col;
+        }
+      }
+    }
+  }
+
+  current = { seed, rows, cols, tileSize, paletteKey, colors2D };
+  drawCurrent();
+  gridInfo.textContent = `${rows} × ${cols}  (tile ${tileSize}px)`;
+  seedInfo.textContent = seed;
+  setStatus("Generated");
+}
+
+function mutateArt() {
+  if (!current) return generateArt();
+  const rng = makeRng(current.seed + "|mutate|" + Date.now().toString(36));
+  const { rows, cols, paletteKey } = current;
+
+  let palette = PRESETS[paletteKey];
+  if (!palette) palette = PRESETS.pastel;
+
+  // replace ~20%
+  for (let y=0;y<rows;y++){
+    for (let x=0;x<cols;x++){
+      if (rng() < 0.20){
+        current.colors2D[y][x] = palette[randInt(rng, 0, palette.length - 1)];
+      }
+    }
+  }
+  drawCurrent();
+  setStatus("Shuffled a bit");
+}
+
+function drawCurrent(){
+  const { rows, cols, tileSize, colors2D } = current;
+  // clean
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // center grid
+  const w = cols * tileSize;
+  const h = rows * tileSize;
+  const ox = Math.floor((canvas.width - w) / 2);
+  const oy = Math.floor((canvas.height - h) / 2);
+
+  // draw tiles
+  for (let y=0;y<rows;y++){
+    for (let x=0;x<cols;x++){
+      ctx.fillStyle = colors2D[y][x];
+      ctx.fillRect(ox + x*tileSize, oy + y*tileSize, tileSize, tileSize);
+    }
+  }
+
+  // subtle grid lines
+  ctx.globalAlpha = 0.22;
+  ctx.strokeStyle = "#000000";
+  ctx.lineWidth = 1;
+  for (let y=0;y<=rows;y++){
+    ctx.beginPath();
+    ctx.moveTo(ox, oy + y*tileSize);
+    ctx.lineTo(ox + w, oy + y*tileSize);
+    ctx.stroke();
+  }
+  for (let x=0;x<=cols;x++){
+    ctx.beginPath();
+    ctx.moveTo(ox + x*tileSize, oy);
+    ctx.lineTo(ox + x*tileSize, oy + h);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+}
+
+/** ------------------------------
+ *  Storage
+ * ------------------------------ */
+const KEY = "tile_vibe_gallery_v1";
+
+function loadGallery(){
+  try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
+  catch { return []; }
+}
+function saveGallery(items){
+  localStorage.setItem(KEY, JSON.stringify(items));
+}
+function nowISO(){ return new Date().toISOString(); }
+
+function saveCurrentWithName(){
+  if (!current) generateArt();
+  const title = (nameInput.value || "").trim();
+  if (!title) { setStatus("名前を入れてね"); nameInput.focus(); return; }
+
+  const thumb = canvas.toDataURL("image/png"); // simple thumbnail
+  const item = {
+    id: crypto?.randomUUID?.() ?? (Date.now().toString(36) + Math.random().toString(36).slice(2,8)),
+    title,
+    createdAt: nowISO(),
+    thumb,
+    art: current
+  };
+
+  const items = loadGallery();
+  items.unshift(item);
+  saveGallery(items);
+  nameInput.value = "";
+  renderGallery();
+  setStatus("Saved ✓");
+}
+
+function clearAll(){
+  if (!confirm("ギャラリーを全削除します。OK?")) return;
+  localStorage.removeItem(KEY);
+  renderGallery();
+  setStatus("Cleared");
+}
+
+/** ------------------------------
+ *  Gallery UI
+ * ------------------------------ */
+function sortItems(items){
+  const mode = sortSel.value;
+  const copy = items.slice();
+  if (mode === "new") copy.sort((a,b)=> b.createdAt.localeCompare(a.createdAt));
+  if (mode === "old") copy.sort((a,b)=> a.createdAt.localeCompare(b.createdAt));
+  if (mode === "name") copy.sort((a,b)=> (a.title||"").localeCompare(b.title||""));
+  return copy;
+}
+
+function renderGallery(){
+  const items = sortItems(loadGallery());
+  galleryEl.innerHTML = "";
+
+  if (items.length === 0){
+    const p = document.createElement("p");
+    p.className = "hint";
+    p.textContent = "まだ保存がありません。気に入った作品を Name & Save してね。";
+    galleryEl.appendChild(p);
+    return;
+  }
+
+  for (const it of items){
+    const card = document.createElement("div");
+    card.className = "thumb";
+    card.innerHTML = `
+      <img src="${it.thumb}" alt="${escapeHtml(it.title)}" />
+      <div class="meta">
+        <p class="title">${escapeHtml(it.title)}</p>
+        <p class="small">${new Date(it.createdAt).toLocaleString()}</p>
+        <div class="actions">
+          <button data-act="load" data-id="${it.id}">Load</button>
+          <button class="ghost" data-act="dup" data-id="${it.id}">Duplicate</button>
+          <button class="danger" data-act="del" data-id="${it.id}">Delete</button>
+        </div>
+      </div>
+    `;
+    galleryEl.appendChild(card);
+  }
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+galleryEl.addEventListener("click", (e)=>{
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  const act = btn.dataset.act;
+  const id = btn.dataset.id;
+  const items = loadGallery();
+  const idx = items.findIndex(x=>x.id===id);
+  if (idx < 0) return;
+
+  if (act === "load"){
+    current = items[idx].art;
+    paletteSel.value = current.paletteKey || "pastel";
+    drawCurrent();
+    gridInfo.textContent = `${current.rows} × ${current.cols}  (tile ${current.tileSize}px)`;
+    seedInfo.textContent = current.seed;
+    setStatus("Loaded");
+  }
+
+  if (act === "dup"){
+    const copy = structuredClone(items[idx]);
+    copy.id = crypto?.randomUUID?.() ?? (Date.now().toString(36) + Math.random().toString(36).slice(2,8));
+    copy.title = copy.title + " (copy)";
+    copy.createdAt = nowISO();
+    items.unshift(copy);
+    saveGallery(items);
+    renderGallery();
+    setStatus("Duplicated");
+  }
+
+  if (act === "del"){
+    if (!confirm("削除する？")) return;
+    items.splice(idx,1);
+    saveGallery(items);
+    renderGallery();
+    setStatus("Deleted");
+  }
+});
+
+sortSel.addEventListener("change", renderGallery);
+
+/** ------------------------------
+ *  Export
+ * ------------------------------ */
+function exportPng(){
+  if (!current) generateArt();
+  const a = document.createElement("a");
+  const title = (seedInfo.textContent || "tile-art").replace(/[^a-zA-Z0-9_-]+/g,"-");
+  a.download = `tile-${title}.png`;
+  a.href = canvas.toDataURL("image/png");
+  a.click();
+  setStatus("Exported");
+}
+
+/** ------------------------------
+ *  Events
+ * ------------------------------ */
+genBtn.addEventListener("click", ()=>generateArt());
+mutateBtn.addEventListener("click", mutateArt);
+exportBtn.addEventListener("click", exportPng);
+saveBtn.addEventListener("click", saveCurrentWithName);
+clearBtn.addEventListener("click", clearAll);
+
+// boot
+generateArt({ rows: 18, cols: 18 });
+renderGallery();
+</script>
+</body>
+</html>

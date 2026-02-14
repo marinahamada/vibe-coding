@@ -1,0 +1,876 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>式づくりゲーム — 語呂→式→変形→Percent Ladder</title>
+<style>
+  :root{
+    --bg0:#070812;
+    --bg1:#0b1330;
+    --card: rgba(255,255,255,.08);
+    --line: rgba(255,255,255,.14);
+    --text: rgba(255,255,255,.92);
+    --muted: rgba(255,255,255,.65);
+    --shadow: 0 24px 80px rgba(0,0,0,.55);
+    --r:18px;
+
+    /* pop iOS accents */
+    --blue:#0a84ff;
+    --purple:#bf5af2;
+    --pink:#ff2d55;
+    --orange:#ff9f0a;
+    --lime:#30d158;
+    --red:#ff453a;
+
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; padding:18px;
+    font-family: system-ui, -apple-system, "SF Pro Display","SF Pro Text","Segoe UI", Arial;
+    background:
+      radial-gradient(900px 520px at 12% 10%, rgba(10,132,255,.20), transparent 60%),
+      radial-gradient(900px 520px at 88% 12%, rgba(255,45,85,.16), transparent 60%),
+      radial-gradient(1000px 560px at 70% 95%, rgba(48,209,88,.12), transparent 62%),
+      radial-gradient(800px 520px at 35% 70%, rgba(191,90,242,.10), transparent 62%),
+      linear-gradient(180deg, var(--bg0), var(--bg1));
+    color:var(--text);
+  }
+  .wrap{max-width:1120px;margin:0 auto}
+  header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:14px}
+  h1{margin:0;font-size:18px;letter-spacing:.2px}
+  .sub{margin-top:6px;color:var(--muted);font-size:12px;line-height:1.5}
+  .pill{
+    display:inline-flex;align-items:center;gap:10px;
+    padding:8px 12px;border-radius:999px;
+    border:1px solid var(--line);
+    background: rgba(255,255,255,.07);
+    backdrop-filter: blur(18px);
+    font-size:12px;color:var(--muted);
+    box-shadow: 0 12px 28px rgba(0,0,0,.35);
+    white-space:nowrap;
+  }
+  .grid{display:grid;grid-template-columns: 1.35fr 0.65fr;gap:14px}
+  @media (max-width: 980px){ .grid{grid-template-columns:1fr;} }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius: var(--r);
+    padding:14px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(18px);
+  }
+  .sep{height:1px;background:rgba(255,255,255,.10);margin:12px 0}
+  .label{color:var(--muted);font-size:12px}
+  .mono{font-family:var(--mono);color:var(--muted);font-size:12px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+  button, input{
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,.18);
+    background: rgba(255,255,255,.07);
+    color: var(--text);
+    padding:10px 12px;
+    font-size:13px;
+    outline:none;
+    box-shadow: 0 1px 0 rgba(255,255,255,.10) inset, 0 1px 2px rgba(0,0,0,.35);
+  }
+  input{min-width:120px}
+  button{cursor:pointer;user-select:none;transition: transform .05s ease, filter .15s ease}
+  button:hover{filter:brightness(1.06)}
+  button:active{transform: translateY(1px); filter:brightness(.98)}
+
+  .btn.primary{
+    background: linear-gradient(180deg, rgba(10,132,255,.95), rgba(10,132,255,.60));
+    border-color: rgba(10,132,255,.55);
+    color:#fff;
+    box-shadow: 0 1px 0 rgba(255,255,255,.15) inset, 0 18px 44px rgba(10,132,255,.20);
+  }
+  .btn.secondary{
+    background: linear-gradient(180deg, rgba(255,45,85,.92), rgba(191,90,242,.60));
+    border-color: rgba(255,45,85,.45);
+    color:#fff;
+    box-shadow: 0 1px 0 rgba(255,255,255,.15) inset, 0 18px 44px rgba(255,45,85,.16);
+  }
+  .btn.ghost{ background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.14); }
+
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+  .chip{
+    padding:10px 12px;border-radius:16px;
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(0,0,0,.18);
+    min-width: 230px;
+  }
+  .chip strong{color:#fff}
+  .chip small{display:block;margin-top:6px;color:var(--muted);font-family:var(--mono)}
+  .chip.selectable{cursor:pointer;transition:filter .15s ease}
+  .chip.selectable:hover{filter:brightness(1.06)}
+  .chip.selected{border-color: rgba(10,132,255,.55); background: rgba(10,132,255,.12);}
+  .chip.bad{border-color: rgba(255,69,58,.45); background: rgba(255,69,58,.10);}
+  .chip.good{border-color: rgba(48,209,88,.45); background: rgba(48,209,88,.10);}
+
+  .bigQ{
+    font-size:18px;line-height:1.6;letter-spacing:.2px;
+    padding:12px 14px;border-radius:16px;
+    border:1px solid rgba(255,255,255,.12);
+    background: rgba(0,0,0,.18);
+  }
+  .hintBox{
+    white-space:pre-line;
+    padding:12px 14px;border-radius:16px;
+    border:1px solid rgba(255,255,255,.12);
+    background: rgba(0,0,0,.16);
+    color: rgba(255,255,255,.88);
+    line-height:1.65;
+    font-size:13px;
+  }
+
+  .scoreGrid{display:grid;grid-template-columns: 1fr 1fr;gap:12px}
+  .kpi{
+    border:1px solid rgba(255,255,255,.12);
+    background: rgba(0,0,0,.16);
+    border-radius:16px;
+    padding:12px;
+  }
+  .kpi .t{color:var(--muted);font-size:12px}
+  .kpi .v{font-size:18px;margin-top:6px}
+
+  .log{max-height:220px;overflow:auto;padding-right:6px}
+  .logItem{
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.05);
+    border-radius:14px;
+    padding:10px 12px;
+    margin-bottom:10px;
+    font-size:12px;
+    line-height:1.5;
+    color: rgba(255,255,255,.86);
+  }
+  .tag{
+    display:inline-flex;align-items:center;
+    padding:3px 8px;border-radius:999px;
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.06);
+    color: var(--muted);
+    font-size:11px;
+    margin-right:8px;
+    font-family:var(--mono);
+  }
+
+  /* Percent ladder */
+  .ladder{
+    border:1px solid rgba(255,255,255,.12);
+    background: rgba(0,0,0,.16);
+    border-radius:16px;
+    padding:12px;
+  }
+  .ladderHead{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+    margin-bottom:10px;
+  }
+  .ladderGrid{
+    display:grid;grid-template-columns: 1fr 1fr 1fr; gap:10px;
+  }
+  .ladderCell{
+    border:1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.05);
+    border-radius:14px;
+    padding:10px 10px;
+  }
+  .ladderCell .t{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+  .ladderCell .t b{color:#fff}
+  .ladderCell input{
+    width:100%;
+    margin-top:8px;
+    font-family: var(--mono);
+  }
+  .okMark{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:18px;height:18px;border-radius:6px;
+    border:1px solid rgba(48,209,88,.45);
+    background: rgba(48,209,88,.18);
+    color:#d8ffe8;
+    font-size:12px;
+    visibility:hidden;
+  }
+  .ladderCell.ok .okMark{visibility:visible}
+  .ladderFoot{
+    margin-top:10px;
+    display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+  }
+  .tiny{
+    font-size:12px;padding:8px 10px;border-radius:12px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>式づくりゲーム（語呂→式→変形）</h1>
+      <div class="sub">
+        “頭のいい人の内部構造”を移植する：<strong>型 → 語呂 → 式 → 変形</strong>。
+        さらに <strong>Percent Ladder（10%→1%→0.1%）</strong> で桁×%も瞬殺。
+      </div>
+    </div>
+    <div class="pill" id="status">準備OK</div>
+  </header>
+
+  <div class="grid">
+    <!-- LEFT -->
+    <section class="card">
+      <div class="label">問題</div>
+      <div class="bigQ" id="qText"></div>
+
+      <div class="sep"></div>
+
+      <div class="row" style="justify-content:space-between;gap:12px">
+        <div>
+          <div class="label">Step 1：型を選ぶ</div>
+          <div class="mono">まず分類できるようになると、式が“勝手に出てくる”ようになる。</div>
+        </div>
+        <div class="row">
+          <button class="btn ghost" id="skipBtn">次の問題</button>
+          <button class="btn primary" id="checkBtn">判定</button>
+        </div>
+      </div>
+
+      <div class="chips" id="typeChips"></div>
+
+      <div class="sep"></div>
+
+      <div class="label">Step 2：式テンプレを選ぶ</div>
+      <div class="mono">分母ミス／差分忘れ／ptと%混同を矯正する。</div>
+      <div class="chips" id="formulaChips"></div>
+
+      <div class="sep"></div>
+
+      <div class="label">Step 3：変形（同値変形）を選ぶ</div>
+      <div class="mono">“同じ意味で別の形にする”＝応用力の源。</div>
+      <div class="chips" id="transformChips"></div>
+
+      <div class="sep"></div>
+
+      <!-- Percent Ladder -->
+      <div class="label">Step 4：Percent Ladder（穴埋め）</div>
+      <div class="mono">10%→1%→0.1% を先に作ると、桁×%が爆速になる。</div>
+
+      <div class="ladder" id="ladderBox" style="display:none">
+        <div class="ladderHead">
+          <div class="label">Ladder（この問題で使う“足場”）</div>
+          <div class="mono" id="ladderTarget"></div>
+        </div>
+
+        <div class="ladderGrid">
+          <div class="ladderCell" id="cell10">
+            <div class="t"><b>10%</b><span class="okMark">✓</span></div>
+            <input id="in10" placeholder="例：500万円 / 5,000,000" />
+          </div>
+          <div class="ladderCell" id="cell1">
+            <div class="t"><b>1%</b><span class="okMark">✓</span></div>
+            <input id="in1" placeholder="例：50万円" />
+          </div>
+          <div class="ladderCell" id="cell01">
+            <div class="t"><b>0.1%</b><span class="okMark">✓</span></div>
+            <input id="in01" placeholder="例：5万円" />
+          </div>
+        </div>
+
+        <div class="ladderFoot">
+          <button class="btn ghost tiny" id="ladderCheckBtn">Ladder判定</button>
+          <button class="btn secondary tiny" id="ladderRevealBtn">答えを見る</button>
+          <span class="mono" id="ladderHint"></span>
+        </div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="label">スマートヒント（語呂＋暗算の型）</div>
+      <div class="hintBox" id="hintBox"></div>
+
+      <div class="sep"></div>
+      <div class="row">
+        <button class="btn secondary" id="resetProgressBtn">進捗リセット</button>
+        <span class="mono">進捗は自動保存（このPC内）。</span>
+      </div>
+    </section>
+
+    <!-- RIGHT -->
+    <aside class="card">
+      <div class="label">リサーチパネル</div>
+      <div class="scoreGrid" style="margin-top:10px">
+        <div class="kpi">
+          <div class="t">連続正解</div>
+          <div class="v" id="streak">0</div>
+        </div>
+        <div class="kpi">
+          <div class="t">正答率</div>
+          <div class="v" id="acc">0%</div>
+        </div>
+        <div class="kpi">
+          <div class="t">主な弱点</div>
+          <div class="v" id="weak">—</div>
+        </div>
+        <div class="kpi">
+          <div class="t">今日の回数</div>
+          <div class="v" id="today">0</div>
+        </div>
+      </div>
+
+      <div class="sep"></div>
+      <div class="label">ミスログ</div>
+      <div class="mono">“なぜミスったか”を蓄積する（ここが伸びる）。</div>
+      <div class="sep" style="margin:10px 0"></div>
+      <div class="log" id="log"></div>
+    </aside>
+  </div>
+</div>
+
+<script>
+/* ===================== ルール設計 =====================
+
+- Step1: 型（分類）
+- Step2: 式テンプレ（正しい構造の選択）
+- Step3: 変形（同値変形の感覚）
+- Step4: Percent Ladder（% of系のときだけ表示）
+  → 10% / 1% / 0.1% を先に作らせる
+
+======================================================== */
+
+const TYPES = [
+  {
+    id:"PCT_OF",
+    name:"何%の計算（◯のp%）",
+    mnemonic:"語呂：『%は“倍率”、ofは掛け算』\n→ p% of T = T × p/100",
+    formulaOptions:[
+      { id:"A", text:"合計 × 率", latex:"T × r", ok:true, tag:"コア" },
+      { id:"B", text:"率 ÷ 合計", latex:"r ÷ T", ok:false, tag:"罠（逆）" },
+      { id:"C", text:"合計 ÷ 率", latex:"T ÷ r", ok:false, tag:"罠（爆発）" },
+    ],
+    transforms:[
+      { id:"T1", text:"T × (p/100)", latex:"T × (p/100)", ok:true },
+      { id:"T2", text:"（10%と5%に分解）", latex:"10% + 5% …", ok:true },
+      { id:"T3", text:"T ÷ (100/p)", latex:"T ÷ (100/p)", ok:true },
+    ],
+    mentalMath:"暗算の型：\n① 10% を作る\n② 1% を作る\n③ 必要な%を分解して合成",
+    ladder:true
+  },
+  {
+    id:"WHAT_PCT",
+    name:"何%？（部分/全体）",
+    mnemonic:"語呂：『部分は全体で割れ』\n→ 何% = 部分 ÷ 全体",
+    formulaOptions:[
+      { id:"A", text:"部分 ÷ 全体", latex:"P ÷ W", ok:true, tag:"コア" },
+      { id:"B", text:"全体 ÷ 部分", latex:"W ÷ P", ok:false, tag:"罠（入替）" },
+      { id:"C", text:"(全体−部分) ÷ 全体", latex:"(W−P) ÷ W", ok:false, tag:"罠（増減と混同）" },
+    ],
+    transforms:[
+      { id:"T1", text:"部分 = 全体 × 率", latex:"P = W×r", ok:true },
+      { id:"T2", text:"全体 = 部分 ÷ 率", latex:"W = P÷r", ok:true },
+      { id:"T3", text:"分数を先に約分する", latex:"P/W → 簡約", ok:true },
+    ],
+    mentalMath:"暗算の型：\n割り算→比→約分\n例：75/300 = 1/4 = 25%",
+    ladder:false
+  },
+  {
+    id:"PCT_CHANGE",
+    name:"増減率（%増・%減）",
+    mnemonic:"語呂：『差を元で割れ』\n→ 増減率 = (新−元) ÷ 元",
+    formulaOptions:[
+      { id:"A", text:"(新 − 元) ÷ 元", latex:"(N−O) ÷ O", ok:true, tag:"コア" },
+      { id:"B", text:"新 ÷ 元", latex:"N ÷ O", ok:false, tag:"罠（残存率）" },
+      { id:"C", text:"(元 − 新) ÷ 新", latex:"(O−N) ÷ N", ok:false, tag:"罠（分母ミス）" },
+    ],
+    transforms:[
+      { id:"T1", text:"新 = 元 × (1 + 増減率)", latex:"N = O×(1+g)", ok:true },
+      { id:"T2", text:"減少なら 1 − 新/元", latex:"g = 1−N/O", ok:true },
+      { id:"T3", text:"10%基準で近似→精密化", latex:"Δ と 10% を比較", ok:true },
+    ],
+    mentalMath:"暗算の型：\n① 差（Δ）を出す\n② 元の10%と比較\n③ 5%/2%/1%で調整",
+    ladder:false
+  },
+  {
+    id:"PT_IMPACT",
+    name:"pt差→円差（PL直感）",
+    mnemonic:"語呂：『pt差×売上＝円差』\n（pt=率の“差”）",
+    formulaOptions:[
+      { id:"A", text:"影響 = 売上 × (率1 − 率2)", latex:"S×(r1−r2)", ok:true, tag:"コア" },
+      { id:"B", text:"影響 = 売上 × (率2 ÷ 率1)", latex:"S×(r2/r1)", ok:false, tag:"罠（%と混同）" },
+      { id:"C", text:"影響 = 売上 ÷ 率", latex:"S ÷ r", ok:false, tag:"罠（意味不明）" },
+    ],
+    transforms:[
+      { id:"T1", text:"粗利率 = 1 − 原価率", latex:"GM% = 1−COGS%", ok:true },
+      { id:"T2", text:"影響 = 売上 × pt（小数）", latex:"S×pt", ok:true },
+      { id:"T3", text:"pt = 影響 ÷ 売上", latex:"pt = Δ¥/S", ok:true },
+    ],
+    mentalMath:"暗算の型：\n売上×0.01=1%の円\npt差はその倍\n例：5,000万×0.02=100万",
+    ladder:true
+  }
+];
+
+// 問題生成
+function genQuestion(typeId){
+  if(typeId==="PCT_OF"){
+    const total = pick([240, 360, 480, 1200, 8000, 25000000, 50000000, 80000000]);
+    const p = pick([3,5,8,12,15,20,25]);
+    return {
+      typeId,
+      text: `${formatSmart(total)} の ${p}% は？（まず構造）`,
+      context: {total, p},
+      answerNote: `狙い：合計×率（${p}% = ${p}/100）`,
+      ladder: { total }
+    };
+  }
+  if(typeId==="WHAT_PCT"){
+    const pairs = [
+      [75,300],[48,240],[60,150],[120,800],[45,180],[108,1200],[900,1200]
+    ];
+    const [part, whole] = pick(pairs);
+    return {
+      typeId,
+      text: `${formatSmart(part)} は ${formatSmart(whole)} の何%？（まず構造）`,
+      context:{part,whole},
+      answerNote:`狙い：部分÷全体`,
+      ladder: null
+    };
+  }
+  if(typeId==="PCT_CHANGE"){
+    const old = pick([800, 1000, 1200, 2000, 5000, 50000000]);
+    const delta = pick([ -120, -200, -80, +100, +150, +250, -5000000, +8000000 ]);
+    const neu = old + delta;
+    return {
+      typeId,
+      text: `元 ${formatSmart(old)} → 新 ${formatSmart(neu)}。増減率は？（まず式）`,
+      context:{old, neu},
+      answerNote:`狙い：(新−元)÷元`,
+      ladder: null
+    };
+  }
+  if(typeId==="PT_IMPACT"){
+    const sales = pick([30000000, 50000000, 80000000, 120000000]);
+    const r1 = pick([0.60,0.55,0.48,0.62]);
+    const pt = pick([0.01,0.02,0.03]);
+    const r2 = Math.max(0, r1-pt);
+    return {
+      typeId,
+      text: `売上 ¥${formatSmart(sales)}。原価率が ${Math.round(r1*100)}%→${Math.round(r2*100)}%（${Math.round(pt*100)}pt改善）。利益インパクトは？（構造→桁）`,
+      context:{sales,r1,r2,pt},
+      answerNote:`狙い：売上×pt差`,
+      ladder: { total: sales }
+    };
+  }
+}
+
+function formatSmart(n){
+  // 1,000,000以上は日本語っぽく
+  if(n >= 100000000){
+    const oku = n / 100000000;
+    const s = (Math.round(oku*10)/10).toString().replace(/\.0$/,"");
+    return `${s}億円`;
+  }
+  if(n >= 10000){
+    const man = n / 10000;
+    const s = (Math.round(man*10)/10).toString().replace(/\.0$/,"");
+    return `${s}万円`;
+  }
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+/* ===================== State + persistence ===================== */
+const LS_KEY="formula_trainer_ja_v2";
+const state = load() || {
+  streak:0,
+  solved:0,
+  correct:0,
+  todayCount:0,
+  weakness:{
+    type_misclass:0,
+    wrong_denominator:0,
+    missing_delta:0,
+    pt_percent_confuse:0,
+    inverse_multiplier:0,
+    ladder:0
+  },
+  log:[]
+};
+
+let current = null;
+let selection = { type:null, formula:null, transform:null };
+let ladder = { shown:false, total:0, targetP:0, correct:{p10:0,p1:0,p01:0}, passed:false };
+
+const $ = (id)=>document.getElementById(id);
+const statusEl = $("status");
+const qText = $("qText");
+const typeChips = $("typeChips");
+const formulaChips = $("formulaChips");
+const transformChips = $("transformChips");
+const hintBox = $("hintBox");
+
+const ladderBox = $("ladderBox");
+const ladderTarget = $("ladderTarget");
+const ladderHint = $("ladderHint");
+const in10 = $("in10"), in1=$("in1"), in01=$("in01");
+const cell10=$("cell10"), cell1=$("cell1"), cell01=$("cell01");
+
+function save(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+function load(){
+  try{
+    const s = localStorage.getItem(LS_KEY);
+    return s ? JSON.parse(s) : null;
+  }catch{ return null; }
+}
+
+function setStatus(t){ statusEl.textContent = t; }
+
+/* ===================== Render KPIs ===================== */
+function renderKPIs(){
+  $("streak").textContent = state.streak;
+  const acc = state.solved ? Math.round((state.correct/state.solved)*100) : 0;
+  $("acc").textContent = `${acc}%`;
+  $("today").textContent = state.todayCount;
+
+  const entries = Object.entries(state.weakness).sort((a,b)=>b[1]-a[1]);
+  const top = entries[0];
+  $("weak").textContent = top[1] ? prettyWeak(top[0]) : "—";
+
+  const logEl = $("log");
+  logEl.innerHTML = "";
+  for(const item of state.log.slice(-12).reverse()){
+    const div = document.createElement("div");
+    div.className="logItem";
+    div.innerHTML = `
+      <span class="tag">${item.type}</span>
+      <span class="tag" style="border-color:rgba(255,159,10,.35)">原因:${item.why}</span>
+      <div style="margin-top:6px">${escapeHtml(item.q)}</div>
+    `;
+    logEl.appendChild(div);
+  }
+}
+function prettyWeak(k){
+  if(k==="type_misclass") return "型選択";
+  if(k==="wrong_denominator") return "分母ミス";
+  if(k==="missing_delta") return "差分忘れ";
+  if(k==="pt_percent_confuse") return "pt/%混同";
+  if(k==="inverse_multiplier") return "倍率の逆";
+  if(k==="ladder") return "Ladder桁感";
+  return k;
+}
+function escapeHtml(s){
+  return (s||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
+}
+
+/* ===================== UI chips ===================== */
+function chipEl(title, sub, onClick){
+  const div = document.createElement("div");
+  div.className = "chip selectable";
+  div.innerHTML = `<strong>${title}</strong><small>${sub}</small>`;
+  div.addEventListener("click", onClick);
+  return div;
+}
+function highlight(container, id){
+  for(const el of [...container.querySelectorAll(".chip")]){
+    el.classList.toggle("selected", el.dataset.id===id);
+    el.classList.remove("bad","good");
+  }
+}
+function firstLine(s){ return (s||"").split("\n")[0]; }
+
+function renderTypeChips(){
+  typeChips.innerHTML = "";
+  for(const t of TYPES){
+    const div = chipEl(t.name, `語呂: ${firstLine(t.mnemonic)}`, ()=>{
+      selection.type = t.id;
+      highlight(typeChips, t.id);
+      renderFormulaChips(t.id);
+      renderTransformChips(t.id);
+      renderHint(t.id);
+      setStatus("次：式テンプレを選ぶ");
+      updateLadderVisibility(t.id);
+    });
+    div.dataset.id = t.id;
+    typeChips.appendChild(div);
+  }
+}
+function renderFormulaChips(typeId){
+  formulaChips.innerHTML = "";
+  if(!typeId){
+    formulaChips.innerHTML = `<div class="mono">まず Step 1（型）を選んでね。</div>`;
+    return;
+  }
+  const t = TYPES.find(x=>x.id===typeId);
+  for(const f of t.formulaOptions){
+    const div = chipEl(f.text, `${f.latex} • ${f.tag}`, ()=>{
+      selection.formula = f.id;
+      highlight(formulaChips, f.id);
+      setStatus("次：変形を選ぶ");
+    });
+    div.dataset.id = f.id;
+    formulaChips.appendChild(div);
+  }
+}
+function renderTransformChips(typeId){
+  transformChips.innerHTML = "";
+  if(!typeId){
+    transformChips.innerHTML = `<div class="mono">まず Step 1（型）を選んでね。</div>`;
+    return;
+  }
+  const t = TYPES.find(x=>x.id===typeId);
+  for(const tr of t.transforms){
+    const div = chipEl(tr.text, tr.latex, ()=>{
+      selection.transform = tr.id;
+      highlight(transformChips, tr.id);
+      setStatus("判定OK（Ladderがあれば埋めてね）");
+    });
+    div.dataset.id = tr.id;
+    transformChips.appendChild(div);
+  }
+}
+function renderHint(typeId){
+  if(!typeId){
+    hintBox.textContent = "Step 1で型を選ぶと、語呂と暗算の型が出るよ。";
+    return;
+  }
+  const t = TYPES.find(x=>x.id===typeId);
+  hintBox.textContent =
+`語呂（トリガー）：
+${t.mnemonic}
+
+暗算の型：
+${t.mentalMath}
+
+メモ：
+${current?.answerNote || ""}`;
+}
+
+/* ===================== Percent Ladder ===================== */
+function parseAmount(s){
+  // Accept: "5000000", "5,000,000", "500万円", "5万円", "1億", "1.2億円"
+  if(!s) return NaN;
+  let t = (s+"").trim();
+  t = t.replace(/,/g,"").replace(/円/g,"");
+
+  // 億
+  const oku = t.match(/^([0-9]+(\.[0-9]+)?)億$/);
+  if(oku) return Math.round(parseFloat(oku[1])*100000000);
+
+  // 万
+  const man = t.match(/^([0-9]+(\.[0-9]+)?)万$/);
+  if(man) return Math.round(parseFloat(man[1])*10000);
+
+  // 万円
+  const manyen = t.match(/^([0-9]+(\.[0-9]+)?)万円$/);
+  if(manyen) return Math.round(parseFloat(manyen[1])*10000);
+
+  // plain number
+  if(/^[0-9]+(\.[0-9]+)?$/.test(t)) return Math.round(parseFloat(t));
+
+  return NaN;
+}
+
+function setupLadder(total){
+  ladder.shown = true;
+  ladder.total = total;
+  ladder.passed = false;
+  ladder.correct.p10 = total * 0.10;
+  ladder.correct.p1  = total * 0.01;
+  ladder.correct.p01 = total * 0.001;
+
+  in10.value=""; in1.value=""; in01.value="";
+  cell10.classList.remove("ok"); cell1.classList.remove("ok"); cell01.classList.remove("ok");
+  ladderHint.textContent = "ヒント：まず10%→1%→0.1%を“足場”として作る。";
+  ladderTarget.textContent = `対象：${formatSmart(total)} の 10% / 1% / 0.1%`;
+}
+
+function updateLadderVisibility(typeId){
+  const t = TYPES.find(x=>x.id===typeId);
+  const needs = !!t?.ladder && !!current?.ladder?.total;
+  if(needs){
+    ladderBox.style.display = "block";
+    setupLadder(current.ladder.total);
+    setStatus("Ladderも埋めると桁×%が速くなる");
+  }else{
+    ladderBox.style.display = "none";
+    ladder.shown = false;
+    ladder.passed = true; // not required
+  }
+}
+
+function ladderCheck(){
+  if(!ladder.shown) return true;
+
+  const v10 = parseAmount(in10.value);
+  const v1  = parseAmount(in1.value);
+  const v01 = parseAmount(in01.value);
+
+  const ok10 = Number.isFinite(v10) && Math.abs(v10 - ladder.correct.p10) <= Math.max(1, ladder.correct.p10*0.001);
+  const ok1  = Number.isFinite(v1)  && Math.abs(v1  - ladder.correct.p1 ) <= Math.max(1, ladder.correct.p1 *0.001);
+  const ok01 = Number.isFinite(v01) && Math.abs(v01 - ladder.correct.p01) <= Math.max(1, ladder.correct.p01*0.001);
+
+  cell10.classList.toggle("ok", ok10);
+  cell1.classList.toggle("ok", ok1);
+  cell01.classList.toggle("ok", ok01);
+
+  ladder.passed = ok10 && ok1 && ok01;
+
+  if(ladder.passed){
+    ladderHint.textContent = "Ladder OK ✓  次は必要%を分解して合成できる！";
+    setStatus("Ladder OK ✓ 判定してOK");
+  }else{
+    state.weakness.ladder++;
+    ladderHint.textContent = "まだ！ 10%→1%→0.1% の順で作り直してみて。";
+    setStatus("Ladderが未完成");
+  }
+  save();
+  renderKPIs();
+  return ladder.passed;
+}
+
+function ladderReveal(){
+  if(!ladder.shown) return;
+  in10.value = formatSmart(Math.round(ladder.correct.p10));
+  in1.value  = formatSmart(Math.round(ladder.correct.p1));
+  in01.value = formatSmart(Math.round(ladder.correct.p01));
+  ladderCheck();
+}
+
+/* ===================== Checking logic ===================== */
+function detectMistakeCategory(){
+  let why = [];
+
+  if(selection.type !== current.typeId){
+    state.weakness.type_misclass++;
+    why.push("型違い");
+  }
+  if(selection.type){
+    const t = TYPES.find(x=>x.id===selection.type);
+    const f = t?.formulaOptions.find(x=>x.id===selection.formula);
+    if(f && !f.ok){
+      if(f.latex.includes("r ÷") || f.latex.includes("÷ T")) { state.weakness.inverse_multiplier++; why.push("倍率逆"); }
+      if(f.latex.includes("W ÷ P") || f.latex.includes("÷ N")) { state.weakness.wrong_denominator++; why.push("分母"); }
+      if(f.latex.includes("N ÷ O")) { state.weakness.missing_delta++; why.push("差分"); }
+    }
+  }
+  if(current.typeId==="PT_IMPACT" && selection.type && selection.type!=="PT_IMPACT"){
+    state.weakness.pt_percent_confuse++;
+    why.push("pt/%");
+  }
+  if(ladder.shown && !ladder.passed){
+    why.push("Ladder");
+  }
+
+  return why.length ? why.join("+") : "—";
+}
+
+function markCorrectness(){
+  const typeOk = selection.type === current.typeId;
+
+  let formulaOk = false;
+  let transformOk = false;
+
+  if(selection.type){
+    const t = TYPES.find(x=>x.id===selection.type);
+    const f = t?.formulaOptions.find(x=>x.id===selection.formula);
+    const tr = t?.transforms.find(x=>x.id===selection.transform);
+    formulaOk = !!(f && f.ok);
+    transformOk = !!(tr && tr.ok);
+  }
+  const ladderOk = ladder.shown ? ladder.passed : true;
+  return {typeOk, formulaOk, transformOk, ladderOk, allOk: typeOk && formulaOk && transformOk && ladderOk};
+}
+
+function check(){
+  if(!selection.type || !selection.formula || !selection.transform){
+    setStatus("Step1〜3を全部選んでね");
+    return;
+  }
+  if(ladder.shown && !ladder.passed){
+    // allow check but nudge ladder
+    setStatus("Ladderを埋めると伸びる（先にLadder判定してみて）");
+  }
+
+  const r = markCorrectness();
+  state.solved++; state.todayCount++;
+
+  // paint selected chips
+  for(const el of [...typeChips.querySelectorAll(".chip")]){
+    if(el.dataset.id === selection.type) el.classList.add(r.typeOk ? "good" : "bad");
+  }
+  for(const el of [...formulaChips.querySelectorAll(".chip")]){
+    if(el.dataset.id === selection.formula) el.classList.add(r.formulaOk ? "good" : "bad");
+  }
+  for(const el of [...transformChips.querySelectorAll(".chip")]){
+    if(el.dataset.id === selection.transform) el.classList.add(r.transformOk ? "good" : "bad");
+  }
+
+  if(r.allOk){
+    state.correct++;
+    state.streak++;
+    setStatus("正解 ✓");
+  }else{
+    state.streak = 0;
+    setStatus("惜しい…語呂と分母・差分を見直そう");
+    const why = detectMistakeCategory();
+    state.log.push({ q: current.text, type: current.typeId, why });
+  }
+
+  save();
+  renderKPIs();
+
+  setTimeout(()=> renderQuestion(), 900);
+}
+
+/* ===================== Question cycle ===================== */
+function renderQuestion(){
+  // weakness-biased sampling
+  const weighted = [];
+  for(const t of TYPES){
+    let w = 1;
+    if(t.id==="PCT_CHANGE") w += state.weakness.missing_delta*0.15 + state.weakness.wrong_denominator*0.10;
+    if(t.id==="PCT_OF") w += state.weakness.inverse_multiplier*0.22 + state.weakness.ladder*0.08;
+    if(t.id==="PT_IMPACT") w += state.weakness.pt_percent_confuse*0.20 + state.weakness.ladder*0.10;
+    if(t.id==="WHAT_PCT") w += state.weakness.wrong_denominator*0.12;
+    weighted.push({t,w});
+  }
+  const sum = weighted.reduce((s,x)=>s+x.w,0);
+  let r = Math.random()*sum;
+  let chosen = weighted[0].t;
+  for(const x of weighted){ r -= x.w; if(r<=0){ chosen=x.t; break; } }
+
+  current = genQuestion(chosen.id);
+  selection = { type:null, formula:null, transform:null };
+
+  qText.textContent = current.text;
+
+  renderTypeChips();
+  renderFormulaChips(null);
+  renderTransformChips(null);
+  renderHint(null);
+
+  // ladder depends on chosen type AFTER user selects type
+  ladderBox.style.display = "none";
+  ladder.shown = false;
+  ladder.passed = true;
+
+  setStatus("Step1：型を選ぶ");
+}
+
+/* ===================== Buttons ===================== */
+$("checkBtn").addEventListener("click", check);
+$("skipBtn").addEventListener("click", ()=>{ setStatus("次の問題"); renderQuestion(); });
+$("resetProgressBtn").addEventListener("click", ()=>{
+  localStorage.removeItem(LS_KEY);
+  location.reload();
+});
+
+$("ladderCheckBtn").addEventListener("click", ladderCheck);
+$("ladderRevealBtn").addEventListener("click", ladderReveal);
+
+/* ===================== Boot ===================== */
+renderKPIs();
+renderQuestion();
+</script>
+</body>
+</html>

@@ -1,0 +1,773 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Virtual Fridge Chef</title>
+  <style>
+    :root {
+      --bg-top: #eef5ff;
+      --bg-bottom: #f6fbff;
+      --ink: #111827;
+      --muted: #55637a;
+      --glass: rgba(255, 255, 255, 0.72);
+      --glass-strong: rgba(255, 255, 255, 0.9);
+      --line: rgba(255, 255, 255, 0.84);
+      --accent: #0a84ff;
+      --accent-dark: #0060df;
+      --danger: #ff3b30;
+      --chip: #f2f6fb;
+      --card-shadow: 0 20px 55px rgba(16, 38, 72, 0.18);
+      --soft-shadow: 0 10px 28px rgba(16, 38, 72, 0.12);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+      background:
+        radial-gradient(1000px 500px at 8% 6%, rgba(255, 255, 255, 0.92), transparent 70%),
+        radial-gradient(700px 380px at 94% 86%, rgba(10, 132, 255, 0.18), transparent 65%),
+        linear-gradient(155deg, var(--bg-top), var(--bg-bottom));
+      padding: 28px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app {
+      max-width: 1180px;
+      margin: 0 auto;
+      border-radius: var(--radius-xl);
+      background: var(--glass);
+      border: 1px solid var(--line);
+      box-shadow: var(--card-shadow);
+      overflow: hidden;
+      backdrop-filter: blur(20px) saturate(150%);
+      -webkit-backdrop-filter: blur(20px) saturate(150%);
+      animation: floatIn 700ms ease both;
+    }
+
+    .titlebar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      border-bottom: 1px solid rgba(222, 232, 245, 0.95);
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.82), rgba(246, 250, 255, 0.65));
+    }
+
+    .traffic {
+      display: flex;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      box-shadow: inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+    }
+
+    .dot.red { background: #ff5f57; }
+    .dot.yellow { background: #febc2e; }
+    .dot.green { background: #28c840; }
+
+    .titlebar h1 {
+      margin: 0;
+      font-size: 0.95rem;
+      letter-spacing: 0.01em;
+      font-weight: 600;
+      color: #2d3b52;
+    }
+
+    .titlebar .device {
+      font-size: 0.85rem;
+      color: #7a8ca6;
+      font-weight: 600;
+    }
+
+    .content {
+      padding: 20px;
+      display: grid;
+      gap: 20px;
+    }
+
+    .hero {
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(241, 247, 255, 0.82));
+      border: 1px solid rgba(255, 255, 255, 0.95);
+      box-shadow: var(--soft-shadow);
+    }
+
+    .hero h2 {
+      margin: 0;
+      font-size: clamp(1.5rem, 2.8vw, 2.4rem);
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+      max-width: 72ch;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.05fr 1.35fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--glass-strong);
+      border: 1px solid rgba(255, 255, 255, 0.92);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--soft-shadow);
+      padding: 16px;
+      animation: rise 600ms ease both;
+    }
+
+    .card h3 {
+      margin: 0 0 12px;
+      font-size: 1.02rem;
+      color: #22334e;
+      letter-spacing: 0.01em;
+    }
+
+    .add-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    input[type="text"] {
+      border: 1px solid #d4e2f1;
+      border-radius: 13px;
+      padding: 11px 12px;
+      font-size: 0.97rem;
+      outline: none;
+      width: 100%;
+      background: #fff;
+      color: var(--ink);
+      transition: border-color 180ms ease, box-shadow 180ms ease;
+    }
+
+    input[type="text"]:focus {
+      border-color: #8cc3ff;
+      box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.18);
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 13px;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.92rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: transform 120ms ease, filter 180ms ease, box-shadow 180ms ease;
+    }
+
+    button:hover { filter: brightness(1.05); }
+    button:active { transform: translateY(1px) scale(0.99); }
+
+    .btn-primary {
+      background: linear-gradient(180deg, #2b9bff, var(--accent));
+      box-shadow: 0 6px 16px rgba(10, 132, 255, 0.3);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(180deg, #4fb3ff, var(--accent-dark));
+      box-shadow: 0 6px 16px rgba(0, 96, 223, 0.25);
+    }
+
+    .btn-danger {
+      background: linear-gradient(180deg, #ff786f, var(--danger));
+      box-shadow: 0 6px 16px rgba(255, 59, 48, 0.25);
+    }
+
+    .fridge-shell {
+      position: relative;
+      border-radius: 20px;
+      padding: 14px;
+      background: linear-gradient(180deg, #f9fcff, #eaf2fb);
+      border: 1px solid #cfdeef;
+      box-shadow: inset 0 2px 8px rgba(255, 255, 255, 0.9), inset 0 -2px 8px rgba(147, 172, 200, 0.3);
+      overflow: hidden;
+      min-height: 205px;
+    }
+
+    .fridge-shell::before {
+      content: "";
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      top: 62px;
+      height: 1px;
+      background: #cad9e9;
+      box-shadow: 0 48px 0 #cad9e9;
+    }
+
+    .fridge-shell::after {
+      content: "";
+      position: absolute;
+      top: 14px;
+      bottom: 14px;
+      right: 14px;
+      width: 9px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #b4c8dd, #8ea6bf);
+      box-shadow: inset -1px 0 2px rgba(0, 0, 0, 0.16);
+    }
+
+    .fridge-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 0 14px 10px 2px;
+      color: #4a6384;
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .fridge-light {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #5cd65c;
+      box-shadow: 0 0 10px rgba(92, 214, 92, 0.8);
+    }
+
+    .fridge {
+      min-height: 90px;
+      display: flex;
+      flex-wrap: wrap;
+      align-content: flex-start;
+      gap: 8px;
+      background: linear-gradient(180deg, #ffffff, #f4f9ff);
+      border: 1px solid #cddbea;
+      border-radius: 13px;
+      padding: 10px;
+      margin-right: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--chip);
+      border: 1px solid #d8e3ef;
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 0.9rem;
+      animation: pop 280ms ease;
+    }
+
+    .chip .x {
+      border: 0;
+      width: 18px;
+      height: 18px;
+      padding: 0;
+      background: #e6eef8;
+      color: #506481;
+      border-radius: 50%;
+      line-height: 1;
+      font-size: 0.75rem;
+      box-shadow: none;
+    }
+
+    .quick {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .quick button {
+      background: linear-gradient(180deg, #f4f8fe, #e7eff9);
+      color: #2a3d57;
+      border: 1px solid #d4e2f1;
+      box-shadow: none;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      padding: 7px 11px;
+    }
+
+    .stats {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 9px;
+    }
+
+    .stat {
+      border-radius: 13px;
+      border: 1px solid #d8e4f1;
+      background: linear-gradient(180deg, #fbfdff, #f3f8ff);
+      text-align: center;
+      padding: 10px 7px;
+      color: #334a68;
+      font-size: 0.83rem;
+      font-weight: 600;
+    }
+
+    .stat strong {
+      display: block;
+      color: #10233f;
+      font-size: 1.02rem;
+      margin-bottom: 2px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin: 6px 0 14px;
+      flex-wrap: wrap;
+    }
+
+    .safari {
+      border-radius: 16px;
+      border: 1px solid #cfdeed;
+      background: #f9fbff;
+      overflow: hidden;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    }
+
+    .safari-bar {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      background: linear-gradient(180deg, #f4f8fd, #e8f0fa);
+      border-bottom: 1px solid #d5e1ee;
+    }
+
+    .safari-controls {
+      display: flex;
+      gap: 6px;
+    }
+
+    .safari-btn {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      box-shadow: inset 0 -1px 1px rgba(0, 0, 0, 0.2);
+    }
+
+    .safari-btn.red { background: #ff5f57; }
+    .safari-btn.yellow { background: #febc2e; }
+    .safari-btn.green { background: #28c840; }
+
+    .url-pill {
+      text-align: center;
+      border-radius: 999px;
+      border: 1px solid #d3dfed;
+      background: #ffffff;
+      color: #516985;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 6px 10px;
+    }
+
+    .safari-tools {
+      font-size: 0.82rem;
+      color: #6d84a3;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+
+    .recipe-card {
+      background: #fff;
+      border-radius: 0;
+      border: 0;
+      min-height: 270px;
+      padding: 14px;
+    }
+
+    .recipe-title {
+      margin: 0;
+      font-size: 1.3rem;
+      letter-spacing: -0.01em;
+      color: #193252;
+    }
+
+    .badge {
+      display: inline-block;
+      margin: 8px 0 10px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid #c7def8;
+      background: #eef6ff;
+      color: #1f66b4;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 0.84rem;
+      color: #274263;
+    }
+
+    .meta span {
+      border: 1px solid #d4e1ee;
+      background: #f3f8fe;
+      border-radius: 10px;
+      padding: 4px 8px;
+    }
+
+    .recipe-card h4 {
+      margin: 12px 0 8px;
+      font-size: 0.95rem;
+      color: #233a58;
+    }
+
+    .recipe-card ul,
+    .recipe-card ol {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .recipe-card li {
+      margin-bottom: 5px;
+      line-height: 1.35;
+    }
+
+    .empty {
+      color: #667f9f;
+      margin: 0;
+      font-style: italic;
+    }
+
+    @keyframes floatIn {
+      from { transform: translateY(12px) scale(0.985); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pop {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @media (max-width: 940px) {
+      body { padding: 14px; }
+      .content { padding: 14px; }
+      .grid { grid-template-columns: 1fr; }
+      .titlebar .device { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="titlebar">
+      <div class="traffic" aria-hidden="true">
+        <span class="dot red"></span>
+        <span class="dot yellow"></span>
+        <span class="dot green"></span>
+      </div>
+      <h1>🍏 Fridge Chef Play</h1>
+      <div class="device">📱 + 💻 mode</div>
+    </header>
+
+    <section class="content">
+      <article class="hero">
+        <h2>🧊 ➜ 👨‍🍳 ➜ 🍽️</h2>
+        <p>Drop food into your virtual fridge, tap cook, and get a playful chef-made dish with style, steps, and plating flair.</p>
+      </article>
+
+      <section class="grid">
+        <article class="card">
+          <h3>🧊 My Fridge</h3>
+          <div class="add-row">
+            <input id="ingredientInput" type="text" placeholder="🥕 tomato / basil / egg ..." />
+            <button id="addBtn" type="button" class="btn-primary">➕ 🥬</button>
+          </div>
+
+          <div class="fridge-shell">
+            <div class="fridge-head">
+              <span>❄️ COOL ZONE</span>
+              <span class="fridge-light" aria-hidden="true"></span>
+            </div>
+            <div id="fridge" class="fridge" aria-live="polite"></div>
+          </div>
+
+          <div class="quick" aria-label="Quick add ingredients">
+            <button type="button" data-quick="tomato">🍅</button>
+            <button type="button" data-quick="garlic">🧄</button>
+            <button type="button" data-quick="chicken">🍗</button>
+            <button type="button" data-quick="rice">🍚</button>
+            <button type="button" data-quick="pasta">🍝</button>
+            <button type="button" data-quick="mushroom">🍄</button>
+            <button type="button" data-quick="spinach">🥬</button>
+            <button type="button" data-quick="egg">🥚</button>
+            <button type="button" data-quick="lemon">🍋</button>
+            <button type="button" data-quick="cheese">🧀</button>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <strong id="countStat">0</strong>
+              🧺
+            </div>
+            <div class="stat">
+              <strong id="freshnessStat">100%</strong>
+              ✨
+            </div>
+            <div class="stat">
+              <strong id="levelStat">🐣</strong>
+              👨‍🍳
+            </div>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3>👨‍🍳 Studio</h3>
+          <div class="actions">
+            <button id="cookBtn" class="btn-secondary" type="button">🍳✨</button>
+            <button id="clearBtn" class="btn-danger" type="button">🗑️🧊</button>
+          </div>
+
+          <div class="safari">
+            <div class="safari-bar">
+              <div class="safari-controls" aria-hidden="true">
+                <span class="safari-btn red"></span>
+                <span class="safari-btn yellow"></span>
+                <span class="safari-btn green"></span>
+              </div>
+              <div class="url-pill">🧑‍🍳 recipe://fridge-chef</div>
+              <div class="safari-tools">🔁 ⤴︎</div>
+            </div>
+            <section id="recipe" class="recipe-card" aria-live="polite">
+              <p class="empty">😴 No dish yet. Add 3+ items, then tap 🍳✨.</p>
+            </section>
+          </div>
+        </article>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const ingredientInput = document.getElementById('ingredientInput');
+    const addBtn = document.getElementById('addBtn');
+    const cookBtn = document.getElementById('cookBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const fridgeEl = document.getElementById('fridge');
+    const recipeEl = document.getElementById('recipe');
+    const countStat = document.getElementById('countStat');
+    const freshnessStat = document.getElementById('freshnessStat');
+    const levelStat = document.getElementById('levelStat');
+
+    const pantry = new Set(['salt', 'pepper', 'olive oil', 'butter', 'water']);
+    const ingredients = [];
+
+    const ingredientEmoji = {
+      tomato: '🍅', basil: '🌿', garlic: '🧄', chicken: '🍗', rice: '🍚', pasta: '🍝', mushroom: '🍄',
+      spinach: '🥬', egg: '🥚', lemon: '🍋', cheese: '🧀', onion: '🧅', beef: '🥩', shrimp: '🍤',
+      tofu: '🧊', beans: '🫘', potato: '🥔', broccoli: '🥦', pepper: '🫑', cucumber: '🥒',
+      corn: '🌽', bread: '🍞', avocado: '🥑', fish: '🐟', salmon: '🐟', olive: '🫒', yogurt: '🥣'
+    };
+
+    const cuisineMap = {
+      italian: ['tomato', 'basil', 'pasta', 'parmesan', 'mozzarella', 'garlic'],
+      japanese: ['rice', 'soy sauce', 'miso', 'sesame', 'nori', 'tofu'],
+      mexican: ['beans', 'corn', 'lime', 'cilantro', 'chili', 'avocado'],
+      french: ['butter', 'thyme', 'mushroom', 'cream', 'shallot', 'leek'],
+      mediterranean: ['lemon', 'olive', 'feta', 'chickpea', 'yogurt', 'cucumber']
+    };
+
+    function normalize(text) {
+      return text.trim().toLowerCase().replace(/\s+/g, ' ');
+    }
+
+    function pretty(text) {
+      return text.replace(/\b\w/g, (char) => char.toUpperCase());
+    }
+
+    function withEmoji(item) {
+      const icon = ingredientEmoji[item] || '🥣';
+      return `${icon} ${pretty(item)}`;
+    }
+
+    function addIngredient(raw) {
+      const value = normalize(raw);
+      if (!value || ingredients.includes(value)) return;
+      ingredients.push(value);
+      ingredientInput.value = '';
+      renderFridge();
+      renderStats();
+    }
+
+    function removeIngredient(name) {
+      const idx = ingredients.indexOf(name);
+      if (idx >= 0) ingredients.splice(idx, 1);
+      renderFridge();
+      renderStats();
+    }
+
+    function renderFridge() {
+      fridgeEl.innerHTML = '';
+      if (!ingredients.length) {
+        const p = document.createElement('p');
+        p.className = 'empty';
+        p.textContent = '🫙 empty fridge';
+        fridgeEl.appendChild(p);
+        return;
+      }
+
+      ingredients.forEach((item) => {
+        const chip = document.createElement('span');
+        chip.className = 'chip';
+        chip.textContent = withEmoji(item);
+
+        const x = document.createElement('button');
+        x.className = 'x';
+        x.type = 'button';
+        x.textContent = '✕';
+        x.ariaLabel = `Remove ${item}`;
+        x.addEventListener('click', () => removeIngredient(item));
+
+        chip.appendChild(x);
+        fridgeEl.appendChild(chip);
+      });
+    }
+
+    function detectCuisine(items) {
+      let winner = 'chef special';
+      let best = 0;
+      for (const [cuisine, keys] of Object.entries(cuisineMap)) {
+        const score = keys.reduce((acc, key) => acc + (items.includes(key) ? 1 : 0), 0);
+        if (score > best) {
+          best = score;
+          winner = cuisine;
+        }
+      }
+      return pretty(winner);
+    }
+
+    function pick(list) {
+      return list[Math.floor(Math.random() * list.length)];
+    }
+
+    function recipeTemplate(items) {
+      const proteins = ['chicken', 'beef', 'tofu', 'shrimp', 'egg', 'beans', 'salmon'];
+      const carbs = ['rice', 'pasta', 'bread', 'potato', 'quinoa', 'tortilla'];
+      const veggies = ['tomato', 'onion', 'spinach', 'mushroom', 'zucchini', 'broccoli', 'pepper'];
+
+      const mainProtein = items.find((i) => proteins.includes(i)) || 'protein of choice';
+      const mainCarb = items.find((i) => carbs.includes(i)) || 'hearty base';
+      const mainVeg = items.find((i) => veggies.includes(i)) || 'seasonal vegetables';
+      const herb = items.find((i) => ['basil', 'cilantro', 'parsley', 'thyme', 'mint', 'oregano'].includes(i)) || 'fresh herbs';
+      const citrus = items.find((i) => ['lemon', 'lime', 'orange'].includes(i)) || 'a splash of acidity';
+
+      const style = detectCuisine(items);
+      const adjective = pick(['Silky', 'Golden', 'Cozy', 'Velvet', 'Fire-Kissed', 'Garden']);
+      const format = pick(['Skillet', 'Bowl', 'Roast', 'Saute', 'Pilaf', 'Pasta']);
+      const title = `${adjective} ${pretty(mainVeg)} ${format}`;
+
+      const cookTime = 15 + items.length * 4;
+      const difficulty = items.length > 7 ? '🧑‍🍳🧑‍🍳' : '🧑‍🍳';
+      const beauty = Math.min(98, 58 + items.length * 5 + (style !== 'Chef Special' ? 8 : 0));
+
+      const useItems = items.slice(0, 8);
+      const enhanced = [...useItems, ...[...pantry].slice(0, 2)];
+
+      const steps = [
+        `🔪 Prep ${withEmoji(mainVeg)} + season ${withEmoji(mainProtein)} with 🧂 + 🌶️ + 🫒.`,
+        `🔥 Saute aromatics and let ${withEmoji(mainVeg)} soften until glossy.`,
+        `🍲 Add ${withEmoji(mainCarb)} + ${withEmoji(mainProtein)} and stir in ${withEmoji(herb)}.`,
+        `⚖️ Balance with ${withEmoji(citrus)} and a tiny butter finish.`,
+        `🍽️ Plate high in the center, drizzle oil, sprinkle herbs, snap a pic.`
+      ];
+
+      return {
+        title,
+        style,
+        cookTime,
+        difficulty,
+        beauty,
+        ingredients: enhanced.map(withEmoji),
+        steps,
+        plating: '📸 Keep edges clean, add one bright garnish on top, and serve immediately for max wow.'
+      };
+    }
+
+    function renderRecipe(data) {
+      recipeEl.innerHTML = `
+        <h4 class="recipe-title">🍽️ ${data.title}</h4>
+        <span class="badge">🌍 ${data.style}</span>
+
+        <div class="meta">
+          <span>⏱️ ${data.cookTime}m</span>
+          <span>🎚️ ${data.difficulty}</span>
+          <span>✨ ${data.beauty}/100</span>
+        </div>
+
+        <h4>🧺</h4>
+        <ul>${data.ingredients.map((item) => `<li>${item}</li>`).join('')}</ul>
+
+        <h4>👨‍🍳</h4>
+        <ol>${data.steps.map((step) => `<li>${step}</li>`).join('')}</ol>
+
+        <h4>🎨</h4>
+        <p>${data.plating}</p>
+      `;
+    }
+
+    function renderStats() {
+      countStat.textContent = String(ingredients.length);
+      const freshness = Math.max(62, 100 - ingredients.length * 3);
+      freshnessStat.textContent = `${freshness}%`;
+      levelStat.textContent = ingredients.length >= 8 ? '🧑‍🍳' : ingredients.length >= 4 ? '😎' : '🐣';
+    }
+
+    addBtn.addEventListener('click', () => addIngredient(ingredientInput.value));
+    ingredientInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') addIngredient(ingredientInput.value);
+    });
+
+    document.querySelectorAll('[data-quick]').forEach((button) => {
+      button.addEventListener('click', () => addIngredient(button.dataset.quick));
+    });
+
+    cookBtn.addEventListener('click', () => {
+      if (ingredients.length < 3) {
+        recipeEl.innerHTML = '<p class="empty">🧠 Need at least 3 items for chef magic.</p>';
+        return;
+      }
+      renderRecipe(recipeTemplate([...ingredients]));
+    });
+
+    clearBtn.addEventListener('click', () => {
+      ingredients.length = 0;
+      renderFridge();
+      renderStats();
+      recipeEl.innerHTML = '<p class="empty">🧼 fridge reset. Ready for round 2.</p>';
+    });
+
+    renderFridge();
+    renderStats();
+  </script>
+</body>
+</html>

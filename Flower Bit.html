@@ -1,0 +1,596 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Flower Bit</title>
+<style>
+  :root{
+    --bg0:#070812;
+    --bg1:#0b1330;
+
+    /* refined glass */
+    --card: rgba(255,255,255,.055);
+    --line: rgba(255,255,255,.10);
+    --text: rgba(255,255,255,.92);
+    --muted: rgba(255,255,255,.60);
+
+    /* softer shadow (less “cheap”) */
+    --shadow: 0 10px 30px rgba(0,0,0,.28);
+
+    --r:18px;
+    --accent:#0a84ff;
+    --ok:#30d158;
+    --warn:#ff9f0a;
+
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+  }
+
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    padding:18px;
+    font-family: system-ui, -apple-system, "SF Pro Display","SF Pro Text","Segoe UI", Arial;
+    background:
+      radial-gradient(900px 520px at 20% 10%, rgba(10,132,255,.10), transparent 60%),
+      radial-gradient(900px 520px at 82% 12%, rgba(255,255,255,.06), transparent 60%),
+      linear-gradient(180deg, var(--bg0), var(--bg1));
+    color: var(--text);
+  }
+
+  .wrap{ max-width:1120px; margin:0 auto; }
+
+  header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:12px;
+    margin-bottom:14px;
+  }
+  h1{ margin:0; font-size:18px; letter-spacing:.2px; }
+  .sub{ margin-top:6px; color:var(--muted); font-size:12px; line-height:1.5; }
+
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 12px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background: rgba(255,255,255,.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    font-size:12px;
+    color:var(--muted);
+    box-shadow: 0 8px 22px rgba(0,0,0,.20);
+    white-space:nowrap;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns: 1.25fr 0.75fr;
+    gap:14px;
+  }
+  @media (max-width: 980px){
+    .grid{ grid-template-columns:1fr; }
+  }
+
+  .card{
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    padding: 16px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .toolbar{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+
+  .label{
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  input, button, select{
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.05);
+    color: var(--text);
+    padding: 10px 12px;
+    font-size:13px;
+    outline:none;
+    box-shadow: 0 1px 0 rgba(255,255,255,.08) inset;
+  }
+
+  button{
+    cursor:pointer;
+    user-select:none;
+    transition: transform .05s ease, filter .15s ease;
+  }
+  button:hover{ filter: brightness(1.06); }
+  button:active{ transform: translateY(1px); filter: brightness(.98); }
+
+  .btn.primary{
+    background: linear-gradient(180deg, rgba(10,132,255,.88), rgba(10,132,255,.52));
+    border-color: rgba(10,132,255,.55);
+    color:#fff;
+    box-shadow: 0 1px 0 rgba(255,255,255,.12) inset, 0 16px 36px rgba(10,132,255,.14);
+  }
+  .btn.ghost{
+    background: rgba(255,255,255,.045);
+    border-color: rgba(255,255,255,.10);
+    color: rgba(255,255,255,.88);
+  }
+
+  .btn.pink{
+    background: linear-gradient(180deg, rgba(255,45,85,.88), rgba(255,45,85,.52));
+    border-color: rgba(255,45,85,.55);
+    color:#fff;
+    box-shadow: 0 1px 0 rgba(255,255,255,.12) inset, 0 16px 36px rgba(255,45,85,.14);
+  }
+
+  .btn.pink:hover{ filter: brightness(1.06); }
+
+  .sep{
+    height:1px;
+    background: rgba(255,255,255,.10);
+    margin: 14px 0;
+  }
+
+  /* canvas */
+  canvas{
+    width:100%;
+    height:auto;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(0,0,0,.14);
+  }
+
+  .muted{
+    color: var(--muted);
+    font-size:12px;
+    line-height:1.55;
+  }
+
+  .kpi{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:10px;
+  }
+
+  .box{
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(0,0,0,.12);
+    border-radius:16px;
+    padding:12px;
+  }
+  .box .t{ font-size:12px; color:var(--muted); }
+  .box .v{ font-size:16px; margin-top:6px; }
+
+  .palette{
+    display:grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap:8px;
+    margin-top:10px;
+  }
+
+  .swatch{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    padding:8px 10px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.04);
+    min-width:0;
+  }
+
+  .swatchLeft{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    min-width:0;
+    overflow:hidden;
+  }
+
+  .dot{
+    width:14px;
+    height:14px;
+    border-radius:5px;
+    border:1px solid rgba(255,255,255,.16);
+    flex: 0 0 auto;
+  }
+
+  .hex{
+    font-size:11px;
+    color: rgba(255,255,255,.86);
+    font-family: var(--mono);
+    letter-spacing:.2px;
+  }
+
+  .pcs{
+    font-size:11px;
+    color: var(--muted);
+    font-family: var(--mono);
+    white-space:nowrap;
+  }
+
+  .mono{
+    font-family: var(--mono);
+    font-size:11px;
+    color: var(--muted);
+  }
+
+  /* file input refined */
+  .file-hidden{
+    position:absolute;
+    width:1px;height:1px;
+    padding:0;margin:-1px;
+    overflow:hidden;clip:rect(0,0,0,0);
+    white-space:nowrap;border:0;
+  }
+
+  .file-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 12px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.05);
+    color: rgba(255,255,255,.78);
+    cursor:pointer;
+    user-select:none;
+    box-shadow: 0 1px 0 rgba(255,255,255,.08) inset;
+    transition: filter .15s ease, transform .05s ease;
+    font-size:12px;
+  }
+  .file-btn:hover{ filter:brightness(1.06); }
+  .file-btn:active{ transform: translateY(1px); filter:brightness(.98); }
+
+  .file-btn__icon{
+    width:18px;height:18px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:6px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(0,0,0,.18);
+    color: rgba(255,255,255,.70);
+    font-size:12px;
+    line-height:1;
+  }
+
+  .file-name{
+    color: rgba(255,255,255,.55);
+    font-size:12px;
+    max-width: 260px;
+    overflow:hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .toggle{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 12px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.04);
+    color: rgba(255,255,255,.82);
+    cursor:pointer;
+    user-select:none;
+  }
+  .toggle input{ margin:0; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Flower Bit</h1>
+      <div class="sub">A minimal pattern generator for beads or bricks — upload, quantize, export.</div>
+    </div>
+    <div class="pill" id="status">Ready</div>
+  </header>
+
+  <div class="grid">
+    <!-- Main -->
+    <section class="card">
+      <div class="toolbar">
+        <span class="label">Image</span>
+
+        <input id="file" type="file" accept="image/*" class="file-hidden" />
+        <label for="file" class="file-btn">
+          <span class="file-btn__icon">⤓</span>
+          <span>Choose image…</span>
+        </label>
+        <span class="file-name" id="fileName">No file selected</span>
+
+        <span class="label">Grid</span>
+        <select id="gridSize">
+          <option>24</option>
+          <option>32</option>
+          <option selected>48</option>
+          <option>64</option>
+          <option>80</option>
+        </select>
+
+        <span class="label">Colors</span>
+<select id="kColors">
+  <option>6</option>
+  <option>8</option>
+  <option selected>12</option>
+  <option>16</option>
+  <option>20</option>
+  <option>24</option>
+  <option>32</option>
+  <option>40</option>
+  <option>48</option>
+  <option>64</option>
+  <option>80</option>
+</select>
+
+        <label class="toggle">
+          <input id="showGrid" type="checkbox" checked />
+          <span class="label" style="color:rgba(255,255,255,.78)">Grid lines</span>
+        </label>
+
+        <button class="btn primary" id="gen">Generate</button>
+        <button class="btn pink" id="save">Export PNG</button>
+      </div>
+
+      <div class="sep"></div>
+
+      <canvas id="c"></canvas>
+
+      <div class="muted" style="margin-top:12px">
+        Tip: <b>48–64</b> grids look great and stay buildable. Reduce colors for a cleaner, more “designed” result.
+      </div>
+    </section>
+
+    <!-- Side -->
+    <aside class="card">
+      <div class="kpi">
+        <div class="box"><div class="t">Grid</div><div class="v" id="kpiGrid">—</div></div>
+        <div class="box"><div class="t">Colors</div><div class="v" id="kpiK">—</div></div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="box">
+        <div class="t">Palette & counts</div>
+        <div class="palette" id="palette"></div>
+        <div class="mono" style="margin-top:10px">Next: palette snapping (Perler/LEGO), manual edits, print sheet.</div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+const fileEl = document.getElementById("file");
+const fileNameEl = document.getElementById("fileName");
+const gridEl = document.getElementById("gridSize");
+const kEl = document.getElementById("kColors");
+const showGridEl = document.getElementById("showGrid");
+const genBtn = document.getElementById("gen");
+const saveBtn = document.getElementById("save");
+const statusEl = document.getElementById("status");
+
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d", { willReadFrequently: true });
+
+const kpiGrid = document.getElementById("kpiGrid");
+const kpiK = document.getElementById("kpiK");
+const paletteEl = document.getElementById("palette");
+
+let srcImg = null;
+let lastRender = null;
+
+function setStatus(t){ statusEl.textContent = t; }
+
+fileEl.addEventListener("change", (e) => {
+  const f = e.target.files?.[0];
+  if(!f){
+    fileNameEl.textContent = "No file selected";
+    return;
+  }
+  fileNameEl.textContent = f.name;
+
+  const url = URL.createObjectURL(f);
+  const img = new Image();
+  img.onload = () => {
+    srcImg = img;
+    URL.revokeObjectURL(url);
+    setStatus("Image loaded");
+  };
+  img.onerror = () => {
+    setStatus("Failed to load image");
+    fileNameEl.textContent = "No file selected";
+    URL.revokeObjectURL(url);
+  };
+  img.src = url;
+});
+
+genBtn.addEventListener("click", () => {
+  if(!srcImg){
+    alert("Please choose an image first.");
+    return;
+  }
+  const N = parseInt(gridEl.value,10);
+  const K = parseInt(kEl.value,10);
+
+  setStatus("Generating…");
+  setTimeout(()=> {
+    const out = renderPattern(srcImg, N, K, showGridEl.checked);
+    lastRender = out;
+    updatePalette(out.palette, out.counts);
+    kpiGrid.textContent = `${N} × ${N}`;
+    kpiK.textContent = `${K}`;
+    setStatus("Done");
+  }, 10);
+});
+
+saveBtn.addEventListener("click", () => {
+  if(!lastRender){
+    alert("Generate a pattern first.");
+    return;
+  }
+  const a = document.createElement("a");
+  a.download = `flowerbit_${lastRender.N}x${lastRender.N}_${lastRender.K}colors.png`;
+  a.href = canvas.toDataURL("image/png");
+  a.click();
+});
+
+showGridEl.addEventListener("change", () => {
+  if(!lastRender || !srcImg) return;
+  const out = renderPattern(srcImg, lastRender.N, lastRender.K, showGridEl.checked);
+  lastRender = out;
+});
+
+/* ---------- Core rendering ---------- */
+function renderPattern(img, N, K, showGrid){
+  // centered square crop
+  const s = Math.min(img.width, img.height);
+  const sx = Math.floor((img.width - s)/2);
+  const sy = Math.floor((img.height - s)/2);
+
+  // downscale to N×N
+  const off = document.createElement("canvas");
+  off.width = N; off.height = N;
+  const octx = off.getContext("2d", { willReadFrequently: true });
+  octx.imageSmoothingEnabled = true;
+  octx.drawImage(img, sx, sy, s, s, 0, 0, N, N);
+
+  const imgData = octx.getImageData(0,0,N,N);
+  const pixels = [];
+  for(let i=0;i<imgData.data.length;i+=4){
+    pixels.push([imgData.data[i], imgData.data[i+1], imgData.data[i+2]]);
+  }
+
+  // k-means quantization
+  const {centroids, labels} = kmeans(pixels, K, 12);
+
+  // counts
+  const counts = new Array(K).fill(0);
+  for(const lb of labels) counts[lb]++;
+
+  // upscale display
+  const cell = 12;
+  canvas.width = N * cell;
+  canvas.height = N * cell;
+
+  for(let y=0;y<N;y++){
+    for(let x=0;x<N;x++){
+      const idx = y*N + x;
+      const c = centroids[labels[idx]];
+      ctx.fillStyle = `rgb(${c[0]},${c[1]},${c[2]})`;
+      ctx.fillRect(x*cell, y*cell, cell, cell);
+    }
+  }
+
+  if(showGrid){
+    ctx.strokeStyle = "rgba(255,255,255,.14)";
+    ctx.lineWidth = 1;
+    for(let i=0;i<=N;i++){
+      ctx.beginPath();
+      ctx.moveTo(i*cell+0.5, 0);
+      ctx.lineTo(i*cell+0.5, N*cell);
+      ctx.stroke();
+    }
+    for(let j=0;j<=N;j++){
+      ctx.beginPath();
+      ctx.moveTo(0, j*cell+0.5);
+      ctx.lineTo(N*cell, j*cell+0.5);
+      ctx.stroke();
+    }
+  }
+
+  return { N, K, palette: centroids, counts };
+}
+
+function updatePalette(palette, counts){
+  paletteEl.innerHTML = "";
+
+  const items = palette
+    .map((c,i)=>({c,i,n:counts[i]}))
+    .sort((a,b)=>b.n-a.n);
+
+  for(const it of items){
+    const hex = rgbToHex(it.c[0], it.c[1], it.c[2]);
+    const row = document.createElement("div");
+    row.className = "swatch";
+    row.innerHTML = `
+      <div class="swatchLeft">
+        <span class="dot" style="background:${hex}"></span>
+        <div class="hex">${hex}</div>
+      </div>
+      <div class="pcs">${it.n} pcs</div>
+    `;
+    paletteEl.appendChild(row);
+  }
+}
+
+function rgbToHex(r,g,b){
+  const h = (n)=> n.toString(16).padStart(2,"0");
+  return `#${h(r)}${h(g)}${h(b)}`;
+}
+
+/* ---------- Simple RGB k-means ---------- */
+function kmeans(points, k, iters=10){
+  const centroids = [];
+  const used = new Set();
+
+  while(centroids.length < k){
+    const idx = Math.floor(Math.random()*points.length);
+    if(used.has(idx)) continue;
+    used.add(idx);
+    centroids.push(points[idx].slice());
+  }
+
+  const labels = new Array(points.length).fill(0);
+
+  for(let t=0;t<iters;t++){
+    // assign
+    for(let i=0;i<points.length;i++){
+      let best = 0, bestD = Infinity;
+      const p = points[i];
+      for(let c=0;c<k;c++){
+        const d = dist2(p, centroids[c]);
+        if(d < bestD){ bestD = d; best = c; }
+      }
+      labels[i] = best;
+    }
+    // update
+    const sum = new Array(k).fill(0).map(()=>[0,0,0,0]);
+    for(let i=0;i<points.length;i++){
+      const lb = labels[i];
+      const p = points[i];
+      sum[lb][0]+=p[0]; sum[lb][1]+=p[1]; sum[lb][2]+=p[2]; sum[lb][3]+=1;
+    }
+    for(let c=0;c<k;c++){
+      if(sum[c][3]===0) continue;
+      centroids[c][0]=Math.round(sum[c][0]/sum[c][3]);
+      centroids[c][1]=Math.round(sum[c][1]/sum[c][3]);
+      centroids[c][2]=Math.round(sum[c][2]/sum[c][3]);
+    }
+  }
+  return {centroids, labels};
+}
+
+function dist2(a,b){
+  const dr=a[0]-b[0], dg=a[1]-b[1], db=a[2]-b[2];
+  return dr*dr + dg*dg + db*db;
+}
+</script>
+</body>
+</html>
