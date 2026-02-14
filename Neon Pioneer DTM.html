@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Neon Pioneer DTM</title>
+  <title>Pioneer DTM</title>
   <style>
     :root {
       --bg-1: #080a17;
@@ -17,7 +17,7 @@
       --neon-lime: #7dff4d;
       --neon-amber: #ffbc4d;
       --danger: #ff5a6f;
-      --radius: 16px;
+      --radius: 12px;
       --shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
     }
 
@@ -29,29 +29,9 @@
       margin: 0;
       min-height: 100vh;
       color: var(--text);
-      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
-      background:
-        radial-gradient(circle at 15% 20%, rgba(0, 240, 255, 0.08), transparent 30%),
-        radial-gradient(circle at 80% 15%, rgba(255, 47, 171, 0.08), transparent 32%),
-        radial-gradient(circle at 50% 110%, rgba(125, 255, 77, 0.06), transparent 34%),
-        linear-gradient(145deg, var(--bg-1), var(--bg-2));
+      font-family: "SF Pro Text", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+      background: linear-gradient(160deg, #070b16, #0b1324);
       padding: 18px;
-    }
-
-    .console-head {
-      max-width: 1400px;
-      margin: 0 auto 12px;
-      border: 1px solid #2f3f6e;
-      border-radius: 14px;
-      padding: 10px 14px;
-      background: linear-gradient(180deg, rgba(17, 23, 44, 0.95), rgba(10, 16, 33, 0.97));
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.82rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #b9c8e8;
     }
 
     .app {
@@ -67,7 +47,7 @@
     .generator,
     .master {
       border: 1px solid var(--panel-border);
-      background: linear-gradient(165deg, rgba(18, 24, 45, 0.95), rgba(12, 18, 35, 0.98));
+      background: #0f172b;
       border-radius: var(--radius);
       box-shadow: var(--shadow);
     }
@@ -85,7 +65,7 @@
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(75deg, transparent 0, rgba(0, 240, 255, 0.05) 50%, transparent 100%);
+      background: linear-gradient(75deg, transparent 0, rgba(0, 240, 255, 0.04) 50%, transparent 100%);
       transform: translateX(-100%);
       animation: sweep 4.5s linear infinite;
       animation-play-state: paused;
@@ -94,7 +74,7 @@
     }
 
     .deck.live {
-      box-shadow: 0 0 20px rgba(0, 240, 255, 0.28), 0 0 40px rgba(255, 47, 171, 0.14);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.18);
       border-color: #3a5698;
     }
 
@@ -188,8 +168,8 @@
 
     .btn {
       border: 1px solid #35518b;
-      border-radius: 11px;
-      background: linear-gradient(180deg, #1a2545, #111a34);
+      border-radius: 9px;
+      background: #151f3a;
       color: var(--text);
       padding: 8px 10px;
       font-size: 0.78rem;
@@ -197,12 +177,11 @@
       font-weight: 700;
       letter-spacing: 0.03em;
       cursor: pointer;
-      box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.05);
+      box-shadow: inset 0 0 3px rgba(255, 255, 255, 0.08);
       transition: all 0.12s ease;
     }
 
     .btn:hover {
-      transform: translateY(-1px);
       border-color: var(--neon-cyan);
     }
 
@@ -365,13 +344,13 @@
 
     .big-action {
       border: 1px solid var(--neon-magenta);
-      border-radius: 12px;
+      border-radius: 10px;
       font-weight: 800;
       color: #fff;
       letter-spacing: 0.06em;
       text-transform: uppercase;
       padding: 12px;
-      background: linear-gradient(90deg, #7027ff, #ff2fab);
+      background: linear-gradient(90deg, #304a9e, #2a73bf);
       cursor: pointer;
       box-shadow: 0 0 18px rgba(255, 47, 171, 0.9);
     }
@@ -402,10 +381,6 @@
   </style>
 </head>
 <body>
-  <header class="console-head">
-    <span>Neon DTM Console</span>
-    <span>djay / Pioneer Inspired Layout</span>
-  </header>
   <main class="app">
     <section class="deck" id="deckA">
       <div class="title"><span class="neon-label">Deck A</span><span id="trackAName">No Track</span></div>
@@ -517,21 +492,6 @@
           <input type="range" id="pump" min="0" max="1" step="0.01" value="0.45" />
         </div>
       </div>
-      <div class="generator-controls">
-        <div class="slider-wrap">
-          <label>YouTube URL (Backend Import)</label>
-          <input id="ytUrl" class="text" placeholder="https://www.youtube.com/watch?v=..." />
-        </div>
-        <div class="slider-wrap">
-          <label>Load Into Deck</label>
-          <select id="ytDeck" class="select">
-            <option value="A">Deck A</option>
-            <option value="B">Deck B</option>
-          </select>
-        </div>
-      </div>
-      <button class="btn" id="ytImport">Import YouTube To Deck</button>
-      <div class="status" id="ytStatus">Start backend server first: <code>node youtube-import-server.js</code></div>
       <button class="big-action" id="renderMix">Build New Mix</button>
       <div class="status" id="renderStatus">Load two songs, pick a style, then click Build New Mix.</div>
       <div class="hint">This is a creative remix tool. For commercial release, confirm rights for source songs.</div>
@@ -1012,52 +972,6 @@
       generateHybridMix();
     });
 
-    async function importFromYouTube() {
-      const status = document.getElementById('ytStatus');
-      const url = document.getElementById('ytUrl').value.trim();
-      const targetDeck = document.getElementById('ytDeck').value;
-      if (!url) {
-        status.textContent = 'Paste a YouTube URL first.';
-        status.style.color = 'var(--danger)';
-        return;
-      }
-
-      status.textContent = 'Importing from backend...';
-      status.style.color = 'var(--text-soft)';
-
-      try {
-        const importRes = await fetch('http://localhost:8787/api/youtube/import', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url }),
-        });
-        if (!importRes.ok) {
-          const text = await importRes.text();
-          throw new Error(text || 'Import failed');
-        }
-        const payload = await importRes.json();
-        if (!payload.ok || !payload.fileUrl) {
-          throw new Error(payload.error || 'No file returned');
-        }
-
-        const audioRes = await fetch(payload.fileUrl);
-        if (!audioRes.ok) throw new Error('Could not fetch imported audio file');
-        const arr = await audioRes.arrayBuffer();
-        const deck = targetDeck === 'A' ? deckA : deckB;
-        await deck.loadFromArrayBuffer(arr, payload.title || `YouTube-${targetDeck}`);
-
-        status.textContent = `Imported to Deck ${targetDeck}: ${payload.title || 'YouTube Track'}`;
-        status.style.color = 'var(--neon-lime)';
-      } catch (err) {
-        status.textContent = `Import failed: ${err.message}. Is backend running on localhost:8787?`;
-        status.style.color = 'var(--danger)';
-      }
-    }
-
-    document.getElementById('ytImport').addEventListener('click', async () => {
-      await ctx.resume();
-      importFromYouTube();
-    });
   </script>
 </body>
 </html>
