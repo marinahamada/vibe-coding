@@ -517,6 +517,21 @@
           <input type="range" id="pump" min="0" max="1" step="0.01" value="0.45" />
         </div>
       </div>
+      <div class="generator-controls">
+        <div class="slider-wrap">
+          <label>YouTube URL (Backend Import)</label>
+          <input id="ytUrl" class="text" placeholder="https://www.youtube.com/watch?v=..." />
+        </div>
+        <div class="slider-wrap">
+          <label>Load Into Deck</label>
+          <select id="ytDeck" class="select">
+            <option value="A">Deck A</option>
+            <option value="B">Deck B</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn" id="ytImport">Import YouTube To Deck</button>
+      <div class="status" id="ytStatus">Start backend server first: <code>node youtube-import-server.js</code></div>
       <button class="big-action" id="renderMix">Build New Mix</button>
       <div class="status" id="renderStatus">Load two songs, pick a style, then click Build New Mix.</div>
       <div class="hint">This is a creative remix tool. For commercial release, confirm rights for source songs.</div>
@@ -616,6 +631,16 @@
         loopMode: false,
       };
 
+      async function loadFromArrayBuffer(arr, trackName) {
+        const decoded = await ctx.decodeAudioData(arr.slice(0));
+        state.buffer = decoded;
+        state.loadedArrayBuffer = arr.slice(0);
+        state.pausedAt = 0;
+        stopPlayback(false);
+        el.name.textContent = trackName || `Deck ${prefix} Track`;
+        drawWave(el.wave, decoded);
+      }
+
       function wireSource(offset = 0) {
         if (!state.buffer) return;
         const source = ctx.createBufferSource();
@@ -664,12 +689,7 @@
         const file = e.target.files?.[0];
         if (!file) return;
         const arr = await file.arrayBuffer();
-        const decoded = await ctx.decodeAudioData(arr.slice(0));
-        state.buffer = decoded;
-        state.loadedArrayBuffer = arr.slice(0);
-        state.pausedAt = 0;
-        el.name.textContent = file.name;
-        drawWave(el.wave, decoded);
+        await loadFromArrayBuffer(arr, file.name);
       });
 
       el.play.addEventListener('click', async () => {
@@ -746,7 +766,7 @@
         });
       });
 
-      return { state, el, output: analyser };
+      return { state, el, output: analyser, loadFromArrayBuffer };
     }
 
     const deckA = createDeck('A');
@@ -990,6 +1010,53 @@
     document.getElementById('renderMix').addEventListener('click', async () => {
       await ctx.resume();
       generateHybridMix();
+    });
+
+    async function importFromYouTube() {
+      const status = document.getElementById('ytStatus');
+      const url = document.getElementById('ytUrl').value.trim();
+      const targetDeck = document.getElementById('ytDeck').value;
+      if (!url) {
+        status.textContent = 'Paste a YouTube URL first.';
+        status.style.color = 'var(--danger)';
+        return;
+      }
+
+      status.textContent = 'Importing from backend...';
+      status.style.color = 'var(--text-soft)';
+
+      try {
+        const importRes = await fetch('http://localhost:8787/api/youtube/import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url }),
+        });
+        if (!importRes.ok) {
+          const text = await importRes.text();
+          throw new Error(text || 'Import failed');
+        }
+        const payload = await importRes.json();
+        if (!payload.ok || !payload.fileUrl) {
+          throw new Error(payload.error || 'No file returned');
+        }
+
+        const audioRes = await fetch(payload.fileUrl);
+        if (!audioRes.ok) throw new Error('Could not fetch imported audio file');
+        const arr = await audioRes.arrayBuffer();
+        const deck = targetDeck === 'A' ? deckA : deckB;
+        await deck.loadFromArrayBuffer(arr, payload.title || `YouTube-${targetDeck}`);
+
+        status.textContent = `Imported to Deck ${targetDeck}: ${payload.title || 'YouTube Track'}`;
+        status.style.color = 'var(--neon-lime)';
+      } catch (err) {
+        status.textContent = `Import failed: ${err.message}. Is backend running on localhost:8787?`;
+        status.style.color = 'var(--danger)';
+      }
+    }
+
+    document.getElementById('ytImport').addEventListener('click', async () => {
+      await ctx.resume();
+      importFromYouTube();
     });
   </script>
 </body>
