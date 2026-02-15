@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Master Cocktail Bar</title>
+  <style>
+    :root {
+      --ink: #f3e8cf;
+      --muted: #cdbb98;
+      --line: rgba(231, 201, 150, 0.34);
+      --paper: #1e140d;
+      --panel: rgba(35, 22, 14, 0.86);
+      --panel-deep: rgba(21, 13, 8, 0.92);
+      --accent: #c89a57;
+      --accent-dark: #725028;
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(1200px 420px at 50% -20%, rgba(255, 206, 126, 0.2), transparent 65%),
+        radial-gradient(900px 460px at 12% 0%, rgba(160, 93, 50, 0.24), transparent 60%),
+        linear-gradient(155deg, #0f0a07, #2a1a10 46%, #3d2416);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        repeating-linear-gradient(
+          90deg,
+          rgba(255, 230, 188, 0.018) 0,
+          rgba(255, 230, 188, 0.018) 1px,
+          transparent 1px,
+          transparent 5px
+        );
+      opacity: 0.45;
+    }
+
+    .wrap {
+      width: min(980px, 92vw);
+      margin: 0 auto;
+      padding: 34px 0 52px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .headline {
+      margin-bottom: 22px;
+      animation: rise 700ms ease both;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Baskerville", "Garamond", serif;
+      font-size: clamp(2rem, 5vw, 3.7rem);
+      line-height: 1;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: #f8e8c5;
+      text-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+    }
+
+    .subtitle {
+      margin-top: 10px;
+      color: var(--muted);
+      max-width: 62ch;
+      line-height: 1.42;
+      font-size: 0.96rem;
+    }
+
+    .board {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(180deg, rgba(255, 223, 175, 0.04), transparent 26%),
+        linear-gradient(180deg, var(--panel), var(--panel-deep));
+      box-shadow: var(--shadow);
+      padding: 18px;
+      animation: rise 760ms ease both;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-title {
+      font-size: 0.86rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      margin-bottom: 8px;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .field {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255, 245, 227, 0.03);
+      padding: 10px;
+    }
+
+    .field label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      margin-bottom: 7px;
+      text-transform: uppercase;
+    }
+
+    select {
+      width: 100%;
+      border: 1px solid rgba(219, 188, 136, 0.42);
+      border-radius: 9px;
+      background: #2a190f;
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 0.92rem;
+      padding: 9px;
+    }
+
+    .moods {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 9px;
+      margin-top: 10px;
+    }
+
+    .mood {
+      border: 1px solid var(--line);
+      background: rgba(255, 213, 146, 0.05);
+      color: var(--ink);
+      border-radius: 11px;
+      padding: 11px;
+      text-align: left;
+      cursor: pointer;
+      transition: transform 120ms ease, background 160ms ease;
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    .mood:hover { transform: translateY(-1px); }
+
+    .mood.active {
+      background: rgba(241, 188, 109, 0.18);
+      box-shadow: 0 0 0 1px rgba(255, 225, 170, 0.4) inset;
+    }
+
+    .mood strong {
+      display: block;
+      font-size: 0.93rem;
+      margin-bottom: 3px;
+    }
+
+    .mood span {
+      color: var(--muted);
+      font-size: 0.77rem;
+    }
+
+    .tools {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 11px;
+      margin-top: 15px;
+    }
+
+    .button {
+      border: 1px solid rgba(237, 198, 138, 0.8);
+      border-radius: 999px;
+      padding: 11px 17px;
+      background: linear-gradient(180deg, #d7ac6e, #b27d42);
+      color: #211308;
+      font-family: "Baskerville", "Garamond", serif;
+      font-size: 0.93rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      font-weight: 700;
+      cursor: pointer;
+      transition: filter 120ms ease, transform 80ms ease;
+    }
+
+    .button:hover { filter: brightness(1.06); }
+    .button:active { transform: translateY(1px); }
+
+    .switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .switch input {
+      accent-color: var(--accent);
+      width: 16px;
+      height: 16px;
+    }
+
+    .result {
+      margin-top: 17px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255, 225, 179, 0.04), rgba(10, 6, 4, 0.5));
+      border-radius: 14px;
+      padding: 15px;
+      min-height: 194px;
+    }
+
+    .result h2 {
+      font-family: "Baskerville", "Garamond", serif;
+      margin: 0;
+      font-size: clamp(1.4rem, 3.6vw, 2.2rem);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #f5e2bd;
+    }
+
+    .meta {
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      letter-spacing: 0.01em;
+      line-height: 1.4;
+    }
+
+    .recipe-grid {
+      margin-top: 13px;
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 12px;
+    }
+
+    .box {
+      border: 1px solid rgba(239, 207, 150, 0.21);
+      background: rgba(255, 244, 220, 0.03);
+      border-radius: 10px;
+      padding: 11px;
+    }
+
+    .box h3 {
+      margin: 0 0 7px;
+      color: #e8c38e;
+      font-size: 0.82rem;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+
+    ul, ol {
+      margin: 0;
+      padding-left: 17px;
+      line-height: 1.52;
+      font-size: 0.91rem;
+    }
+
+    .note {
+      margin-top: 9px;
+      color: var(--muted);
+      font-size: 0.81rem;
+    }
+
+    @media (max-width: 760px) {
+      .filters { grid-template-columns: 1fr; }
+      .moods { grid-template-columns: 1fr 1fr; }
+      .recipe-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="headline">
+      <h1>Master Cocktail Bar</h1>
+      <p class="subtitle">
+        A classic-house selection room. Choose your mood, spirit, and flavor profile. The house master will mix a tailored cocktail card.
+      </p>
+    </section>
+
+    <section class="board" aria-label="Cocktail generator">
+      <div class="filters">
+        <div class="field">
+          <label for="spiritSelect">Base Alcohol</label>
+          <select id="spiritSelect">
+            <option value="auto">Master's Choice</option>
+            <option value="gin">Gin</option>
+            <option value="whiskey">Whiskey</option>
+            <option value="vodka">Vodka</option>
+            <option value="rum">Rum</option>
+            <option value="tequila">Tequila</option>
+            <option value="mezcal">Mezcal</option>
+            <option value="brandy">Brandy</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="profileSelect">Flavor Profile</label>
+          <select id="profileSelect">
+            <option value="auto">Match Mood Automatically</option>
+            <option value="fruity">Fruity</option>
+            <option value="smoky">Smoky</option>
+            <option value="citrusy">Citrusy</option>
+            <option value="herbal">Herbal</option>
+            <option value="sweet">Sweet</option>
+            <option value="dry">Dry</option>
+            <option value="spiced">Spiced</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section-title">Mood Of The Day</div>
+      <div class="moods" id="moodGrid"></div>
+
+      <div class="tools">
+        <button class="button" id="mixButton" type="button">Summon The Master</button>
+        <label class="switch">
+          <input type="checkbox" id="zeroProof" />
+          Zero-proof build
+        </label>
+      </div>
+
+      <article class="result" id="result" aria-live="polite"></article>
+    </section>
+  </main>
+
+  <script>
+    const moods = [
+      { id: "chill", name: "Chill Sunset", note: "slow, smooth, warm", defaultSpirit: "whiskey", fallbackProfile: "sweet", vibe: "velvety and easy" },
+      { id: "bold", name: "Bold Energy", note: "vibrant, sharp, electric", defaultSpirit: "tequila", fallbackProfile: "citrusy", vibe: "bright and lifted" },
+      { id: "romantic", name: "Romantic", note: "soft, floral, dreamy", defaultSpirit: "gin", fallbackProfile: "fruity", vibe: "fragrant and elegant" },
+      { id: "focused", name: "Focused", note: "clean, clear, precise", defaultSpirit: "vodka", fallbackProfile: "dry", vibe: "crisp and minimal" },
+      { id: "celebration", name: "Celebration", note: "sparkling, playful, festive", defaultSpirit: "rum", fallbackProfile: "fruity", vibe: "lively and tropical" },
+      { id: "mysterious", name: "Mysterious Night", note: "dark, smoky, layered", defaultSpirit: "mezcal", fallbackProfile: "smoky", vibe: "deep and smoky" }
+    ];
+
+    const profileFlavors = {
+      fruity: ["pineapple", "blackberry", "passionfruit", "peach"],
+      smoky: ["cacao", "lapsang", "charred orange", "smoked plum"],
+      citrusy: ["grapefruit", "yuzu", "blood orange", "lime zest"],
+      herbal: ["mint", "basil", "rosemary", "green chartreuse note"],
+      sweet: ["vanilla", "honey", "caramel", "tonka"],
+      dry: ["vermouth", "white tea", "chamomile", "cucumber"],
+      spiced: ["ginger", "clove", "allspice", "cardamom"]
+    };
+
+    const techniques = ["Shaken hard", "Stirred with cracked ice", "Built and swizzled", "Short whip shake"];
+    const garnishes = ["expressed citrus peel", "mint crown", "dehydrated orange wheel", "luxardo cherry", "fresh grated nutmeg", "smoked rosemary"];
+    const glassware = ["Nick & Nora", "Rocks glass", "Coupe", "Highball", "Old fashioned glass"];
+    const sweeteners = ["honey syrup", "demerara syrup", "agave nectar", "maple syrup"];
+    const acids = ["fresh lemon juice", "fresh lime juice", "verjus", "acid-adjusted citrus"];
+    const zeroBases = ["seedlip grove", "juniper distillate", "smoked black tea", "spiced shrub"];
+    const namePartA = ["Midnight", "Golden", "Velvet", "Scarlet", "Royal", "Oak", "Silk", "Crown"];
+    const namePartB = ["Whisper", "Parlor", "Reserve", "Ritual", "Boulevard", "Ember", "Ledger", "Nocturne"];
+
+    let selectedMood = moods[0].id;
+
+    const moodGrid = document.getElementById("moodGrid");
+    const result = document.getElementById("result");
+    const mixButton = document.getElementById("mixButton");
+    const zeroProof = document.getElementById("zeroProof");
+    const spiritSelect = document.getElementById("spiritSelect");
+    const profileSelect = document.getElementById("profileSelect");
+
+    function pick(list) {
+      return list[Math.floor(Math.random() * list.length)];
+    }
+
+    function titleCase(text) {
+      return text.charAt(0).toUpperCase() + text.slice(1);
+    }
+
+    function createMoodButtons() {
+      moodGrid.innerHTML = "";
+      moods.forEach((mood) => {
+        const button = document.createElement("button");
+        button.className = "mood" + (mood.id === selectedMood ? " active" : "");
+        button.type = "button";
+        button.innerHTML = "<strong>" + mood.name + "</strong><span>" + mood.note + "</span>";
+        button.addEventListener("click", () => {
+          selectedMood = mood.id;
+          createMoodButtons();
+          generateRecipe();
+        });
+        moodGrid.appendChild(button);
+      });
+    }
+
+    function generateRecipe() {
+      const mood = moods.find((item) => item.id === selectedMood);
+      const isZero = zeroProof.checked;
+      const chosenSpirit = spiritSelect.value;
+      const chosenProfile = profileSelect.value;
+
+      const resolvedProfile = chosenProfile === "auto" ? mood.fallbackProfile : chosenProfile;
+      const resolvedSpirit = isZero
+        ? pick(zeroBases)
+        : chosenSpirit === "auto"
+          ? mood.defaultSpirit
+          : chosenSpirit;
+
+      const accent = pick(profileFlavors[resolvedProfile]);
+      const acid = pick(acids);
+      const sweet = pick(sweeteners);
+      const sparkle = pick(["soda water", "dry tonic", "ginger ale", "sparkling tea"]);
+      const style = pick(techniques);
+      const garnish = pick(garnishes);
+      const glass = pick(glassware);
+      const name = pick(namePartA) + " " + pick(namePartB);
+      const abv = isZero ? "0%" : String(Math.floor(Math.random() * 10) + 13) + "%";
+
+      const ingredients = isZero
+        ? [
+            "55 ml " + resolvedSpirit,
+            "20 ml " + acid,
+            "15 ml " + sweet,
+            "20 ml " + accent + " cordial",
+            "Top with " + sparkle
+          ]
+        : [
+            "50 ml " + resolvedSpirit,
+            "20 ml " + acid,
+            "15 ml " + sweet,
+            "10 ml " + accent + " modifier",
+            "2 dashes aromatic bitters"
+          ];
+
+      const steps = [
+        style + " until chilled and integrated.",
+        "Strain into a chilled " + glass + ".",
+        isZero ? "Top lightly with " + sparkle + "." : "Fine strain for a clean finish.",
+        "Garnish with " + garnish + "."
+      ];
+
+      result.innerHTML = `
+        <h2>${name}</h2>
+        <div class="meta">Mood: ${mood.name} | Base: ${titleCase(resolvedSpirit)} | Profile: ${titleCase(resolvedProfile)} | Estimated ABV: ${abv}</div>
+        <div class="recipe-grid">
+          <section class="box">
+            <h3>Ingredients</h3>
+            <ul>${ingredients.map((line) => `<li>${line}</li>`).join("")}</ul>
+          </section>
+          <section class="box">
+            <h3>Method</h3>
+            <ol>${steps.map((line) => `<li>${line}</li>`).join("")}</ol>
+          </section>
+        </div>
+        <div class="note">Master note: A ${titleCase(resolvedProfile)} direction with a ${mood.vibe} body, composed in classic house style.</div>
+      `;
+    }
+
+    createMoodButtons();
+    generateRecipe();
+
+    mixButton.addEventListener("click", generateRecipe);
+    zeroProof.addEventListener("change", generateRecipe);
+    spiritSelect.addEventListener("change", generateRecipe);
+    profileSelect.addEventListener("change", generateRecipe);
+  </script>
+</body>
+</html>
