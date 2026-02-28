@@ -6,19 +6,23 @@
   <title>Master Cocktail Bar</title>
   <style>
     :root {
-      --ink: #f3e8cf;
-      --muted: #cdbb98;
-      --line: rgba(231, 201, 150, 0.34);
-      --paper: #1e140d;
-      --panel: rgba(35, 22, 14, 0.86);
-      --panel-deep: rgba(21, 13, 8, 0.92);
-      --accent: #c89a57;
-      --accent-dark: #725028;
-      --shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
-      --radius: 18px;
+      --bg-1: #0f0907;
+      --bg-2: #1d110c;
+      --bg-3: #342015;
+      --ink: #f2e7ce;
+      --muted: #c8b896;
+      --line: rgba(236, 203, 145, 0.3);
+      --panel: rgba(32, 20, 13, 0.86);
+      --panel-strong: rgba(23, 14, 9, 0.94);
+      --brass-1: #d2a561;
+      --brass-2: #966831;
+      --shadow: 0 24px 56px rgba(0, 0, 0, 0.46);
+      --radius: 16px;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
@@ -26,9 +30,9 @@
       color: var(--ink);
       font-family: Georgia, "Times New Roman", serif;
       background:
-        radial-gradient(1200px 420px at 50% -20%, rgba(255, 206, 126, 0.2), transparent 65%),
-        radial-gradient(900px 460px at 12% 0%, rgba(160, 93, 50, 0.24), transparent 60%),
-        linear-gradient(155deg, #0f0a07, #2a1a10 46%, #3d2416);
+        radial-gradient(1200px 520px at 50% -28%, rgba(247, 195, 108, 0.2), transparent 66%),
+        radial-gradient(760px 420px at 12% 2%, rgba(170, 92, 49, 0.24), transparent 62%),
+        linear-gradient(160deg, var(--bg-1), var(--bg-2) 46%, var(--bg-3));
     }
 
     body::before {
@@ -39,8 +43,8 @@
       background:
         repeating-linear-gradient(
           90deg,
-          rgba(255, 230, 188, 0.018) 0,
-          rgba(255, 230, 188, 0.018) 1px,
+          rgba(255, 238, 208, 0.016) 0,
+          rgba(255, 238, 208, 0.016) 1px,
           transparent 1px,
           transparent 5px
         );
@@ -48,237 +52,380 @@
     }
 
     .wrap {
-      width: min(980px, 92vw);
+      width: min(1160px, 94vw);
       margin: 0 auto;
-      padding: 34px 0 52px;
+      padding: 30px 0 48px;
       position: relative;
       z-index: 1;
     }
 
     .headline {
-      margin-bottom: 22px;
-      animation: rise 700ms ease both;
+      margin-bottom: 16px;
+      animation: rise 600ms ease both;
     }
 
-    h1 {
+    .headline h1 {
       margin: 0;
       font-family: "Baskerville", "Garamond", serif;
-      font-size: clamp(2rem, 5vw, 3.7rem);
-      line-height: 1;
-      letter-spacing: 0.03em;
+      font-size: clamp(2rem, 4.2vw, 3.4rem);
+      letter-spacing: 0.05em;
       text-transform: uppercase;
-      color: #f8e8c5;
-      text-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+      color: #f9e8bf;
+      text-shadow: 0 5px 18px rgba(0, 0, 0, 0.4);
     }
 
-    .subtitle {
-      margin-top: 10px;
+    .headline p {
+      margin: 8px 0 0;
       color: var(--muted);
-      max-width: 62ch;
-      line-height: 1.42;
-      font-size: 0.96rem;
+      max-width: 78ch;
+      line-height: 1.45;
+      font-size: 0.95rem;
     }
 
-    .board {
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.95fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    .panel {
       border: 1px solid var(--line);
       border-radius: var(--radius);
       background:
-        linear-gradient(180deg, rgba(255, 223, 175, 0.04), transparent 26%),
-        linear-gradient(180deg, var(--panel), var(--panel-deep));
+        linear-gradient(180deg, rgba(248, 219, 165, 0.05), transparent 23%),
+        linear-gradient(180deg, var(--panel), var(--panel-strong));
       box-shadow: var(--shadow);
-      padding: 18px;
-      animation: rise 760ms ease both;
     }
 
-    @keyframes rise {
-      from { opacity: 0; transform: translateY(16px); }
-      to { opacity: 1; transform: translateY(0); }
+    .left-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .mood-panel,
+    .sheet-panel,
+    .recipe-panel {
+      padding: 14px;
+      animation: rise 700ms ease both;
     }
 
     .section-title {
-      font-size: 0.86rem;
-      color: var(--muted);
+      font-size: 0.79rem;
       text-transform: uppercase;
-      letter-spacing: 0.09em;
-      margin-bottom: 8px;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin: 0 0 9px;
     }
 
-    .filters {
+    .mood-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .mood-btn {
+      border: 1px solid var(--line);
+      background: rgba(248, 219, 165, 0.05);
+      border-radius: 10px;
+      padding: 10px;
+      text-align: left;
+      color: var(--ink);
+      cursor: pointer;
+      transition: transform 120ms ease, background 140ms ease;
+      font-family: Georgia, "Times New Roman", serif;
+    }
+
+    .mood-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .mood-btn.active {
+      background: rgba(236, 185, 104, 0.2);
+      box-shadow: 0 0 0 1px rgba(255, 224, 170, 0.4) inset;
+    }
+
+    .mood-btn strong {
+      display: block;
+      font-size: 0.92rem;
+      margin-bottom: 3px;
+    }
+
+    .mood-btn span {
+      color: var(--muted);
+      font-size: 0.74rem;
+    }
+
+    .order-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-      margin-bottom: 14px;
+      gap: 10px;
     }
 
-    .field {
+    .control {
       border: 1px solid var(--line);
-      border-radius: 12px;
-      background: rgba(255, 245, 227, 0.03);
+      border-radius: 10px;
       padding: 10px;
+      background: rgba(255, 241, 217, 0.03);
     }
 
-    .field label {
-      display: block;
+    .control.full {
+      grid-column: 1 / -1;
+    }
+
+    .control label,
+    .control .label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       color: var(--muted);
       font-size: 0.72rem;
+      text-transform: uppercase;
       letter-spacing: 0.08em;
       margin-bottom: 7px;
-      text-transform: uppercase;
+    }
+
+    .value {
+      color: var(--ink);
+      font-size: 0.75rem;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: #d7a55d;
+      cursor: pointer;
     }
 
     select {
       width: 100%;
-      border: 1px solid rgba(219, 188, 136, 0.42);
-      border-radius: 9px;
+      border: 1px solid rgba(235, 201, 143, 0.45);
+      border-radius: 8px;
       background: #2a190f;
       color: var(--ink);
       font-family: Georgia, "Times New Roman", serif;
-      font-size: 0.92rem;
-      padding: 9px;
+      padding: 8px;
+      font-size: 0.9rem;
     }
 
-    .moods {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 9px;
-      margin-top: 10px;
+    .toggle-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
-    .mood {
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
       border: 1px solid var(--line);
-      background: rgba(255, 213, 146, 0.05);
-      color: var(--ink);
-      border-radius: 11px;
-      padding: 11px;
-      text-align: left;
-      cursor: pointer;
-      transition: transform 120ms ease, background 160ms ease;
-      font-family: Georgia, "Times New Roman", serif;
-    }
-
-    .mood:hover { transform: translateY(-1px); }
-
-    .mood.active {
-      background: rgba(241, 188, 109, 0.18);
-      box-shadow: 0 0 0 1px rgba(255, 225, 170, 0.4) inset;
-    }
-
-    .mood strong {
-      display: block;
-      font-size: 0.93rem;
-      margin-bottom: 3px;
-    }
-
-    .mood span {
+      border-radius: 999px;
       color: var(--muted);
-      font-size: 0.77rem;
+      font-size: 0.8rem;
+      background: rgba(255, 225, 170, 0.04);
+    }
+
+    .chip input {
+      accent-color: #d3a15c;
+      width: 14px;
+      height: 14px;
+      margin: 0;
     }
 
     .tools {
       display: flex;
-      align-items: center;
       flex-wrap: wrap;
-      gap: 11px;
-      margin-top: 15px;
+      gap: 8px;
+      margin-top: 10px;
     }
 
-    .button {
-      border: 1px solid rgba(237, 198, 138, 0.8);
+    .btn {
+      border: 1px solid rgba(237, 201, 144, 0.84);
       border-radius: 999px;
-      padding: 11px 17px;
-      background: linear-gradient(180deg, #d7ac6e, #b27d42);
-      color: #211308;
+      background: linear-gradient(180deg, var(--brass-1), var(--brass-2));
+      color: #22150c;
+      padding: 9px 14px;
       font-family: "Baskerville", "Garamond", serif;
-      font-size: 0.93rem;
-      letter-spacing: 0.03em;
+      font-size: 0.86rem;
       text-transform: uppercase;
+      letter-spacing: 0.03em;
       font-weight: 700;
       cursor: pointer;
       transition: filter 120ms ease, transform 80ms ease;
     }
 
-    .button:hover { filter: brightness(1.06); }
-    .button:active { transform: translateY(1px); }
-
-    .switch {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--muted);
-      font-size: 0.86rem;
+    .btn:hover {
+      filter: brightness(1.05);
     }
 
-    .switch input {
-      accent-color: var(--accent);
-      width: 16px;
-      height: 16px;
+    .btn:active {
+      transform: translateY(1px);
     }
 
-    .result {
-      margin-top: 17px;
-      border: 1px solid var(--line);
-      background: linear-gradient(180deg, rgba(255, 225, 179, 0.04), rgba(10, 6, 4, 0.5));
-      border-radius: 14px;
-      padding: 15px;
-      min-height: 194px;
+    .btn.alt {
+      background: rgba(255, 225, 170, 0.07);
+      color: var(--ink);
+      border-color: var(--line);
+      text-transform: none;
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 500;
     }
 
-    .result h2 {
-      font-family: "Baskerville", "Garamond", serif;
-      margin: 0;
-      font-size: clamp(1.4rem, 3.6vw, 2.2rem);
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      color: #f5e2bd;
-    }
-
-    .meta {
-      margin-top: 7px;
+    .status {
+      margin-top: 8px;
+      min-height: 19px;
       color: var(--muted);
       font-size: 0.84rem;
       letter-spacing: 0.01em;
-      line-height: 1.4;
     }
 
-    .recipe-grid {
-      margin-top: 13px;
-      display: grid;
-      grid-template-columns: 1.2fr 1fr;
-      gap: 12px;
+    .status.stirring {
+      animation: pulse 800ms ease-in-out infinite;
+      color: #f2ca8d;
     }
 
-    .box {
-      border: 1px solid rgba(239, 207, 150, 0.21);
-      background: rgba(255, 244, 220, 0.03);
-      border-radius: 10px;
-      padding: 11px;
+    @keyframes pulse {
+      0% { opacity: 0.35; }
+      50% { opacity: 1; }
+      100% { opacity: 0.35; }
     }
 
-    .box h3 {
-      margin: 0 0 7px;
-      color: #e8c38e;
-      font-size: 0.82rem;
-      letter-spacing: 0.09em;
+    .recipe-panel {
+      position: sticky;
+      top: 12px;
+    }
+
+    .recipe-panel h2 {
+      margin: 0;
+      font-family: "Baskerville", "Garamond", serif;
+      font-size: clamp(1.3rem, 3vw, 2.1rem);
+      letter-spacing: 0.05em;
       text-transform: uppercase;
+      color: #f7e1b4;
+    }
+
+    .meta {
+      margin-top: 8px;
+      color: var(--muted);
+      line-height: 1.4;
+      font-size: 0.82rem;
+    }
+
+    .card-grid {
+      margin-top: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .card {
+      border: 1px solid rgba(236, 203, 145, 0.22);
+      border-radius: 10px;
+      padding: 10px;
+      background: rgba(255, 235, 195, 0.03);
+    }
+
+    .card h3 {
+      margin: 0 0 7px;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #e7c08a;
     }
 
     ul, ol {
       margin: 0;
       padding-left: 17px;
-      line-height: 1.52;
-      font-size: 0.91rem;
+      line-height: 1.5;
+      font-size: 0.88rem;
     }
 
-    .note {
-      margin-top: 9px;
+    .line-list {
+      font-size: 0.86rem;
+      line-height: 1.5;
+      color: var(--ink);
+    }
+
+    .line-list div {
+      border-bottom: 1px dashed rgba(236, 203, 145, 0.2);
+      padding: 4px 0;
+    }
+
+    .line-list div:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .favorites {
+      margin-top: 10px;
+      border-top: 1px solid rgba(236, 203, 145, 0.2);
+      padding-top: 10px;
+    }
+
+    .favorites h3 {
+      margin: 0 0 7px;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
       color: var(--muted);
-      font-size: 0.81rem;
     }
 
-    @media (max-width: 760px) {
-      .filters { grid-template-columns: 1fr; }
-      .moods { grid-template-columns: 1fr 1fr; }
-      .recipe-grid { grid-template-columns: 1fr; }
+    .favorites-list {
+      display: grid;
+      gap: 6px;
+      max-height: 166px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .favorite-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      border: 1px solid rgba(236, 203, 145, 0.22);
+      border-radius: 8px;
+      padding: 6px 7px;
+      background: rgba(255, 235, 195, 0.02);
+      font-size: 0.8rem;
+    }
+
+    .favorite-item button {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 225, 170, 0.07);
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 0.76rem;
+      cursor: pointer;
+      padding: 4px 9px;
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .recipe-panel {
+        position: static;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .order-grid,
+      .mood-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -286,189 +433,608 @@
   <main class="wrap">
     <section class="headline">
       <h1>Master Cocktail Bar</h1>
-      <p class="subtitle">
-        A classic-house selection room. Choose your mood, spirit, and flavor profile. The house master will mix a tailored cocktail card.
+      <p>
+        Top: mood cards. Bottom: order sheet with deep sliders. Right: fixed "Drink of the Day" card with shopping list and substitutions.
       </p>
     </section>
 
-    <section class="board" aria-label="Cocktail generator">
-      <div class="filters">
-        <div class="field">
-          <label for="spiritSelect">Base Alcohol</label>
-          <select id="spiritSelect">
-            <option value="auto">Master's Choice</option>
-            <option value="gin">Gin</option>
-            <option value="whiskey">Whiskey</option>
-            <option value="vodka">Vodka</option>
-            <option value="rum">Rum</option>
-            <option value="tequila">Tequila</option>
-            <option value="mezcal">Mezcal</option>
-            <option value="brandy">Brandy</option>
-          </select>
+    <div class="layout">
+      <section class="left-stack">
+        <section class="panel mood-panel" aria-label="Mood of the day">
+          <p class="section-title">Mood Of The Day</p>
+          <div id="moodGrid" class="mood-grid"></div>
+        </section>
+
+        <section class="panel sheet-panel" aria-label="Order sheet">
+          <p class="section-title">Order Sheet</p>
+          <div class="order-grid">
+            <div class="control">
+              <div class="label"><span>Base Spirit</span><span id="spiritValue" class="value"></span></div>
+              <input id="spiritRange" type="range" min="0" max="6" value="1" />
+            </div>
+
+            <div class="control">
+              <div class="label"><span>Flavor Direction</span><span id="profileValue" class="value"></span></div>
+              <input id="profileRange" type="range" min="0" max="6" value="0" />
+            </div>
+
+            <div class="control">
+              <div class="label"><span>Strength</span><span id="strengthValue" class="value"></span></div>
+              <input id="strengthRange" type="range" min="0" max="4" value="2" />
+            </div>
+
+            <div class="control">
+              <div class="label"><span>Sweetness</span><span id="sweetValue" class="value"></span></div>
+              <input id="sweetRange" type="range" min="0" max="100" value="50" />
+            </div>
+
+            <div class="control">
+              <div class="label"><span>Acidity</span><span id="acidValue" class="value"></span></div>
+              <input id="acidRange" type="range" min="0" max="100" value="45" />
+            </div>
+
+            <div class="control">
+              <div class="label"><span>Bubbles</span><span id="sparkleValue" class="value"></span></div>
+              <input id="sparkleRange" type="range" min="0" max="100" value="30" />
+            </div>
+
+            <div class="control full">
+              <div class="label"><span>Style</span></div>
+              <div class="toggle-row">
+                <label class="chip"><input id="classicMode" type="checkbox" checked /> Classic-focused</label>
+                <label class="chip"><input id="zeroProof" type="checkbox" /> Zero-proof</label>
+              </div>
+            </div>
+
+            <div class="control">
+              <label for="glassSelect">Glass</label>
+              <select id="glassSelect">
+                <option value="short">Short</option>
+                <option value="long">Long</option>
+              </select>
+            </div>
+
+            <div class="control">
+              <label for="sceneSelect">Scene</label>
+              <select id="sceneSelect">
+                <option value="aperitif">Before meal</option>
+                <option value="with-meal">With meal</option>
+                <option value="after-dinner">After dinner</option>
+              </select>
+            </div>
+
+            <div class="control full">
+              <label for="companySelect">Company</label>
+              <select id="companySelect">
+                <option value="solo">Solo</option>
+                <option value="group">With friends</option>
+              </select>
+            </div>
+
+            <div class="control full">
+              <div class="label"><span>Preference / NG</span></div>
+              <div class="toggle-row">
+                <label class="chip"><input type="checkbox" id="noCitrus" /> No citrus</label>
+                <label class="chip"><input type="checkbox" id="noDairy" /> No dairy</label>
+                <label class="chip"><input type="checkbox" id="noEgg" /> No egg white</label>
+                <label class="chip"><input type="checkbox" id="noSmoke" /> No smoke</label>
+                <label class="chip"><input type="checkbox" id="noSweet" /> No sweet</label>
+              </div>
+            </div>
+
+            <div class="control full">
+              <div class="label"><span>Available At Home (for shopping list)</span></div>
+              <div class="toggle-row" id="pantryChecks"></div>
+            </div>
+          </div>
+
+          <div class="tools">
+            <button id="mixButton" class="btn" type="button">Mix For Today</button>
+            <button id="variationButton" class="btn alt" type="button">Another variation</button>
+            <button id="copyButton" class="btn alt" type="button">Copy recipe</button>
+            <button id="favoriteButton" class="btn alt" type="button">Save favorite</button>
+          </div>
+          <div id="statusLine" class="status" aria-live="polite"></div>
+
+          <div class="favorites">
+            <h3>Favorites</h3>
+            <div id="favoritesList" class="favorites-list"></div>
+          </div>
+        </section>
+      </section>
+
+      <section class="panel recipe-panel" aria-label="Drink of the day">
+        <h2 id="drinkName">Master Selection</h2>
+        <div id="drinkMeta" class="meta"></div>
+        <div class="card-grid">
+          <section class="card">
+            <h3>Ingredients</h3>
+            <ul id="ingredientsList"></ul>
+          </section>
+          <section class="card">
+            <h3>Method</h3>
+            <ol id="methodList"></ol>
+          </section>
+          <section class="card">
+            <h3>Service Notes</h3>
+            <div id="serviceNotes" class="line-list"></div>
+          </section>
+          <section class="card">
+            <h3>Shopping List (missing only)</h3>
+            <div id="shoppingList" class="line-list"></div>
+          </section>
+          <section class="card">
+            <h3>Substitutions</h3>
+            <div id="substitutions" class="line-list"></div>
+          </section>
         </div>
-
-        <div class="field">
-          <label for="profileSelect">Flavor Profile</label>
-          <select id="profileSelect">
-            <option value="auto">Match Mood Automatically</option>
-            <option value="fruity">Fruity</option>
-            <option value="smoky">Smoky</option>
-            <option value="citrusy">Citrusy</option>
-            <option value="herbal">Herbal</option>
-            <option value="sweet">Sweet</option>
-            <option value="dry">Dry</option>
-            <option value="spiced">Spiced</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="section-title">Mood Of The Day</div>
-      <div class="moods" id="moodGrid"></div>
-
-      <div class="tools">
-        <button class="button" id="mixButton" type="button">Summon The Master</button>
-        <label class="switch">
-          <input type="checkbox" id="zeroProof" />
-          Zero-proof build
-        </label>
-      </div>
-
-      <article class="result" id="result" aria-live="polite"></article>
-    </section>
+      </section>
+    </div>
   </main>
 
   <script>
     const moods = [
-      { id: "chill", name: "Chill Sunset", note: "slow, smooth, warm", defaultSpirit: "whiskey", fallbackProfile: "sweet", vibe: "velvety and easy" },
-      { id: "bold", name: "Bold Energy", note: "vibrant, sharp, electric", defaultSpirit: "tequila", fallbackProfile: "citrusy", vibe: "bright and lifted" },
-      { id: "romantic", name: "Romantic", note: "soft, floral, dreamy", defaultSpirit: "gin", fallbackProfile: "fruity", vibe: "fragrant and elegant" },
-      { id: "focused", name: "Focused", note: "clean, clear, precise", defaultSpirit: "vodka", fallbackProfile: "dry", vibe: "crisp and minimal" },
-      { id: "celebration", name: "Celebration", note: "sparkling, playful, festive", defaultSpirit: "rum", fallbackProfile: "fruity", vibe: "lively and tropical" },
-      { id: "mysterious", name: "Mysterious Night", note: "dark, smoky, layered", defaultSpirit: "mezcal", fallbackProfile: "smoky", vibe: "deep and smoky" }
+      { id: "calm", name: "Calm Evening", note: "slow and warm", classic: "Old Fashioned" },
+      { id: "bright", name: "Bright Mood", note: "fresh and lively", classic: "Tom Collins" },
+      { id: "romantic", name: "Romantic", note: "soft and floral", classic: "French 75" },
+      { id: "focus", name: "Focused", note: "clean and precise", classic: "Martini" },
+      { id: "party", name: "Party Night", note: "playful and festive", classic: "Daiquiri" },
+      { id: "deep", name: "Deep Night", note: "dark and layered", classic: "Negroni" }
     ];
 
-    const profileFlavors = {
-      fruity: ["pineapple", "blackberry", "passionfruit", "peach"],
+    const spirits = ["gin", "whiskey", "vodka", "rum", "tequila", "mezcal", "brandy"];
+    const profiles = ["fruity", "smoky", "citrusy", "herbal", "sweet", "dry", "spiced"];
+    const strengthLabels = ["Light", "Easy", "Standard", "Strong", "Boozy"];
+    const methods = ["Shake hard with cold ice", "Stir with dense ice", "Build over fresh ice and swizzle", "Whip shake and strain"];
+    const classicsBySpirit = {
+      whiskey: ["Old Fashioned", "Whiskey Sour", "Manhattan"],
+      gin: ["Negroni", "Gimlet", "Tom Collins"],
+      vodka: ["Vodka Martini", "Moscow Mule", "Cosmopolitan"],
+      rum: ["Daiquiri", "Mojito", "Dark and Stormy"],
+      tequila: ["Margarita", "Paloma", "Tequila Sour"],
+      mezcal: ["Oaxaca Old Fashioned", "Mezcal Negroni", "Naked and Famous"],
+      brandy: ["Sidecar", "Brandy Crusta", "Brandy Sour"]
+    };
+
+    const profileAccents = {
+      fruity: ["pineapple", "passionfruit", "peach", "blackberry"],
       smoky: ["cacao", "lapsang", "charred orange", "smoked plum"],
-      citrusy: ["grapefruit", "yuzu", "blood orange", "lime zest"],
-      herbal: ["mint", "basil", "rosemary", "green chartreuse note"],
-      sweet: ["vanilla", "honey", "caramel", "tonka"],
-      dry: ["vermouth", "white tea", "chamomile", "cucumber"],
+      citrusy: ["grapefruit", "yuzu", "orange", "lime zest"],
+      herbal: ["mint", "basil", "rosemary", "sage"],
+      sweet: ["vanilla", "honey", "caramel", "maple"],
+      dry: ["dry vermouth", "white tea", "chamomile", "cucumber"],
       spiced: ["ginger", "clove", "allspice", "cardamom"]
     };
 
-    const techniques = ["Shaken hard", "Stirred with cracked ice", "Built and swizzled", "Short whip shake"];
-    const garnishes = ["expressed citrus peel", "mint crown", "dehydrated orange wheel", "luxardo cherry", "fresh grated nutmeg", "smoked rosemary"];
-    const glassware = ["Nick & Nora", "Rocks glass", "Coupe", "Highball", "Old fashioned glass"];
-    const sweeteners = ["honey syrup", "demerara syrup", "agave nectar", "maple syrup"];
-    const acids = ["fresh lemon juice", "fresh lime juice", "verjus", "acid-adjusted citrus"];
-    const zeroBases = ["seedlip grove", "juniper distillate", "smoked black tea", "spiced shrub"];
-    const namePartA = ["Midnight", "Golden", "Velvet", "Scarlet", "Royal", "Oak", "Silk", "Crown"];
-    const namePartB = ["Whisper", "Parlor", "Reserve", "Ritual", "Boulevard", "Ember", "Ledger", "Nocturne"];
+    const pantryItems = [
+      "gin", "whiskey", "vodka", "rum", "tequila", "mezcal", "brandy",
+      "lemon", "lime", "verjus", "honey syrup", "demerara syrup", "agave", "soda", "tonic", "ginger ale", "aromatic bitters"
+    ];
+
+    const substituteMap = {
+      lemon: "use verjus",
+      lime: "use acid-adjusted lemon",
+      verjus: "use white wine vinegar + water",
+      honey: "use agave",
+      "honey syrup": "use demerara syrup",
+      "demerara syrup": "use simple syrup",
+      agave: "use honey syrup",
+      soda: "use sparkling tea",
+      tonic: "use soda + bitters",
+      "ginger ale": "use soda + fresh ginger",
+      "aromatic bitters": "use orange bitters"
+    };
+
+    const modeLines = [
+      "The bar keeps tonight quiet and precise.",
+      "A classic spine with a modern whisper.",
+      "Balanced to suit the room, not just the glass.",
+      "Built for one more thoughtful sip."
+    ];
+
+    const elements = {
+      moodGrid: document.getElementById("moodGrid"),
+      spiritRange: document.getElementById("spiritRange"),
+      profileRange: document.getElementById("profileRange"),
+      strengthRange: document.getElementById("strengthRange"),
+      sweetRange: document.getElementById("sweetRange"),
+      acidRange: document.getElementById("acidRange"),
+      sparkleRange: document.getElementById("sparkleRange"),
+      spiritValue: document.getElementById("spiritValue"),
+      profileValue: document.getElementById("profileValue"),
+      strengthValue: document.getElementById("strengthValue"),
+      sweetValue: document.getElementById("sweetValue"),
+      acidValue: document.getElementById("acidValue"),
+      sparkleValue: document.getElementById("sparkleValue"),
+      classicMode: document.getElementById("classicMode"),
+      zeroProof: document.getElementById("zeroProof"),
+      glassSelect: document.getElementById("glassSelect"),
+      sceneSelect: document.getElementById("sceneSelect"),
+      companySelect: document.getElementById("companySelect"),
+      noCitrus: document.getElementById("noCitrus"),
+      noDairy: document.getElementById("noDairy"),
+      noEgg: document.getElementById("noEgg"),
+      noSmoke: document.getElementById("noSmoke"),
+      noSweet: document.getElementById("noSweet"),
+      pantryChecks: document.getElementById("pantryChecks"),
+      mixButton: document.getElementById("mixButton"),
+      variationButton: document.getElementById("variationButton"),
+      copyButton: document.getElementById("copyButton"),
+      favoriteButton: document.getElementById("favoriteButton"),
+      statusLine: document.getElementById("statusLine"),
+      favoritesList: document.getElementById("favoritesList"),
+      drinkName: document.getElementById("drinkName"),
+      drinkMeta: document.getElementById("drinkMeta"),
+      ingredientsList: document.getElementById("ingredientsList"),
+      methodList: document.getElementById("methodList"),
+      serviceNotes: document.getElementById("serviceNotes"),
+      shoppingList: document.getElementById("shoppingList"),
+      substitutions: document.getElementById("substitutions")
+    };
 
     let selectedMood = moods[0].id;
-
-    const moodGrid = document.getElementById("moodGrid");
-    const result = document.getElementById("result");
-    const mixButton = document.getElementById("mixButton");
-    const zeroProof = document.getElementById("zeroProof");
-    const spiritSelect = document.getElementById("spiritSelect");
-    const profileSelect = document.getElementById("profileSelect");
+    let latestRecipe = null;
 
     function pick(list) {
       return list[Math.floor(Math.random() * list.length)];
     }
 
-    function titleCase(text) {
-      return text.charAt(0).toUpperCase() + text.slice(1);
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
     }
 
-    function createMoodButtons() {
-      moodGrid.innerHTML = "";
+    function titleCase(text) {
+      return text
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+    }
+
+    function getSettings() {
+      return {
+        mood: moods.find((item) => item.id === selectedMood),
+        spirit: spirits[Number(elements.spiritRange.value)],
+        profile: profiles[Number(elements.profileRange.value)],
+        strength: Number(elements.strengthRange.value),
+        sweet: Number(elements.sweetRange.value),
+        acid: Number(elements.acidRange.value),
+        sparkle: Number(elements.sparkleRange.value),
+        classicMode: elements.classicMode.checked,
+        zeroProof: elements.zeroProof.checked,
+        glass: elements.glassSelect.value,
+        scene: elements.sceneSelect.value,
+        company: elements.companySelect.value,
+        noCitrus: elements.noCitrus.checked,
+        noDairy: elements.noDairy.checked,
+        noEgg: elements.noEgg.checked,
+        noSmoke: elements.noSmoke.checked,
+        noSweet: elements.noSweet.checked
+      };
+    }
+
+    function refreshSliderLabels() {
+      elements.spiritValue.textContent = titleCase(spirits[Number(elements.spiritRange.value)]);
+      elements.profileValue.textContent = titleCase(profiles[Number(elements.profileRange.value)]);
+      elements.strengthValue.textContent = strengthLabels[Number(elements.strengthRange.value)];
+      elements.sweetValue.textContent = elements.sweetRange.value;
+      elements.acidValue.textContent = elements.acidRange.value;
+      elements.sparkleValue.textContent = elements.sparkleRange.value;
+    }
+
+    function buildMoodCards() {
+      elements.moodGrid.innerHTML = "";
       moods.forEach((mood) => {
         const button = document.createElement("button");
-        button.className = "mood" + (mood.id === selectedMood ? " active" : "");
         button.type = "button";
+        button.className = "mood-btn" + (mood.id === selectedMood ? " active" : "");
         button.innerHTML = "<strong>" + mood.name + "</strong><span>" + mood.note + "</span>";
         button.addEventListener("click", () => {
           selectedMood = mood.id;
-          createMoodButtons();
-          generateRecipe();
+          buildMoodCards();
         });
-        moodGrid.appendChild(button);
+        elements.moodGrid.appendChild(button);
       });
     }
 
-    function generateRecipe() {
-      const mood = moods.find((item) => item.id === selectedMood);
-      const isZero = zeroProof.checked;
-      const chosenSpirit = spiritSelect.value;
-      const chosenProfile = profileSelect.value;
-
-      const resolvedProfile = chosenProfile === "auto" ? mood.fallbackProfile : chosenProfile;
-      const resolvedSpirit = isZero
-        ? pick(zeroBases)
-        : chosenSpirit === "auto"
-          ? mood.defaultSpirit
-          : chosenSpirit;
-
-      const accent = pick(profileFlavors[resolvedProfile]);
-      const acid = pick(acids);
-      const sweet = pick(sweeteners);
-      const sparkle = pick(["soda water", "dry tonic", "ginger ale", "sparkling tea"]);
-      const style = pick(techniques);
-      const garnish = pick(garnishes);
-      const glass = pick(glassware);
-      const name = pick(namePartA) + " " + pick(namePartB);
-      const abv = isZero ? "0%" : String(Math.floor(Math.random() * 10) + 13) + "%";
-
-      const ingredients = isZero
-        ? [
-            "55 ml " + resolvedSpirit,
-            "20 ml " + acid,
-            "15 ml " + sweet,
-            "20 ml " + accent + " cordial",
-            "Top with " + sparkle
-          ]
-        : [
-            "50 ml " + resolvedSpirit,
-            "20 ml " + acid,
-            "15 ml " + sweet,
-            "10 ml " + accent + " modifier",
-            "2 dashes aromatic bitters"
-          ];
-
-      const steps = [
-        style + " until chilled and integrated.",
-        "Strain into a chilled " + glass + ".",
-        isZero ? "Top lightly with " + sparkle + "." : "Fine strain for a clean finish.",
-        "Garnish with " + garnish + "."
-      ];
-
-      result.innerHTML = `
-        <h2>${name}</h2>
-        <div class="meta">Mood: ${mood.name} | Base: ${titleCase(resolvedSpirit)} | Profile: ${titleCase(resolvedProfile)} | Estimated ABV: ${abv}</div>
-        <div class="recipe-grid">
-          <section class="box">
-            <h3>Ingredients</h3>
-            <ul>${ingredients.map((line) => `<li>${line}</li>`).join("")}</ul>
-          </section>
-          <section class="box">
-            <h3>Method</h3>
-            <ol>${steps.map((line) => `<li>${line}</li>`).join("")}</ol>
-          </section>
-        </div>
-        <div class="note">Master note: A ${titleCase(resolvedProfile)} direction with a ${mood.vibe} body, composed in classic house style.</div>
-      `;
+    function buildPantryChecks() {
+      elements.pantryChecks.innerHTML = "";
+      pantryItems.forEach((item) => {
+        const label = document.createElement("label");
+        label.className = "chip";
+        label.innerHTML = '<input type="checkbox" data-pantry="' + item + '" />' + titleCase(item);
+        elements.pantryChecks.appendChild(label);
+      });
     }
 
-    createMoodButtons();
-    generateRecipe();
+    function resolveProfile(profile, settings) {
+      if (settings.noSmoke && profile === "smoky") {
+        return "herbal";
+      }
+      if (settings.noSweet && profile === "sweet") {
+        return "dry";
+      }
+      return profile;
+    }
 
-    mixButton.addEventListener("click", generateRecipe);
-    zeroProof.addEventListener("change", generateRecipe);
-    spiritSelect.addEventListener("change", generateRecipe);
-    profileSelect.addEventListener("change", generateRecipe);
+    function computeName(settings, profile, spirit) {
+      const classicBase = pick(classicsBySpirit[settings.spirit]);
+      if (settings.classicMode) {
+        if (settings.zeroProof) {
+          return "Temperance " + classicBase;
+        }
+        return classicBase;
+      }
+
+      const front = pick(["Velvet", "Golden", "Midnight", "Parlor", "Silk", "Copper"]);
+      const tail = pick(["Whisper", "Ritual", "Ledger", "Arc", "Nocturne", "Signal"]);
+      return front + " " + titleCase(profile) + " " + tail + " (" + titleCase(spirit) + ")";
+    }
+
+    function generateRecipe() {
+      const settings = getSettings();
+      const resolvedProfile = resolveProfile(settings.profile, settings);
+      const spirit = settings.zeroProof ? pick(["juniper distillate", "smoked black tea", "spiced shrub"]) : settings.spirit;
+
+      const baseMlTable = [35, 45, 55, 65, 75];
+      const baseMl = settings.zeroProof ? 60 : baseMlTable[settings.strength];
+      const sweetMl = settings.noSweet ? clamp(Math.round(settings.sweet * 0.06), 0, 8) : clamp(Math.round(settings.sweet * 0.22), 6, 24);
+      const acidMl = settings.noCitrus ? clamp(Math.round(settings.acid * 0.14), 6, 18) : clamp(Math.round(settings.acid * 0.2), 8, 26);
+      const sparkleMl = clamp(Math.round(settings.sparkle * 1.1), 0, 120);
+
+      const acidSource = settings.noCitrus ? "verjus" : pick(["lemon", "lime", "verjus"]);
+      const sweetSource = settings.noSweet ? "dry vermouth" : pick(["honey syrup", "demerara syrup", "agave"]);
+      const accent = pick(profileAccents[resolvedProfile]);
+      const modifier = settings.classicMode ? "aromatic bitters" : accent + " cordial";
+      const garnish = settings.noSmoke ? "citrus peel" : pick(["citrus peel", "mint crown", "smoked rosemary", "orange twist"]);
+
+      const ingredients = [
+        { text: baseMl + " ml " + spirit, key: spirit.split(" ")[0] },
+        { text: acidMl + " ml " + acidSource, key: acidSource },
+        { text: sweetMl + " ml " + sweetSource, key: sweetSource },
+        { text: "8 ml " + modifier, key: modifier.split(" ")[0] }
+      ];
+
+      if (!settings.noEgg && settings.classicMode && pick([true, false])) {
+        ingredients.push({ text: "10 ml egg white", key: "egg white" });
+      }
+
+      if (!settings.noDairy && !settings.classicMode && pick([true, false, false])) {
+        ingredients.push({ text: "8 ml cream", key: "cream" });
+      }
+
+      if (sparkleMl > 20) {
+        const bubble = pick(["soda", "tonic", "ginger ale"]);
+        ingredients.push({ text: "Top with " + sparkleMl + " ml " + bubble, key: bubble });
+      }
+
+      const recipeName = computeName(settings, resolvedProfile, spirit);
+      const method = [
+        pick(methods) + ".",
+        "Serve in a " + settings.glass + " glass over fresh ice.",
+        "Finish with " + garnish + ".",
+        settings.classicMode ? "Keep dilution tight and clean." : "Leave a modern aromatic lift on top."
+      ];
+
+      const difficultyScore = ingredients.length + (settings.classicMode ? 0 : 1) + (settings.sparkle > 70 ? 1 : 0);
+      const difficulty = difficultyScore <= 5 ? "Easy" : difficultyScore <= 7 ? "Medium" : "Advanced";
+      const durationMin = 2 + Math.round(difficultyScore * 0.7);
+
+      const pantrySelected = Array.from(elements.pantryChecks.querySelectorAll("input[data-pantry]:checked")).map((node) => node.getAttribute("data-pantry"));
+      const requiredKeys = Array.from(new Set(ingredients.map((item) => item.key)));
+      const missing = requiredKeys.filter((key) => !pantrySelected.includes(key));
+      const substitutions = missing.map((key) => ({
+        key,
+        value: substituteMap[key] || "ask master for nearest style-compatible swap"
+      }));
+
+      const sceneLine = settings.scene === "aperitif"
+        ? "Built for appetite opening before food."
+        : settings.scene === "with-meal"
+          ? "Balanced to sit with a meal."
+          : "Framed for a slower after-dinner pace.";
+
+      const companyLine = settings.company === "solo"
+        ? "Portion and profile tuned for one focused drinker."
+        : "Flavor is broadened for sharing and conversation.";
+
+      const masterLine = pick(modeLines);
+
+      return {
+        name: recipeName,
+        meta: [
+          "Mood: " + settings.mood.name,
+          "Base: " + titleCase(spirit),
+          "Direction: " + titleCase(resolvedProfile),
+          "Strength: " + strengthLabels[settings.strength],
+          "Mode: " + (settings.classicMode ? "Classic" : "Twist")
+        ].join(" | "),
+        ingredients,
+        method,
+        notes: [
+          "Difficulty: " + difficulty,
+          "Time: " + durationMin + " min",
+          sceneLine,
+          companyLine,
+          "Master line: " + masterLine
+        ],
+        missing,
+        substitutions
+      };
+    }
+
+    function renderRecipe(recipe) {
+      latestRecipe = recipe;
+      elements.drinkName.textContent = recipe.name;
+      elements.drinkMeta.textContent = recipe.meta;
+      elements.ingredientsList.innerHTML = recipe.ingredients.map((item) => "<li>" + item.text + "</li>").join("");
+      elements.methodList.innerHTML = recipe.method.map((line) => "<li>" + line + "</li>").join("");
+      elements.serviceNotes.innerHTML = recipe.notes.map((line) => "<div>" + line + "</div>").join("");
+
+      elements.shoppingList.innerHTML = recipe.missing.length
+        ? recipe.missing.map((item) => "<div>" + titleCase(item) + "</div>").join("")
+        : "<div>Nothing missing. You can mix now.</div>";
+
+      elements.substitutions.innerHTML = recipe.substitutions.length
+        ? recipe.substitutions.map((item) => "<div>" + titleCase(item.key) + " -> " + item.value + "</div>").join("")
+        : "<div>No substitutions needed.</div>";
+    }
+
+    function buildCopyText(recipe) {
+      const lines = [];
+      lines.push(recipe.name);
+      lines.push(recipe.meta);
+      lines.push("");
+      lines.push("Ingredients:");
+      recipe.ingredients.forEach((item) => lines.push("- " + item.text));
+      lines.push("");
+      lines.push("Method:");
+      recipe.method.forEach((line, index) => lines.push(String(index + 1) + ". " + line));
+      lines.push("");
+      lines.push("Shopping List:");
+      if (recipe.missing.length) {
+        recipe.missing.forEach((item) => lines.push("- " + item));
+      } else {
+        lines.push("- Nothing missing");
+      }
+      return lines.join("\n");
+    }
+
+    function setStatus(message, stirring) {
+      elements.statusLine.textContent = message;
+      elements.statusLine.classList.toggle("stirring", Boolean(stirring));
+    }
+
+    function getFavorites() {
+      try {
+        const raw = localStorage.getItem("master-cocktail-favorites");
+        return raw ? JSON.parse(raw) : [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function saveFavorites(list) {
+      localStorage.setItem("master-cocktail-favorites", JSON.stringify(list));
+    }
+
+    function renderFavorites() {
+      const favorites = getFavorites();
+      elements.favoritesList.innerHTML = "";
+      if (!favorites.length) {
+        elements.favoritesList.innerHTML = "<div class=\"favorite-item\">No favorites yet.</div>";
+        return;
+      }
+
+      favorites.forEach((item, index) => {
+        const row = document.createElement("div");
+        row.className = "favorite-item";
+
+        const label = document.createElement("div");
+        label.textContent = item.name;
+
+        const load = document.createElement("button");
+        load.type = "button";
+        load.textContent = "Load";
+        load.addEventListener("click", () => {
+          renderRecipe(item.recipe);
+          setStatus("Favorite loaded.", false);
+        });
+
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.textContent = "Delete";
+        remove.addEventListener("click", () => {
+          const next = getFavorites().filter((_, idx) => idx !== index);
+          saveFavorites(next);
+          renderFavorites();
+          setStatus("Favorite removed.", false);
+        });
+
+        const actions = document.createElement("div");
+        actions.style.display = "flex";
+        actions.style.gap = "6px";
+        actions.appendChild(load);
+        actions.appendChild(remove);
+
+        row.appendChild(label);
+        row.appendChild(actions);
+        elements.favoritesList.appendChild(row);
+      });
+    }
+
+    function wait(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    async function mixAndRender() {
+      setStatus("Master is stirring...", true);
+      elements.mixButton.disabled = true;
+      elements.variationButton.disabled = true;
+      await wait(2000);
+      const recipe = generateRecipe();
+      renderRecipe(recipe);
+      setStatus("Ready. One line from the master is in Service Notes.", false);
+      elements.mixButton.disabled = false;
+      elements.variationButton.disabled = false;
+    }
+
+    function bindEvents() {
+      [
+        elements.spiritRange,
+        elements.profileRange,
+        elements.strengthRange,
+        elements.sweetRange,
+        elements.acidRange,
+        elements.sparkleRange
+      ].forEach((input) => {
+        input.addEventListener("input", refreshSliderLabels);
+      });
+
+      elements.mixButton.addEventListener("click", mixAndRender);
+      elements.variationButton.addEventListener("click", () => {
+        const recipe = generateRecipe();
+        renderRecipe(recipe);
+        setStatus("Variation generated with same order sheet.", false);
+      });
+
+      elements.copyButton.addEventListener("click", async () => {
+        if (!latestRecipe) {
+          return;
+        }
+        try {
+          await navigator.clipboard.writeText(buildCopyText(latestRecipe));
+          setStatus("Recipe copied.", false);
+        } catch (error) {
+          setStatus("Copy failed. Clipboard permission blocked.", false);
+        }
+      });
+
+      elements.favoriteButton.addEventListener("click", () => {
+        if (!latestRecipe) {
+          return;
+        }
+        const favorites = getFavorites();
+        favorites.unshift({
+          name: latestRecipe.name,
+          recipe: latestRecipe
+        });
+        saveFavorites(favorites.slice(0, 12));
+        renderFavorites();
+        setStatus("Saved to favorites.", false);
+      });
+    }
+
+    function init() {
+      buildMoodCards();
+      buildPantryChecks();
+      refreshSliderLabels();
+      bindEvents();
+      renderFavorites();
+      renderRecipe(generateRecipe());
+      setStatus("Adjust sliders, then mix.", false);
+    }
+
+    init();
   </script>
 </body>
 </html>

@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Insta Reel Plot Generator</title>
+<style>
+  :root{
+    --bg:#f2f4f8;
+    --ink:#1b1f2a;
+    --muted:#596072;
+    --line:rgba(20,30,55,.14);
+    --panel:rgba(255,255,255,.76);
+    --panel-strong:rgba(255,255,255,.9);
+    --blue:#0a84ff;
+    --blue-deep:#1f6ed4;
+    --radius:22px;
+    --shadow:0 14px 36px rgba(30,45,80,.16);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    min-height:100vh;
+    color:var(--ink);
+    font-family:"SF Pro Text","SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:
+      radial-gradient(900px 520px at 6% -14%, rgba(10,132,255,.18), transparent 60%),
+      radial-gradient(980px 560px at 96% -18%, rgba(99,210,255,.24), transparent 62%),
+      radial-gradient(700px 380px at 50% 104%, rgba(88,86,214,.12), transparent 60%),
+      linear-gradient(160deg,#eef2f8,#f7f9fd 45%,#edf2fb);
+    padding:20px 14px 34px;
+  }
+  .shell{max-width:1060px;margin:0 auto;display:grid;gap:14px}
+  .hero{
+    color:#14203d;
+    border:1px solid rgba(255,255,255,.72);
+    border-radius:26px;
+    padding:24px;
+    background:linear-gradient(120deg,rgba(255,255,255,.84),rgba(245,251,255,.82));
+    backdrop-filter: blur(16px);
+    box-shadow:var(--shadow);
+    animation:rise .5s ease;
+  }
+  h1{margin:0;font-size:clamp(23px,4.2vw,36px);letter-spacing:-.02em;font-weight:700}
+  .sub{margin-top:8px;font-size:14px;color:#3d4b66;line-height:1.5;max-width:760px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    padding:16px;
+    animation:rise .6s ease;
+  }
+  h2{margin:0 0 12px;font-size:17px;letter-spacing:-.01em}
+  .stack{display:grid;gap:10px}
+  label{font-size:12px;font-weight:650;color:var(--muted)}
+  select,button{
+    width:100%;
+    border-radius:14px;
+    border:1px solid var(--line);
+    padding:10px 12px;
+    font:inherit;
+  }
+  select{
+    background:var(--panel-strong);
+    appearance:none;
+    background-image:
+      linear-gradient(45deg,transparent 50%,#5f6883 50%),
+      linear-gradient(135deg,#5f6883 50%,transparent 50%);
+    background-position:
+      calc(100% - 18px) calc(50% + 1px),
+      calc(100% - 13px) calc(50% + 1px);
+    background-size:5px 5px,5px 5px;
+    background-repeat:no-repeat;
+    padding-right:30px;
+  }
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .btn{
+    cursor:pointer;
+    border:none;
+    color:#fff;
+    font-weight:650;
+    letter-spacing:.01em;
+    background:linear-gradient(120deg,var(--blue),var(--blue-deep));
+    box-shadow:0 6px 14px rgba(10,132,255,.3);
+    transition:filter .16s ease, transform .05s ease;
+  }
+  .btn.alt{
+    background:linear-gradient(120deg,#6d7a96,#4f5f80);
+    box-shadow:0 6px 14px rgba(72,84,112,.24);
+  }
+  .btn:hover{filter:brightness(1.03)}
+  .btn:active{transform:translateY(1px)}
+  .list{display:grid;gap:10px}
+  .plot{
+    border:1px solid rgba(20,30,55,.12);
+    border-radius:16px;
+    padding:13px;
+    background:rgba(255,255,255,.88);
+  }
+  .plot h3{margin:0;font-size:15px;font-weight:650}
+  .meta{margin-top:6px;font-size:12px;color:var(--muted)}
+  .beats{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:6px}
+  .beats li{font-size:13px;line-height:1.35}
+  .time{display:inline-block;min-width:60px;font-weight:700;color:#1f6ed4}
+  .extras{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(20,30,55,.2);font-size:12px;line-height:1.45;color:#26324f}
+  .foot{color:#4e5d7a;font-size:12px;text-align:center}
+  @media (max-width:900px){
+    .grid,.row{grid-template-columns:1fr}
+  }
+  @keyframes rise{
+    from{opacity:0;transform:translateY(12px)}
+    to{opacity:1;transform:translateY(0)}
+  }
+</style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <h1>Instagram Reel Plot Generator</h1>
+      <div class="sub">Create concise, audience-relevant 15-second story concepts for viewers in their late twenties to early thirties.</div>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <h2>Creative Direction</h2>
+        <div class="stack">
+          <div>
+            <label for="pillar">Topic Pillar</label>
+            <select id="pillar">
+              <option value="career">Career Pressure</option>
+              <option value="money">Money Reality</option>
+              <option value="dating">Dating + Boundaries</option>
+              <option value="friendship">Friendship Drift</option>
+              <option value="wellness">Wellness vs Hustle</option>
+            </select>
+          </div>
+          <div class="row">
+            <div>
+              <label for="tone">Tone</label>
+              <select id="tone">
+                <option value="witty">Witty</option>
+                <option value="vulnerable">Vulnerable</option>
+                <option value="cinematic">Cinematic</option>
+                <option value="direct">Direct</option>
+              </select>
+            </div>
+            <div>
+              <label for="camera">Shoot Style</label>
+              <select id="camera">
+                <option value="talking">Talking Head</option>
+                <option value="pov">POV + B-roll</option>
+                <option value="text">Text-on-Screen</option>
+                <option value="duet">Dialogue / Two Character</option>
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <button class="btn" id="generateBtn" type="button">Generate 3 Concepts</button>
+            <button class="btn alt" id="remixBtn" type="button">Regenerate Theme</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>Output Concepts (<=15s)</h2>
+        <div id="output" class="list"></div>
+      </article>
+    </section>
+
+    <div class="foot">Tip: establish the hook in the first 2 seconds, pivot by second 8, and resolve by second 15.</div>
+  </main>
+
+<script>
+(() => {
+  const hooks = {
+    career:[
+      "POV: it is 9:02 AM and your inbox already feels like a sprint.",
+      "Your manager asks for a quick sync, and priorities shift instantly.",
+      "You open your workspace and realize every tab needs a decision."
+    ],
+    money:[
+      "You check your account after one discretionary purchase.",
+      "Payday arrives, then recurring payments take over.",
+      "Your budgeting app sends another practical reminder."
+    ],
+    dating:[
+      "They reconnect late at night after days of silence.",
+      "You decide consistency matters more than mixed signals.",
+      "You hear 'I am not ready for commitment' one more time."
+    ],
+    friendship:[
+      "The group chat is active, but everyone is running on low energy.",
+      "Scheduling dinner now feels like project coordination.",
+      "Adult friendship starts to look like calendar management."
+    ],
+    wellness:[
+      "You plan to rest, then reopen your laptop.",
+      "Your body asks for sleep while your mind asks for output.",
+      "Your self-care routine starts to feel like another checklist."
+    ]
+  };
+
+  const conflicts = {
+    career:[
+      "You accept one additional task while your own deadline tightens.",
+      "You over-prepare for a meeting that is postponed.",
+      "You compare your progress to someone else's highlight moment."
+    ],
+    money:[
+      "You reduce subscriptions, but fixed costs still dominate the month.",
+      "You begin a savings challenge and remember upcoming travel plans.",
+      "Even small purchases begin to feel strategic."
+    ],
+    dating:[
+      "You draft a long response, then return to your boundary standards.",
+      "You briefly mistake inconsistency for chemistry.",
+      "You value connection, but no longer want to create your own closure."
+    ],
+    friendship:[
+      "You care about your circle, but everyone is mentally stretched.",
+      "You miss spontaneity, but every plan needs advance scheduling.",
+      "You revisit memories and realize time is limited for everyone."
+    ],
+    wellness:[
+      "You optimize your routine so much that it loses flexibility.",
+      "You follow strong habits and still feel mentally overloaded.",
+      "You start meditating, then shift into planning mode."
+    ]
+  };
+
+  const pivots = {
+    witty:[
+      "Quick reset: I close the app and step away for ten minutes.",
+      "Perspective check: the urgency was not mine to carry.",
+      "I pair optimism with one practical action."
+    ],
+    vulnerable:[
+      "I acknowledge that I am tired, not behind.",
+      "I send one honest message instead of over-explaining.",
+      "I pause the performance of always being composed."
+    ],
+    cinematic:[
+      "Cut to a quiet coffee pour and one intentional breath.",
+      "The music shifts; I place my phone face down and reset.",
+      "City lights in frame, and the inner noise settles."
+    ],
+    direct:[
+      "New rule: no major decisions after 10 PM.",
+      "Boundary update: if it drains me twice, I decline.",
+      "I replace perfection with progress and move forward."
+    ]
+  };
+
+  const payoffs = [
+    "A small win today makes tomorrow easier.",
+    "Nothing dramatic changed, but my stress level did.",
+    "I am still learning, just with clearer direction.",
+    "The challenge remains, but my response is stronger.",
+    "A practical reset creates immediate momentum."
+  ];
+
+  const ctas = {
+    witty:["Share your most relatable adulting moment in the comments.","Tag a friend who plans social time like a strategy session."],
+    vulnerable:["If this resonates, you are not alone.","Save this as a reminder for a demanding day."],
+    cinematic:["Save this for your next evening reset.","Send this to someone rebuilding with intention."],
+    direct:["Comment 'reset' if you are setting clearer boundaries this week.","Save this for the next time you need a quick perspective shift."]
+  };
+
+  const cameraTips = {
+    talking:"Use direct eye contact and short jump cuts every 2-3 seconds.",
+    pov:"Open with a close-up action shot, then reveal your face near second 8.",
+    text:"Keep each line under eight words and animate the pivot phrase.",
+    duet:"Switch roles quickly at second 5 using a clear visual cue."
+  };
+
+  const byId = (id) => document.getElementById(id);
+  const sample = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+  function buildPlot(pillar, tone, camera, idx){
+    const hook = sample(hooks[pillar]);
+    const conflict = sample(conflicts[pillar]);
+    const pivot = sample(pivots[tone]);
+    const payoff = sample(payoffs);
+
+    return {
+      title:`Concept ${idx + 1}: ${pillar[0].toUpperCase() + pillar.slice(1)} narrative`,
+      beats:[
+        ["0s-2s", hook],
+        ["2s-7s", conflict],
+        ["7s-11s", pivot],
+        ["11s-15s", payoff]
+      ],
+      caption:`${hook} ${pivot} ${payoff}`,
+      cta:sample(ctas[tone]),
+      tip:cameraTips[camera]
+    };
+  }
+
+  function renderPlots(pillar, tone, camera){
+    const output = byId("output");
+    const plots = [0,1,2].map((i) => buildPlot(pillar, tone, camera, i));
+
+    output.innerHTML = plots.map((plot) => {
+      const beats = plot.beats.map(([t, line]) => `<li><span class="time">${t}</span> ${line}</li>`).join("");
+      return `
+        <section class="plot">
+          <h3>${plot.title}</h3>
+          <div class="meta">Format: 15s max | Audience: Late 20s to Early 30s</div>
+          <ul class="beats">${beats}</ul>
+          <div class="extras"><strong>Caption:</strong> ${plot.caption}<br><strong>CTA:</strong> ${plot.cta}<br><strong>Shoot tip:</strong> ${plot.tip}</div>
+        </section>
+      `;
+    }).join("");
+  }
+
+  const generate = () => {
+    const pillar = byId("pillar").value;
+    const tone = byId("tone").value;
+    const camera = byId("camera").value;
+    renderPlots(pillar, tone, camera);
+  };
+
+  byId("generateBtn").addEventListener("click", generate);
+  byId("remixBtn").addEventListener("click", generate);
+
+  generate();
+})();
+</script>
+</body>
+</html>

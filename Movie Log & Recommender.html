@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Cinema Ledger</title>
+<style>
+  :root{
+    --bg:#0f1a1f;
+    --bg-soft:#15252d;
+    --panel:#f8f3ea;
+    --panel-soft:#fffdf8;
+    --ink:#172127;
+    --muted:#5a6770;
+    --line:#d8d2c7;
+    --teal:#1b7a78;
+    --amber:#d1892f;
+    --rose:#c85d4d;
+    --radius:18px;
+    --shadow: 0 16px 36px rgba(0,0,0,.22);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    min-height:100vh;
+    color:var(--ink);
+    font-family:"Avenir Next","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+    background:
+      radial-gradient(1200px 700px at -10% -20%, rgba(209,137,47,.26), transparent 60%),
+      radial-gradient(1200px 700px at 110% -10%, rgba(27,122,120,.30), transparent 62%),
+      linear-gradient(160deg, var(--bg), #11161f 45%, #1f2a25 100%);
+    padding:28px 16px 40px;
+  }
+  .shell{max-width:1060px;margin:0 auto;display:grid;gap:14px}
+  .hero{
+    color:#f5f2ea;
+    border:1px solid rgba(255,255,255,.18);
+    border-radius:24px;
+    padding:24px;
+    backdrop-filter: blur(8px);
+    background:rgba(24,35,43,.62);
+    box-shadow: var(--shadow);
+    animation:fadeup .45s ease;
+  }
+  h1{margin:0;font-size:clamp(24px,4vw,36px);letter-spacing:.4px}
+  .sub{margin-top:8px;opacity:.86}
+  .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
+  .card{
+    background:var(--panel);
+    border-radius:var(--radius);
+    border:1px solid var(--line);
+    box-shadow:var(--shadow);
+    padding:16px;
+    animation:fadeup .55s ease;
+  }
+  .card h2{font-size:17px;margin:0 0 12px}
+  .stack{display:grid;gap:10px}
+  label{font-size:12px;color:var(--muted);font-weight:600}
+  input, select, textarea, button{
+    font:inherit;
+    border-radius:12px;
+    border:1px solid var(--line);
+    padding:10px 12px;
+    width:100%;
+  }
+  input, select, textarea{background:var(--panel-soft)}
+  textarea{min-height:78px;resize:vertical}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .btn{
+    cursor:pointer;
+    color:#fff;
+    background:linear-gradient(120deg,var(--teal),#146665);
+    border:none;
+    font-weight:700;
+    letter-spacing:.02em;
+  }
+  .btn.alt{background:linear-gradient(120deg,var(--amber),#bd7320)}
+  .btn.warn{background:linear-gradient(120deg,var(--rose),#ab4b3d)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{
+    font-size:12px;
+    border-radius:999px;
+    padding:6px 10px;
+    border:1px solid rgba(23,33,39,.16);
+    background:#fff;
+  }
+  .list{display:grid;gap:8px;max-height:360px;overflow:auto;padding-right:2px}
+  .item{
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:10px;
+    background:#fff;
+  }
+  .item-title{display:flex;justify-content:space-between;gap:8px;font-weight:700}
+  .meta{margin-top:5px;color:var(--muted);font-size:12px}
+  .empty{font-size:13px;color:var(--muted);padding:10px;border:1px dashed var(--line);border-radius:12px}
+  .rec-score{font-size:12px;color:var(--teal);font-weight:700}
+  .foot{color:#e8e3d8;font-size:12px;text-align:center;opacity:.82;padding-top:6px}
+  @media (max-width:900px){
+    .grid{grid-template-columns:1fr}
+    .row{grid-template-columns:1fr}
+  }
+  @keyframes fadeup{
+    from{opacity:0;transform:translateY(10px)}
+    to{opacity:1;transform:translateY(0)}
+  }
+</style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <h1>Cinema Ledger</h1>
+      <div class="sub">映画の鑑賞記録をためて、好みに沿ったおすすめを自動で提案します。</div>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <h2>鑑賞記録を追加</h2>
+        <form id="logForm" class="stack">
+          <div>
+            <label for="title">作品名</label>
+            <input id="title" name="title" required placeholder="例: Interstellar" />
+          </div>
+          <div class="row">
+            <div>
+              <label for="watchedAt">鑑賞日</label>
+              <input id="watchedAt" name="watchedAt" type="date" required />
+            </div>
+            <div>
+              <label for="rating">評価 (1-5)</label>
+              <select id="rating" name="rating">
+                <option>5</option><option>4</option><option selected>3</option><option>2</option><option>1</option>
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label for="genres">ジャンル (カンマ区切り)</label>
+              <input id="genres" name="genres" placeholder="SF, Drama" />
+            </div>
+            <div>
+              <label for="mood">気分</label>
+              <select id="mood" name="mood">
+                <option>Exciting</option>
+                <option selected>Calm</option>
+                <option>Thoughtful</option>
+                <option>Dark</option>
+                <option>Warm</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label for="note">メモ</label>
+            <textarea id="note" name="note" placeholder="良かったポイントをひとこと"></textarea>
+          </div>
+          <button class="btn" type="submit">記録する</button>
+        </form>
+      </article>
+
+      <article class="card">
+        <h2>サマリー</h2>
+        <div id="summary" class="chips"></div>
+        <div class="stack" style="margin-top:10px">
+          <button id="seedBtn" class="btn alt" type="button">サンプル記録を追加</button>
+          <button id="resetBtn" class="btn warn" type="button">全記録を削除</button>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>鑑賞履歴</h2>
+        <div id="logs" class="list"></div>
+      </article>
+
+      <article class="card">
+        <h2>あなたへのおすすめ</h2>
+        <div id="recs" class="list"></div>
+      </article>
+    </section>
+
+    <div class="foot">データはこのブラウザの localStorage に保存されます。</div>
+  </main>
+
+<script>
+(() => {
+  const STORAGE_KEY = "cinema-ledger-v1";
+
+  const catalog = [
+    { title: "Interstellar", genres: ["SF", "Drama"], mood: "Thoughtful" },
+    { title: "Arrival", genres: ["SF", "Mystery"], mood: "Thoughtful" },
+    { title: "Blade Runner 2049", genres: ["SF", "Noir"], mood: "Dark" },
+    { title: "La La Land", genres: ["Romance", "Music"], mood: "Warm" },
+    { title: "Whiplash", genres: ["Drama", "Music"], mood: "Exciting" },
+    { title: "Mad Max: Fury Road", genres: ["Action", "Adventure"], mood: "Exciting" },
+    { title: "The Grand Budapest Hotel", genres: ["Comedy", "Drama"], mood: "Warm" },
+    { title: "Parasite", genres: ["Thriller", "Drama"], mood: "Dark" },
+    { title: "Past Lives", genres: ["Romance", "Drama"], mood: "Calm" },
+    { title: "Drive", genres: ["Crime", "Drama"], mood: "Dark" },
+    { title: "Little Women", genres: ["Drama", "Family"], mood: "Warm" },
+    { title: "The Social Network", genres: ["Drama", "Biography"], mood: "Exciting" },
+    { title: "The Batman", genres: ["Action", "Crime"], mood: "Dark" },
+    { title: "Soul", genres: ["Animation", "Drama"], mood: "Calm" },
+    { title: "Her", genres: ["Romance", "SF"], mood: "Calm" },
+    { title: "Dune", genres: ["SF", "Adventure"], mood: "Thoughtful" },
+    { title: "The Menu", genres: ["Thriller", "Comedy"], mood: "Dark" },
+    { title: "Everything Everywhere All at Once", genres: ["SF", "Comedy"], mood: "Exciting" }
+  ];
+
+  const defaultLogs = [
+    { title: "Interstellar", watchedAt: "2025-12-01", rating: 5, genres: ["SF", "Drama"], mood: "Thoughtful", note: "余韻が強い" },
+    { title: "Past Lives", watchedAt: "2025-12-20", rating: 4, genres: ["Romance", "Drama"], mood: "Calm", note: "会話が美しい" },
+    { title: "Mad Max: Fury Road", watchedAt: "2026-01-07", rating: 4, genres: ["Action"], mood: "Exciting", note: "テンポが最高" }
+  ];
+
+  const form = document.getElementById("logForm");
+  const summaryEl = document.getElementById("summary");
+  const logsEl = document.getElementById("logs");
+  const recsEl = document.getElementById("recs");
+  const seedBtn = document.getElementById("seedBtn");
+  const resetBtn = document.getElementById("resetBtn");
+
+  const normalize = (s) => s.trim().toLowerCase();
+
+  const parseGenres = (value) => value
+    .split(",")
+    .map((g) => g.trim())
+    .filter(Boolean);
+
+  const load = () => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const save = (logs) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
+  };
+
+  const chip = (text) => `<span class="chip">${text}</span>`;
+
+  const summarize = (logs) => {
+    if (!logs.length) {
+      summaryEl.innerHTML = chip("記録 0 本") + chip("平均評価 -") + chip("推しジャンル -");
+      return;
+    }
+
+    const avg = (logs.reduce((acc, l) => acc + Number(l.rating || 0), 0) / logs.length).toFixed(2);
+    const countByGenre = {};
+    logs.forEach((log) => {
+      (log.genres || []).forEach((g) => {
+        countByGenre[g] = (countByGenre[g] || 0) + 1;
+      });
+    });
+    const topGenre = Object.entries(countByGenre).sort((a, b) => b[1] - a[1])[0]?.[0] || "-";
+    summaryEl.innerHTML = [
+      chip(`記録 ${logs.length} 本`),
+      chip(`平均評価 ${avg}`),
+      chip(`推しジャンル ${topGenre}`)
+    ].join("");
+  };
+
+  const renderLogs = (logs) => {
+    if (!logs.length) {
+      logsEl.innerHTML = '<div class="empty">まだ記録がありません。左上から追加してください。</div>';
+      return;
+    }
+
+    logsEl.innerHTML = logs
+      .slice()
+      .sort((a, b) => String(b.watchedAt).localeCompare(String(a.watchedAt)))
+      .map((log) => {
+        const genres = (log.genres || []).join(" / ") || "No genre";
+        const note = log.note ? `<div class="meta">${log.note}</div>` : "";
+        return `
+          <article class="item">
+            <div class="item-title">
+              <span>${log.title}</span>
+              <span>★${log.rating}</span>
+            </div>
+            <div class="meta">${log.watchedAt} ・ ${genres} ・ ${log.mood}</div>
+            ${note}
+          </article>
+        `;
+      })
+      .join("");
+  };
+
+  const buildProfile = (logs) => {
+    const genreScore = {};
+    const moodScore = {};
+    logs.forEach((log) => {
+      const weight = Number(log.rating) - 2;
+      (log.genres || []).forEach((genre) => {
+        genreScore[genre] = (genreScore[genre] || 0) + weight;
+      });
+      if (log.mood) {
+        moodScore[log.mood] = (moodScore[log.mood] || 0) + weight;
+      }
+    });
+    return { genreScore, moodScore };
+  };
+
+  const recommend = (logs) => {
+    if (!logs.length) {
+      recsEl.innerHTML = '<div class="empty">記録を追加するとおすすめが表示されます。</div>';
+      return;
+    }
+
+    const watched = new Set(logs.map((l) => normalize(l.title)));
+    const profile = buildProfile(logs);
+
+    const scored = catalog
+      .filter((movie) => !watched.has(normalize(movie.title)))
+      .map((movie) => {
+        const genrePoints = movie.genres.reduce((acc, g) => acc + (profile.genreScore[g] || 0), 0);
+        const moodPoints = profile.moodScore[movie.mood] || 0;
+        const bonus = movie.genres.length * 0.15;
+        const score = genrePoints + moodPoints + bonus;
+        return { ...movie, score };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 6);
+
+    if (!scored.length) {
+      recsEl.innerHTML = '<div class="empty">候補を出し切りました。記録を増やして精度を上げましょう。</div>';
+      return;
+    }
+
+    recsEl.innerHTML = scored
+      .map((movie) => `
+        <article class="item">
+          <div class="item-title">
+            <span>${movie.title}</span>
+            <span class="rec-score">score ${movie.score.toFixed(2)}</span>
+          </div>
+          <div class="meta">${movie.genres.join(" / ")} ・ ${movie.mood}</div>
+        </article>
+      `)
+      .join("");
+  };
+
+  const render = () => {
+    const logs = load();
+    summarize(logs);
+    renderLogs(logs);
+    recommend(logs);
+  };
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const formData = new FormData(form);
+    const entry = {
+      title: String(formData.get("title") || "").trim(),
+      watchedAt: String(formData.get("watchedAt") || ""),
+      rating: Number(formData.get("rating") || 3),
+      genres: parseGenres(String(formData.get("genres") || "")),
+      mood: String(formData.get("mood") || "Calm"),
+      note: String(formData.get("note") || "").trim()
+    };
+
+    if (!entry.title || !entry.watchedAt) return;
+
+    const logs = load();
+    logs.push(entry);
+    save(logs);
+
+    form.reset();
+    document.getElementById("watchedAt").valueAsDate = new Date();
+    document.getElementById("rating").value = "3";
+    document.getElementById("mood").value = "Calm";
+
+    render();
+  });
+
+  seedBtn.addEventListener("click", () => {
+    const logs = load();
+    save(logs.concat(defaultLogs));
+    render();
+  });
+
+  resetBtn.addEventListener("click", () => {
+    if (!confirm("本当に全記録を削除しますか？")) return;
+    localStorage.removeItem(STORAGE_KEY);
+    render();
+  });
+
+  document.getElementById("watchedAt").valueAsDate = new Date();
+  render();
+})();
+</script>
+</body>
+</html>

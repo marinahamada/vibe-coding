@@ -1,0 +1,1068 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Film Shelf</title>
+<style>
+  :root{
+    --bg:#ffffff;
+    --text:#0f0f10;
+    --muted: rgba(15,15,16,.58);
+    --line: rgba(15,15,16,.10);
+    --card: rgba(255,255,255,.82);
+    --shadow: 0 10px 30px rgba(0,0,0,.06);
+    --r: 18px;
+    --pad: 16px;
+
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+  }
+
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    font-family: system-ui, -apple-system, "SF Pro Text","SF Pro Display", Segoe UI, Arial;
+    background: var(--bg);
+    color: var(--text);
+  }
+  .wrap{ max-width: 1080px; margin: 0 auto; padding: 18px; }
+
+  header{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:12px;
+    padding: 10px 0 14px;
+  }
+  h1{
+    margin:0;
+    font-size:20px;
+    letter-spacing:.2px;
+    font-weight:650;
+  }
+  .sub{
+    margin-top:8px;
+    font-size:12px;
+    color: var(--muted);
+    line-height:1.5;
+  }
+
+  .btn{
+    border:1px solid var(--line);
+    background: rgba(255,255,255,.86);
+    border-radius: 14px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: rgba(15,15,16,.92);
+    cursor:pointer;
+    box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;
+    transition: transform .05s ease, filter .15s ease;
+    user-select:none;
+  }
+  .btn:hover{ filter: brightness(1.01); }
+  .btn:active{ transform: translateY(1px); filter: brightness(.99); }
+  .btn.primary{
+    background: rgba(15,15,16,.92);
+    color:#fff;
+    border-color: rgba(15,15,16,.15);
+  }
+  .btn.danger{
+    background: rgba(255, 59, 48, .10);
+    border-color: rgba(255,59,48,.25);
+    color: rgba(180, 20, 15, .92);
+  }
+
+  .topbar{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    padding-bottom: 10px;
+  }
+
+  .search{
+    flex: 1 1 280px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    border:1px solid var(--line);
+    background: rgba(15,15,16,.03);
+    border-radius: 14px;
+    padding: 10px 12px;
+  }
+  .search input{
+    border:0;
+    outline:none;
+    width:100%;
+    background: transparent;
+    font-size: 13px;
+    color: rgba(15,15,16,.92);
+  }
+  .search .hint{
+    font-size:11px;
+    color: var(--muted);
+    font-family: var(--mono);
+    white-space:nowrap;
+  }
+
+  .moods{
+    display:flex;
+    gap:8px;
+    overflow:auto;
+    padding: 8px 0 12px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .moodTab{
+    flex:0 0 auto;
+    padding: 8px 10px;
+    border-radius: 999px;
+    border:1px solid rgba(15,15,16,.09);
+    background: rgba(255,255,255,.70);
+    font-size: 12px;
+    color: rgba(15,15,16,.86);
+    cursor:pointer;
+    user-select:none;
+    position:relative;
+  }
+  .moodTab.active{
+    border-color: rgba(15,15,16,.12);
+    background: rgba(15,15,16,.03);
+  }
+  .moodTab.active::after{
+    content:"";
+    position:absolute;
+    left:10px; right:10px; bottom:6px;
+    height:2px;
+    border-radius: 999px;
+    background: rgba(15,15,16,.18);
+  }
+  .moodTab[data-accent].active::after{
+    background: var(--accent, rgba(15,15,16,.18));
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+  }
+  @media (max-width: 1060px){ .grid{ grid-template-columns: repeat(5, 1fr);} }
+  @media (max-width: 900px){ .grid{ grid-template-columns: repeat(4, 1fr);} }
+  @media (max-width: 720px){ .grid{ grid-template-columns: repeat(3, 1fr);} }
+  @media (max-width: 520px){ .grid{ grid-template-columns: repeat(2, 1fr);} }
+
+  .card{
+    border:1px solid var(--line);
+    border-radius: var(--r);
+    background: var(--card);
+    box-shadow: var(--shadow);
+    overflow:hidden;
+    position:relative;
+    cursor:pointer;
+    min-height: 240px;
+  }
+  .accentLine{
+    position:absolute;
+    left:0; top:0; bottom:0;
+    width:2px;
+    background: rgba(15,15,16,.12);
+    opacity:.9;
+  }
+
+  .poster{
+    aspect-ratio: 2 / 3;
+    width:100%;
+    background: rgba(15,15,16,.04);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color: rgba(15,15,16,.35);
+    font-size: 12px;
+  }
+  .poster img{
+    width:100%; height:100%;
+    object-fit: cover;
+    display:block;
+  }
+  .meta{
+    padding: 10px 10px 12px;
+  }
+  .title{
+    font-size: 12.5px;
+    font-weight: 650;
+    line-height: 1.25;
+    margin:0;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .year{
+    margin-top:6px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* ---------- Modal ---------- */
+  .overlay{
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.34);
+    display:none;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 14px;
+  }
+  .overlay.show{ display:flex; }
+
+  .sheet{
+    width: min(760px, 100%);
+    max-height: calc(100vh - 28px);
+    overflow:auto;
+    background: rgba(255,255,255,.92);
+    border:1px solid rgba(255,255,255,.50);
+    border-radius: 22px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.25);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+  .sheetHead{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 14px 14px 10px;
+    border-bottom: 1px solid rgba(15,15,16,.08);
+    position: sticky;
+    top:0;
+    background: rgba(255,255,255,.86);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+  .sheetTitle{
+    font-size: 13px;
+    font-weight: 650;
+    letter-spacing:.2px;
+  }
+  .sheetBody{
+    padding: 14px;
+  }
+
+  .form{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  @media (max-width: 740px){ .form{ grid-template-columns: 1fr; } }
+
+  .field{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+  }
+  .label{
+    font-size: 11.5px;
+    color: rgba(15,15,16,.70);
+    letter-spacing:.2px;
+  }
+  input, textarea{
+    border:1px solid rgba(15,15,16,.10);
+    background: rgba(15,15,16,.03);
+    border-radius: 14px;
+    padding: 10px 12px;
+    font-size: 13px;
+    outline: none;
+    color: rgba(15,15,16,.92);
+  }
+  textarea{ min-height: 86px; resize: vertical; }
+
+  .row{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
+    border:1px solid rgba(15,15,16,.10);
+    background: rgba(15,15,16,.02);
+    border-radius: 16px;
+  }
+  .row .name{
+    font-size: 12.5px;
+    font-weight: 600;
+  }
+  .stepper{
+    display:flex;
+    align-items:center;
+    gap: 8px;
+  }
+  .stepper button{
+    width: 28px;
+    height: 28px;
+    border-radius: 10px;
+    border:1px solid rgba(15,15,16,.12);
+    background: rgba(255,255,255,.82);
+    cursor:pointer;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .stepper .val{
+    min-width: 18px;
+    text-align:center;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: rgba(15,15,16,.75);
+  }
+
+  .moodPick{
+    display:flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .moodChip{
+    padding: 8px 10px;
+    border-radius: 999px;
+    border:1px solid rgba(15,15,16,.10);
+    background: rgba(255,255,255,.72);
+    font-size: 12px;
+    cursor:pointer;
+    user-select:none;
+    position:relative;
+  }
+  .moodChip.selected{
+    background: rgba(15,15,16,.04);
+    border-color: rgba(15,15,16,.12);
+  }
+  .moodChip.selected::after{
+    content:"";
+    position:absolute;
+    left:10px; right:10px; bottom:6px;
+    height:2px;
+    border-radius: 999px;
+    background: var(--accent, rgba(15,15,16,.18));
+    opacity:.9;
+  }
+
+  .posterPick{
+    display:flex;
+    gap:12px;
+    align-items:center;
+  }
+  .posterThumb{
+    width: 68px;
+    height: 92px;
+    border-radius: 14px;
+    border:1px solid rgba(15,15,16,.10);
+    background: rgba(15,15,16,.03);
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color: rgba(15,15,16,.35);
+    font-size: 11px;
+  }
+  .posterThumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+  .fileHidden{
+    position:absolute; width:1px; height:1px;
+    padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0);
+    white-space:nowrap; border:0;
+  }
+
+  .pillRow{
+    display:flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 6px;
+  }
+  .pill{
+    padding: 7px 10px;
+    border-radius: 999px;
+    border:1px solid rgba(15,15,16,.10);
+    background: rgba(15,15,16,.02);
+    font-size: 12px;
+    color: rgba(15,15,16,.82);
+  }
+
+  .detailTop{
+    display:flex;
+    gap: 14px;
+    align-items:flex-start;
+  }
+  @media (max-width: 720px){ .detailTop{ flex-direction: column; } }
+
+  .detailPoster{
+    width: 160px;
+    aspect-ratio: 2/3;
+    border-radius: 18px;
+    border:1px solid rgba(15,15,16,.10);
+    background: rgba(15,15,16,.03);
+    overflow:hidden;
+  }
+  .detailPoster img{ width:100%; height:100%; object-fit: cover; display:block; }
+
+  .detailTitle{
+    margin:0;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing:.2px;
+    line-height: 1.2;
+  }
+  .detailSub{
+    margin-top:8px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .section{
+    margin-top: 14px;
+    border-top: 1px solid rgba(15,15,16,.08);
+    padding-top: 12px;
+  }
+  .section h3{
+    margin:0 0 8px;
+    font-size: 12px;
+    letter-spacing:.2px;
+    color: rgba(15,15,16,.78);
+  }
+  .list{
+    display:flex;
+    flex-direction:column;
+    gap: 8px;
+  }
+  .listItem{
+    padding: 10px 12px;
+    border-radius: 16px;
+    border:1px solid rgba(15,15,16,.10);
+    background: rgba(15,15,16,.02);
+    font-size: 13px;
+    display:flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .listItem .k{ color: rgba(15,15,16,.90); font-weight: 650; }
+  .listItem .v{ color: rgba(15,15,16,.62); font-family: var(--mono); font-size: 12px; }
+
+  .sheetFoot{
+    display:flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 14px 14px;
+    border-top: 1px solid rgba(15,15,16,.08);
+    background: rgba(255,255,255,.86);
+    position: sticky;
+    bottom: 0;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .empty{
+    padding: 28px 0;
+    color: var(--muted);
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Film Shelf</h1>
+      <div class="sub">Minimal logging. Mood-first shelves. No ratings.</div>
+    </div>
+    <button class="btn primary" id="addBtn">Add</button>
+  </header>
+
+  <div class="topbar">
+    <div class="search">
+      <input id="q" placeholder="Search by title…" />
+      <div class="hint" id="countHint">0</div>
+    </div>
+    <button class="btn" id="exportBtn">Export JSON</button>
+    <label class="btn" for="importFile" style="cursor:pointer;">Import JSON</label>
+    <input id="importFile" class="fileHidden" type="file" accept="application/json" />
+  </div>
+
+  <div class="moods" id="moodTabs"></div>
+
+  <div id="grid" class="grid"></div>
+  <div id="empty" class="empty" style="display:none;">No entries yet. Add your first film.</div>
+</div>
+
+<!-- Modal -->
+<div class="overlay" id="overlay" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true">
+    <div class="sheetHead">
+      <div class="sheetTitle" id="sheetTitle">Add</div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn" id="closeBtn">Close</button>
+      </div>
+    </div>
+
+    <div class="sheetBody" id="sheetBody"></div>
+
+    <div class="sheetFoot" id="sheetFoot">
+      <div style="display:flex; gap:8px;">
+        <button class="btn danger" id="deleteBtn" style="display:none;">Delete</button>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn" id="editBtn" style="display:none;">Edit</button>
+        <button class="btn primary" id="saveBtn">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* -------------------- Mood dictionary -------------------- */
+const MOODS = [
+  { id:"all", label:"All", color:"#111111" }, // UI only
+  { id:"still",  label:"Still",  color:"#8E8E93" },
+  { id:"night",  label:"Night",  color:"#2E5BFF" },
+  { id:"gentle", label:"Gentle", color:"#C8A46B" },
+  { id:"sharp",  label:"Sharp",  color:"#3A3A3C" },
+  { id:"after",  label:"After",  color:"#7B61FF" },
+  { id:"warm",   label:"Warm",   color:"#B8860B" },
+  { id:"dark",   label:"Dark",   color:"#0B1320" },
+  { id:"light",  label:"Light",  color:"#BFC7D5" },
+  { id:"heavy",  label:"Heavy",  color:"#5A6673" },
+];
+
+const HIGHLIGHTS = [
+  { key:"performance", label:"Performance" },
+  { key:"visual",      label:"Visual" },
+  { key:"story",       label:"Story" },
+  { key:"line",        label:"Line" },
+  { key:"sound",       label:"Sound" },
+  { key:"after",       label:"After" },
+];
+
+/* -------------------- Storage -------------------- */
+const STORE_KEY = "filmShelf.v1";
+
+function loadStore(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(!raw) return { version:1, entries:[], updatedAt: new Date().toISOString() };
+    const parsed = JSON.parse(raw);
+    if(parsed?.version !== 1 || !Array.isArray(parsed.entries)) throw new Error("bad store");
+    return parsed;
+  }catch(e){
+    console.warn("Store load failed:", e);
+    return { version:1, entries:[], updatedAt: new Date().toISOString() };
+  }
+}
+function saveStore(store){
+  store.updatedAt = new Date().toISOString();
+  localStorage.setItem(STORE_KEY, JSON.stringify(store));
+}
+
+/* -------------------- State -------------------- */
+let store = loadStore();
+let activeMood = "all";
+let query = "";
+let mode = "library"; // add | edit | detail
+let currentId = null;
+
+/* -------------------- Elements -------------------- */
+const gridEl = document.getElementById("grid");
+const emptyEl = document.getElementById("empty");
+const qEl = document.getElementById("q");
+const countHint = document.getElementById("countHint");
+
+const moodTabsEl = document.getElementById("moodTabs");
+
+const overlay = document.getElementById("overlay");
+const sheetTitleEl = document.getElementById("sheetTitle");
+const sheetBodyEl = document.getElementById("sheetBody");
+const sheetFootEl = document.getElementById("sheetFoot");
+
+const addBtn = document.getElementById("addBtn");
+const closeBtn = document.getElementById("closeBtn");
+const saveBtn = document.getElementById("saveBtn");
+const editBtn = document.getElementById("editBtn");
+const deleteBtn = document.getElementById("deleteBtn");
+
+const exportBtn = document.getElementById("exportBtn");
+const importFile = document.getElementById("importFile");
+
+/* -------------------- Helpers -------------------- */
+function uuid(){
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c=>{
+    const r = (Math.random()*16)|0, v = c==="x"?r:(r&0x3|0x8);
+    return v.toString(16);
+  });
+}
+function moodColor(id){
+  const m = MOODS.find(x=>x.id===id);
+  return m ? m.color : "rgba(15,15,16,.12)";
+}
+function escapeHtml(s){
+  return String(s ?? "").replace(/[&<>"']/g, m=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[m]));
+}
+function byUpdatedDesc(a,b){
+  return (b.updatedAt||b.createdAt||"").localeCompare(a.updatedAt||a.createdAt||"");
+}
+function filteredEntries(){
+  let entries = [...store.entries].sort(byUpdatedDesc);
+
+  if(activeMood !== "all"){
+    entries = entries.filter(e => (e.moods||[]).includes(activeMood));
+  }
+  if(query.trim()){
+    const q = query.trim().toLowerCase();
+    entries = entries.filter(e => (e.title||"").toLowerCase().includes(q));
+  }
+  return entries;
+}
+function highlightOrderText(e){
+  const h = e.highlights || {};
+  const ranked = HIGHLIGHTS
+    .map(x=>({label:x.label, v: Number(h[x.key]||0)}))
+    .filter(x=>x.v>0)
+    .sort((a,b)=>b.v-a.v);
+  // show only labels, order implies strength
+  return ranked.map(x=>x.label);
+}
+
+/* -------------------- Render: mood tabs -------------------- */
+function renderMoodTabs(){
+  moodTabsEl.innerHTML = "";
+  const tabs = MOODS; // include All as first
+  for(const m of tabs){
+    const btn = document.createElement("button");
+    btn.className = "moodTab" + (activeMood===m.id ? " active":"");
+    btn.textContent = m.label;
+    btn.dataset.id = m.id;
+    btn.dataset.accent = "1";
+    btn.style.setProperty("--accent", m.id==="all" ? "rgba(15,15,16,.18)" : m.color);
+    btn.addEventListener("click", ()=>{
+      activeMood = m.id;
+      renderMoodTabs();
+      renderGrid();
+    });
+    moodTabsEl.appendChild(btn);
+  }
+}
+
+/* -------------------- Render: grid -------------------- */
+function renderGrid(){
+  const items = filteredEntries();
+  countHint.textContent = String(items.length);
+
+  gridEl.innerHTML = "";
+  emptyEl.style.display = items.length ? "none" : "block";
+
+  for(const e of items){
+    const card = document.createElement("div");
+    card.className = "card";
+    card.addEventListener("click", ()=> openDetail(e.id));
+
+    const firstMood = (e.moods && e.moods[0]) ? e.moods[0] : null;
+    const accent = firstMood ? moodColor(firstMood) : "rgba(15,15,16,.12)";
+
+    const line = document.createElement("div");
+    line.className = "accentLine";
+    line.style.background = accent;
+    card.appendChild(line);
+
+    const poster = document.createElement("div");
+    poster.className = "poster";
+    if(e.posterDataUrl){
+      const img = document.createElement("img");
+      img.src = e.posterDataUrl;
+      img.alt = e.title || "poster";
+      poster.appendChild(img);
+    }else{
+      poster.textContent = "Poster";
+    }
+    card.appendChild(poster);
+
+    const meta = document.createElement("div");
+    meta.className = "meta";
+    meta.innerHTML = `
+      <p class="title">${escapeHtml(e.title || "Untitled")}</p>
+      <div class="year">${escapeHtml(e.year || "")}</div>
+    `;
+    card.appendChild(meta);
+
+    gridEl.appendChild(card);
+  }
+}
+
+/* -------------------- Modal control -------------------- */
+function showOverlay(){
+  overlay.classList.add("show");
+  overlay.setAttribute("aria-hidden","false");
+}
+function hideOverlay(){
+  overlay.classList.remove("show");
+  overlay.setAttribute("aria-hidden","true");
+  sheetBodyEl.innerHTML = "";
+  currentId = null;
+}
+overlay.addEventListener("click", (ev)=>{
+  if(ev.target === overlay) hideOverlay();
+});
+closeBtn.addEventListener("click", hideOverlay);
+
+/* -------------------- Views: Add/Edit form -------------------- */
+function buildForm(entry){
+  const e = entry || {
+    id: uuid(),
+    title:"",
+    year:"",
+    country:"",
+    director:"",
+    posterDataUrl:"",
+    moods:[],
+    highlights: { performance:0, visual:0, story:0, line:0, sound:0, after:0 },
+    note:"",
+    watchedAt:"",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  const moodChips = MOODS.filter(m=>m.id!=="all");
+
+  sheetBodyEl.innerHTML = `
+    <div class="form">
+      <div class="field" style="grid-column: 1 / -1;">
+        <div class="label">Title (required)</div>
+        <input id="f_title" value="${escapeHtml(e.title)}" placeholder="Film title" />
+      </div>
+
+      <div class="field">
+        <div class="label">Year</div>
+        <input id="f_year" value="${escapeHtml(e.year)}" placeholder="e.g. 2019" />
+      </div>
+
+      <div class="field">
+        <div class="label">Director</div>
+        <input id="f_dir" value="${escapeHtml(e.director)}" placeholder="Optional" />
+      </div>
+
+      <div class="field">
+        <div class="label">Country</div>
+        <input id="f_country" value="${escapeHtml(e.country)}" placeholder="Optional" />
+      </div>
+
+      <div class="field">
+        <div class="label">Watched at</div>
+        <input id="f_watched" type="date" value="${escapeHtml((e.watchedAt||"").slice(0,10))}" />
+      </div>
+
+      <div class="field" style="grid-column: 1 / -1;">
+        <div class="label">Poster (optional)</div>
+        <div class="posterPick">
+          <div class="posterThumb" id="posterThumb">${e.posterDataUrl ? `<img src="${e.posterDataUrl}" alt="poster">` : "No image"}</div>
+          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <input class="fileHidden" id="f_poster" type="file" accept="image/*" />
+            <label class="btn" for="f_poster">Choose image…</label>
+            <button class="btn" id="clearPoster" type="button">Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="field" style="grid-column: 1 / -1;">
+        <div class="label">Mood (multi-select)</div>
+        <div class="moodPick" id="moodPick"></div>
+      </div>
+
+      <div class="field" style="grid-column: 1 / -1;">
+        <div class="label">Notes (tap to set 0–3)</div>
+        <div class="list" id="hlList"></div>
+      </div>
+
+      <div class="field" style="grid-column: 1 / -1;">
+        <div class="label">Line (optional)</div>
+        <textarea id="f_note" placeholder="A quiet note to remember later…">${escapeHtml(e.note)}</textarea>
+      </div>
+    </div>
+  `;
+
+  // mood chips
+  const pick = document.getElementById("moodPick");
+  const moods = new Set(e.moods || []);
+  for(const m of moodChips){
+    const chip = document.createElement("div");
+    chip.className = "moodChip" + (moods.has(m.id) ? " selected":"");
+    chip.textContent = m.label;
+    chip.style.setProperty("--accent", m.color);
+    chip.addEventListener("click", ()=>{
+      if(moods.has(m.id)) moods.delete(m.id); else moods.add(m.id);
+      chip.classList.toggle("selected");
+    });
+    pick.appendChild(chip);
+  }
+
+  // highlights steppers
+  const hlList = document.getElementById("hlList");
+  const hl = { ...(e.highlights || {}) };
+  for(const h of HIGHLIGHTS){
+    const row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML = `
+      <div class="name">${h.label}</div>
+      <div class="stepper">
+        <button type="button" data-act="dec">−</button>
+        <div class="val" id="v_${h.key}">${Number(hl[h.key]||0)}</div>
+        <button type="button" data-act="inc">+</button>
+      </div>
+    `;
+    row.querySelector('[data-act="dec"]').addEventListener("click", ()=>{
+      hl[h.key] = Math.max(0, Number(hl[h.key]||0) - 1);
+      document.getElementById(`v_${h.key}`).textContent = String(hl[h.key]);
+    });
+    row.querySelector('[data-act="inc"]').addEventListener("click", ()=>{
+      hl[h.key] = Math.min(3, Number(hl[h.key]||0) + 1);
+      document.getElementById(`v_${h.key}`).textContent = String(hl[h.key]);
+    });
+    hlList.appendChild(row);
+  }
+
+  // poster handling
+  const posterInput = document.getElementById("f_poster");
+  const posterThumb = document.getElementById("posterThumb");
+  const clearPoster = document.getElementById("clearPoster");
+
+  posterInput.addEventListener("change", async ()=>{
+    const file = posterInput.files?.[0];
+    if(!file) return;
+    const dataUrl = await fileToDataUrl(file);
+    e.posterDataUrl = dataUrl;
+    posterThumb.innerHTML = `<img src="${dataUrl}" alt="poster">`;
+  });
+
+  clearPoster.addEventListener("click", ()=>{
+    e.posterDataUrl = "";
+    posterInput.value = "";
+    posterThumb.textContent = "No image";
+  });
+
+  // expose getter
+  return {
+    entry: e,
+    getValues(){
+      const title = document.getElementById("f_title").value.trim();
+      const year = document.getElementById("f_year").value.trim();
+      const director = document.getElementById("f_dir").value.trim();
+      const country = document.getElementById("f_country").value.trim();
+      const watchedAt = document.getElementById("f_watched").value ? new Date(document.getElementById("f_watched").value).toISOString() : "";
+      const note = document.getElementById("f_note").value.trim();
+
+      const pickedMoods = Array.from(document.querySelectorAll("#moodPick .moodChip.selected"))
+        .map(el => {
+          const label = el.textContent.trim();
+          const m = MOODS.find(x=>x.label===label);
+          return m ? m.id : null;
+        })
+        .filter(Boolean);
+
+      // update highlights from DOM values
+      const highlights = {};
+      for(const h of HIGHLIGHTS){
+        highlights[h.key] = Number(document.getElementById(`v_${h.key}`).textContent || "0");
+      }
+
+      return {
+        ...e,
+        title, year, director, country, watchedAt, note,
+        moods: pickedMoods,
+        highlights,
+        updatedAt: new Date().toISOString(),
+      };
+    }
+  };
+}
+
+function fileToDataUrl(file){
+  return new Promise((resolve, reject)=>{
+    const r = new FileReader();
+    r.onload = ()=> resolve(r.result);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+/* -------------------- Views: Detail -------------------- */
+function buildDetail(entry){
+  const e = entry;
+  const accent = (e.moods && e.moods[0]) ? moodColor(e.moods[0]) : "rgba(15,15,16,.12)";
+  const whatStayed = highlightOrderText(e);
+
+  const moods = (e.moods||[]).map(id=> MOODS.find(m=>m.id===id)?.label || id);
+
+  sheetBodyEl.innerHTML = `
+    <div class="detailTop">
+      <div class="detailPoster" style="box-shadow: 0 12px 30px rgba(0,0,0,.08); border-left:2px solid ${accent};">
+        ${e.posterDataUrl ? `<img src="${e.posterDataUrl}" alt="poster">` : ""}
+      </div>
+      <div style="flex:1">
+        <h2 class="detailTitle">${escapeHtml(e.title || "Untitled")}</h2>
+        <div class="detailSub">
+          ${escapeHtml([e.country, e.year].filter(Boolean).join(" · "))}<br/>
+          ${escapeHtml(e.director ? `Dir. ${e.director}` : "")}
+        </div>
+
+        <div class="pillRow">
+          ${(moods.length ? moods : ["Uncategorized"]).map((t,i)=>{
+            const id = e.moods?.[i];
+            const c = id ? moodColor(id) : "rgba(15,15,16,.12)";
+            return `<span class="pill" style="border-bottom:2px solid ${c};">${escapeHtml(t)}</span>`;
+          }).join("")}
+        </div>
+
+        ${e.note ? `<div class="section"><h3>Line</h3><div class="listItem"><div class="k">${escapeHtml(e.note)}</div></div></div>` : ""}
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>What stayed</h3>
+      <div class="list" id="whatStayed">
+        ${whatStayed.length
+          ? whatStayed.map(x=> `<div class="listItem"><div class="k">${escapeHtml(x)}</div><div class="v"></div></div>`).join("")
+          : `<div class="listItem"><div class="k" style="font-weight:600; color:rgba(15,15,16,.60)">No tags yet</div></div>`
+        }
+      </div>
+    </div>
+  `;
+}
+
+/* -------------------- Actions -------------------- */
+addBtn.addEventListener("click", ()=> openAdd());
+qEl.addEventListener("input", ()=>{
+  query = qEl.value;
+  renderGrid();
+});
+
+exportBtn.addEventListener("click", ()=>{
+  const blob = new Blob([JSON.stringify(store, null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "film-shelf-export.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+importFile.addEventListener("change", async ()=>{
+  const file = importFile.files?.[0];
+  if(!file) return;
+  try{
+    const text = await file.text();
+    const parsed = JSON.parse(text);
+    if(parsed?.version !== 1 || !Array.isArray(parsed.entries)) throw new Error("Invalid JSON format");
+    // Merge by id (prefer imported)
+    const map = new Map(store.entries.map(e=>[e.id, e]));
+    for(const e of parsed.entries){
+      if(e?.id) map.set(e.id, e);
+    }
+    store.entries = Array.from(map.values());
+    saveStore(store);
+    renderGrid();
+    renderMoodTabs();
+    alert("Imported.");
+  }catch(err){
+    alert("Import failed: " + err.message);
+  }finally{
+    importFile.value = "";
+  }
+});
+
+function openAdd(){
+  mode = "add";
+  currentId = null;
+  sheetTitleEl.textContent = "Add";
+  deleteBtn.style.display = "none";
+  editBtn.style.display = "none";
+  saveBtn.style.display = "inline-flex";
+
+  const form = buildForm(null);
+  saveBtn.onclick = ()=>{
+    const v = form.getValues();
+    if(!v.title){
+      alert("Title is required.");
+      return;
+    }
+    v.createdAt = new Date().toISOString();
+    v.updatedAt = new Date().toISOString();
+    store.entries.push(v);
+    saveStore(store);
+    hideOverlay();
+    renderGrid();
+  };
+
+  showOverlay();
+}
+
+function openDetail(id){
+  const e = store.entries.find(x=>x.id===id);
+  if(!e) return;
+  mode = "detail";
+  currentId = id;
+
+  sheetTitleEl.textContent = "Film";
+  buildDetail(e);
+
+  saveBtn.style.display = "none";
+  editBtn.style.display = "inline-flex";
+  deleteBtn.style.display = "inline-flex";
+
+  editBtn.onclick = ()=> openEdit(id);
+  deleteBtn.onclick = ()=>{
+    if(!confirm("Delete this entry?")) return;
+    store.entries = store.entries.filter(x=>x.id!==id);
+    saveStore(store);
+    hideOverlay();
+    renderGrid();
+  };
+
+  showOverlay();
+}
+
+function openEdit(id){
+  const e = store.entries.find(x=>x.id===id);
+  if(!e) return;
+  mode = "edit";
+  currentId = id;
+
+  sheetTitleEl.textContent = "Edit";
+  deleteBtn.style.display = "inline-flex";
+  editBtn.style.display = "none";
+  saveBtn.style.display = "inline-flex";
+
+  const form = buildForm(e);
+
+  deleteBtn.onclick = ()=>{
+    if(!confirm("Delete this entry?")) return;
+    store.entries = store.entries.filter(x=>x.id!==id);
+    saveStore(store);
+    hideOverlay();
+    renderGrid();
+  };
+
+  saveBtn.onclick = ()=>{
+    const v = form.getValues();
+    if(!v.title){
+      alert("Title is required.");
+      return;
+    }
+    // preserve createdAt
+    const prev = store.entries.find(x=>x.id===id);
+    v.createdAt = prev?.createdAt || v.createdAt;
+    store.entries = store.entries.map(x=> x.id===id ? v : x);
+    saveStore(store);
+    hideOverlay();
+    renderGrid();
+  };
+
+  showOverlay();
+}
+
+/* -------------------- Init -------------------- */
+renderMoodTabs();
+renderGrid();
+</script>
+</body>
+</html>
