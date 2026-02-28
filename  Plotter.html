@@ -1,0 +1,741 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Reel Plotter</title>
+<style>
+  :root{
+    --bg:#ffffff;
+    --text:#0f0f10;
+    --muted: rgba(15,15,16,.58);
+    --line: rgba(15,15,16,.10);
+    --card: rgba(255,255,255,.86);
+    --shadow: 0 10px 30px rgba(0,0,0,.06);
+    --r: 18px;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    font-family: system-ui, -apple-system, "SF Pro Text","SF Pro Display", Segoe UI, Arial;
+    background: var(--bg);
+    color: var(--text);
+  }
+  .wrap{ max-width: 1100px; margin: 0 auto; padding: 18px; }
+  header{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:12px;
+    padding: 10px 0 14px;
+  }
+  h1{ margin:0; font-size:20px; letter-spacing:.2px; font-weight:650; }
+  .sub{ margin-top:8px; font-size:12px; color: var(--muted); line-height:1.5; max-width: 52ch; }
+  .grid{
+    display:grid;
+    grid-template-columns: 0.9fr 1.1fr;
+    gap: 14px;
+  }
+  @media (max-width: 980px){ .grid{ grid-template-columns:1fr; } }
+
+  .card{
+    border:1px solid var(--line);
+    border-radius: var(--r);
+    background: var(--card);
+    box-shadow: var(--shadow);
+    padding: 14px;
+  }
+
+  .row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+
+  .label{ font-size:11.5px; color: rgba(15,15,16,.70); letter-spacing:.2px; }
+
+  select, input, button{
+    border:1px solid rgba(15,15,16,.10);
+    background: rgba(15,15,16,.03);
+    border-radius: 14px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: rgba(15,15,16,.92);
+    outline:none;
+  }
+  select{ cursor:pointer; }
+  input{ width: 240px; max-width: 100%; }
+
+  .btn{
+    cursor:pointer;
+    user-select:none;
+    transition: transform .05s ease, filter .15s ease;
+    background: rgba(255,255,255,.86);
+    box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;
+  }
+  .btn:hover{ filter: brightness(1.01); }
+  .btn:active{ transform: translateY(1px); filter: brightness(.99); }
+  .btn.primary{ background: rgba(15,15,16,.92); color:#fff; border-color: rgba(15,15,16,.15); }
+  .btn.ghost{ background: rgba(15,15,16,.02); }
+  .btn.danger{ background: rgba(255, 59, 48, .10); border-color: rgba(255,59,48,.25); color: rgba(180, 20, 15, .92); }
+
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 10px;
+    border-radius:999px;
+    border:1px solid rgba(15,15,16,.10);
+    background: rgba(15,15,16,.02);
+    font-size: 12px;
+    color: rgba(15,15,16,.72);
+  }
+  .mono{ font-family: var(--mono); }
+  .small{ font-size: 12px; color: var(--muted); line-height:1.55; }
+
+  .sep{
+    height:1px;
+    background: rgba(15,15,16,.08);
+    margin: 12px 0;
+  }
+
+  .outputTitle{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .outputTitle h2{
+    margin:0;
+    font-size: 14px;
+    letter-spacing:.2px;
+    font-weight: 700;
+  }
+
+  .script{
+    border:1px solid rgba(15,15,16,.10);
+    background: rgba(15,15,16,.02);
+    border-radius: 16px;
+    padding: 12px;
+    white-space: pre-wrap;
+    line-height: 1.55;
+    font-size: 13px;
+  }
+
+  .kgrid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  @media (max-width: 520px){ .kgrid{ grid-template-columns:1fr; } }
+
+  .box{
+    border:1px solid rgba(15,15,16,.10);
+    background: rgba(15,15,16,.02);
+    border-radius: 16px;
+    padding: 12px;
+  }
+  .box .t{ font-size: 11.5px; color: rgba(15,15,16,.70); }
+  .box .v{ margin-top: 6px; font-size: 13px; color: rgba(15,15,16,.90); line-height: 1.45; }
+
+  .toast{
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 16px;
+    padding: 10px 12px;
+    border-radius: 999px;
+    border:1px solid rgba(255,255,255,.6);
+    background: rgba(15,15,16,.86);
+    color:#fff;
+    font-size: 12px;
+    display:none;
+    box-shadow: 0 20px 50px rgba(0,0,0,.25);
+  }
+  .toast.show{ display:block; }
+
+  .hint{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:10px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Reel Plotter</h1>
+      <div class="sub">A minimal 15-second reel plot generator (English). Built for late 20s–early 30s: quiet, precise, non-preachy.</div>
+      <div class="hint">
+        <span class="pill">0–2s Hook</span>
+        <span class="pill">2–10s Micro-story</span>
+        <span class="pill">10–15s Payoff + CTA</span>
+      </div>
+    </div>
+    <div class="pill mono" id="status">Ready</div>
+  </header>
+
+  <div class="grid">
+    <!-- Controls -->
+    <section class="card">
+      <div class="row" style="justify-content:space-between;">
+        <div>
+          <div class="label">Inputs</div>
+          <div class="small">Pick a theme and vibe. Optional keyword adds a “center of gravity.”</div>
+        </div>
+        <button class="btn ghost" id="shuffle">Shuffle</button>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="row">
+        <div style="display:flex; flex-direction:column; gap:7px;">
+          <div class="label">Theme</div>
+          <select id="theme">
+            <option value="work">Work</option>
+            <option value="love">Love</option>
+            <option value="friendship">Friendship</option>
+            <option value="self" selected>Self</option>
+            <option value="money">Money</option>
+            <option value="city">City life</option>
+          </select>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:7px;">
+          <div class="label">Vibe</div>
+          <select id="vibe">
+            <option value="calm" selected>Calm</option>
+            <option value="bittersweet">Bittersweet</option>
+            <option value="witty">Witty</option>
+            <option value="grounded">Grounded</option>
+          </select>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:7px;">
+          <div class="label">Format</div>
+          <select id="format">
+            <option value="text" selected>Text only (overlay)</option>
+            <option value="hands">Hands + text</option>
+            <option value="scenery">Scenery + text</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px;">
+        <div style="display:flex; flex-direction:column; gap:7px;">
+          <div class="label">Optional keyword</div>
+          <input id="keyword" placeholder='e.g. "Sunday night"' maxlength="40" />
+        </div>
+        <div style="display:flex; flex-direction:column; gap:7px;">
+          <div class="label">Output count</div>
+          <select id="count">
+            <option value="1" selected>1</option>
+            <option value="3">3 (recommended)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="row">
+        <button class="btn primary" id="generate">Generate</button>
+        <button class="btn" id="copyScript">Copy script</button>
+        <button class="btn" id="copyAll">Copy all</button>
+        <button class="btn danger" id="clear">Clear</button>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="small">
+        <b>Design constraints:</b> no slang, no “hustle,” no lecture. Keep it observational and emotionally precise.
+      </div>
+    </section>
+
+    <!-- Output -->
+    <section class="card">
+      <div class="outputTitle">
+        <h2>Generated plots</h2>
+        <div class="pill mono" id="meta">—</div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div id="out"></div>
+
+      <div class="sep"></div>
+
+      <div class="kgrid">
+        <div class="box">
+          <div class="t">Shooting suggestion</div>
+          <div class="v" id="shoot">—</div>
+        </div>
+        <div class="box">
+          <div class="t">Audio direction</div>
+          <div class="v" id="audio">—</div>
+        </div>
+        <div class="box">
+          <div class="t">Text style</div>
+          <div class="v" id="textstyle">—</div>
+        </div>
+        <div class="box">
+          <div class="t">CTA</div>
+          <div class="v" id="cta">—</div>
+        </div>
+      </div>
+
+      <div class="sep"></div>
+
+      <div class="small mono" id="debug" style="display:none;"></div>
+    </section>
+  </div>
+</div>
+
+<div class="toast" id="toast">Copied</div>
+
+<script>
+/* =========================
+   Core: Templates + Lexicon
+   ========================= */
+
+// 5 templates: empathy-forward, understated, no preaching.
+// Every output must follow: 0–2 hook / 2–10 story / 10–15 payoff+CTA.
+
+const THEMES = {
+  work: {
+    nouns: ["calendar", "inbox", "meeting", "deadline", "feedback", "promotion", "review", "Slack ping", "office light", "commute"],
+    scenes: ["late train home", "quiet desk", "elevator mirror", "kitchen after work", "morning before the first call"],
+    tensions: ["wanting to be seen", "feeling behind", "doing 'enough' but not feeling it", "performing competence", "outgrowing the role"],
+  },
+  love: {
+    nouns: ["distance", "silence", "message", "promise", "weekend", "late reply", "slow fade", "soft goodbye", "unread dot", "second thought"],
+    scenes: ["night walk", "phone glow", "cafe window", "laundry folding", "train seat"],
+    tensions: ["uncertainty", "self-respect", "waiting vs living", "wanting clarity", "choosing peace"],
+  },
+  friendship: {
+    nouns: ["group chat", "birthday", "catch-up", "cancelled plan", "voice note", "inside joke", "long gap", "new city", "old photo", "tiny hurt"],
+    scenes: ["street corner", "brunch table", "text thread", "museum corridor", "bus ride"],
+    tensions: ["drifting without drama", "different life speeds", "wanting closeness without pressure", "showing up imperfectly", "quiet loyalty"],
+  },
+  self: {
+    nouns: ["mirror", "routine", "quiet morning", "Sunday night", "skin", "body", "habit", "journal", "old memory", "new boundary"],
+    scenes: ["window light", "shower steam", "bedside lamp", "grocery aisle", "evening stretch"],
+    tensions: ["outgrowing old versions", "being kind to yourself", "feeling 'late' to life", "wanting simplicity", "missing someone you used to be"],
+  },
+  money: {
+    nouns: ["rent", "savings", "small luxury", "receipt", "card tap", "budget", "future", "quiet fear", "freedom", "trade-off"],
+    scenes: ["checkout line", "empty wallet app", "late-night spreadsheet", "coffee shop", "Sunday planning"],
+    tensions: ["security vs joy", "spending to cope", "earning vs living", "comparing timelines", "control in a chaotic world"],
+  },
+  city: {
+    nouns: ["crosswalk", "neon", "crowd", "night bus", "rain", "streetlight", "tiny apartment", "favorite corner", "late cafe", "window reflection"],
+    scenes: ["rainy platform", "corner store", "city night", "quiet alley", "early morning street"],
+    tensions: ["being alone but not lonely", "noise vs inner calm", "wanting a pause", "romanticizing survival", "finding softness in concrete"],
+  }
+};
+
+const VIBES = {
+  calm: {
+    hookOpeners: ["I didn’t realize", "Lately, I’ve noticed", "Some days I just", "Quietly, I learned", "I keep forgetting"],
+    payoffEnds: ["Maybe that’s enough.", "I’m letting it be simple.", "I’m not rushing it.", "I’m choosing less noise.", "I’m staying with the truth."],
+  },
+  bittersweet: {
+    hookOpeners: ["I miss the version of me that", "It’s strange how", "I didn’t expect to feel", "I thought I was over it, but", "Some nights, I still"],
+    payoffEnds: ["And it still counts.", "That’s the tender part.", "I’m learning to hold both.", "It’s softer than I thought.", "I’m not ashamed of it."],
+  },
+  witty: {
+    hookOpeners: ["Apparently, my brain thinks", "Today’s episode of", "I tried to be chill, and", "My personality is basically", "I love how I"],
+    payoffEnds: ["Anyway. Noted.", "I’ll pretend I learned.", "We move.", "That’s my brand, I guess.", "I’ll call it character growth."],
+  },
+  grounded: {
+    hookOpeners: ["Here’s what actually helped:", "One thing I stopped doing:", "This is the part no one says:", "A small correction I made:", "I changed one thing:"],
+    payoffEnds: ["That’s the whole shift.", "It’s boring, but it works.", "That’s the line I’m keeping.", "I’m building from there.", "No drama. Just direction."],
+  }
+};
+
+const FORMATS = {
+  text: {
+    shot: [
+      "Text-only overlay. Solid background or a soft gradient.",
+      "Fade-in lines. No movement. Keep the type big.",
+      "Use generous margins. Let the silence do work."
+    ],
+    textStyle: [
+      "System font. Regular weight. Center or lower third.",
+      "Fade only. No bounce. No stacked effects.",
+      "Line breaks like poetry, not like captions."
+    ]
+  },
+  hands: {
+    shot: [
+      "Static phone. Hands making coffee / writing / opening a book.",
+      "Natural window light. Keep motion slow.",
+      "Let the audio be quiet. The text is the lead."
+    ],
+    textStyle: [
+      "System font. Regular. Lower third.",
+      "Fade-in per line. Keep it clean.",
+      "Avoid emojis. Use punctuation instead."
+    ]
+  },
+  scenery: {
+    shot: [
+      "Short clips: streetlight, train window, rain, empty cafe.",
+      "No fast cuts. One or two shots max.",
+      "Text should feel like a thought, not an ad."
+    ],
+    textStyle: [
+      "System font. Regular. Center.",
+      "Fade-in lines. High contrast.",
+      "Keep it minimal: 2–4 lines total."
+    ]
+  }
+};
+
+const AUDIO = {
+  calm: ["Ambient pad", "Soft piano", "Room tone + light hiss"],
+  bittersweet: ["Minimal piano", "Warm strings (very low)", "Lo-fi ambient (no drop)"],
+  witty: ["Light groove (no drop)", "Soft indie pop (low)", "Minimal beat, very quiet"],
+  grounded: ["Neutral ambient", "Soft metronome-like texture", "Calm synth pluck (subtle)"]
+};
+
+const CTAS = [
+  "Save if this felt familiar.",
+  "If this hit, save it for later.",
+  "Comment “same” (quietly).",
+  "Save this for the days you forget.",
+  "If you’ve felt this too, you’re not alone."
+];
+
+// 5 script templates (functions) returning {title, hook, story, payoff, cta}
+const TEMPLATES = [
+  templateJustMe,
+  templateQuietContradiction,
+  templateOneSentenceTruth,
+  templateSmallHabitBigFeeling,
+  templateUnsentThought
+];
+
+function templateJustMe(ctx){
+  const { vibe, theme, keyword, pick } = ctx;
+  const opener = pick(VIBES[vibe].hookOpeners);
+  const scene = pick(THEMES[theme].scenes);
+  const tension = pick(THEMES[theme].tensions);
+  const obj = keyword || pick(THEMES[theme].nouns);
+
+  return {
+    title: "I thought it was just me",
+    hook: `${opener} how much ${obj} can change a whole day.`,
+    story: `In ${scene}, I catch myself\n${tension}.\nNot loudly.\nJust… quietly.`,
+    payoff: `And then I remember:\nI don’t need to “fix” it.\nI just need to notice it.`,
+    cta: pick(CTAS)
+  };
+}
+
+function templateQuietContradiction(ctx){
+  const { vibe, theme, keyword, pick } = ctx;
+  const opener = pick(VIBES[vibe].hookOpeners);
+  const a = keyword || pick(THEMES[theme].nouns);
+  const b = pick(THEMES[theme].tensions);
+
+  return {
+    title: "Quiet contradiction",
+    hook: `${opener} I want more… and also less.`,
+    story: `More space for ${a}.\nLess noise around ${b}.\n\nBoth can be true.\nThat’s the weird peace of it.`,
+    payoff: pick(VIBES[vibe].payoffEnds),
+    cta: pick(CTAS)
+  };
+}
+
+function templateOneSentenceTruth(ctx){
+  const { vibe, theme, keyword, pick } = ctx;
+  const truth = pick([
+    "A good life is often just a quieter schedule.",
+    "Sometimes growth looks like fewer explanations.",
+    "Peace is a skill, not a personality trait.",
+    "Confidence is often just repetition without panic.",
+    "You can miss something and still move on."
+  ]);
+
+  const obj = keyword || pick(THEMES[theme].nouns);
+  const scene = pick(THEMES[theme].scenes);
+
+  return {
+    title: "One sentence truth",
+    hook: truth,
+    story: `I realized it in ${scene}.\nNot during a big moment.\nJust while thinking about ${obj}.`,
+    payoff: pick(VIBES[vibe].payoffEnds),
+    cta: pick(CTAS)
+  };
+}
+
+function templateSmallHabitBigFeeling(ctx){
+  const { vibe, theme, keyword, pick } = ctx;
+  const habit = pick([
+    "I stopped checking my phone in the first five minutes.",
+    "I started leaving one hour unplanned.",
+    "I wrote one honest sentence each night.",
+    "I said no without adding a paragraph.",
+    "I stopped trying to make everything ‘worth it.’"
+  ]);
+
+  const obj = keyword || pick(THEMES[theme].nouns);
+  return {
+    title: "Small habit, big feeling",
+    hook: habit,
+    story: `It didn’t change my life.\nBut it changed my relationship with ${obj}.\n\nThe day got softer.\nMy brain got quieter.`,
+    payoff: pick(VIBES[vibe].payoffEnds),
+    cta: pick(CTAS)
+  };
+}
+
+function templateUnsentThought(ctx){
+  const { vibe, theme, keyword, pick } = ctx;
+  const you = pick([
+    "someone I liked",
+    "my past self",
+    "the version of me that was trying",
+    "a friend I haven’t called",
+    "the person I keep forgiving"
+  ]);
+
+  const line = pick([
+    "I hope you feel safe soon.",
+    "I wasn’t asking for much.",
+    "I’m proud of you for staying gentle.",
+    "I’m not mad. I’m just done pretending.",
+    "I didn’t lose you. I found my peace."
+  ]);
+
+  const obj = keyword || pick(THEMES[theme].nouns);
+
+  return {
+    title: "Unsent thought",
+    hook: `A thought I never sent to ${you}:`,
+    story: `"${line}"\n\nI wrote it and didn’t hit send.\nBut it changed how I hold ${obj}.`,
+    payoff: pick(VIBES[vibe].payoffEnds),
+    cta: pick(CTAS)
+  };
+}
+
+/* =========================
+   Generator + UI
+   ========================= */
+
+const elTheme = document.getElementById("theme");
+const elVibe = document.getElementById("vibe");
+const elFormat = document.getElementById("format");
+const elKeyword = document.getElementById("keyword");
+const elCount = document.getElementById("count");
+
+const btnGenerate = document.getElementById("generate");
+const btnShuffle = document.getElementById("shuffle");
+const btnCopyScript = document.getElementById("copyScript");
+const btnCopyAll = document.getElementById("copyAll");
+const btnClear = document.getElementById("clear");
+
+const outEl = document.getElementById("out");
+const metaEl = document.getElementById("meta");
+const statusEl = document.getElementById("status");
+
+const shootEl = document.getElementById("shoot");
+const audioEl = document.getElementById("audio");
+const textStyleEl = document.getElementById("textstyle");
+const ctaEl = document.getElementById("cta");
+
+const toast = document.getElementById("toast");
+
+let lastOutputs = [];
+
+function setStatus(t){ statusEl.textContent = t; }
+
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+function normalizeKeyword(s){
+  const t = (s || "").trim();
+  // Avoid weird characters / overlong input.
+  return t.slice(0, 40);
+}
+
+// Ensures 15s structure + clean overlay-friendly line lengths (soft constraint).
+function formatScript(o){
+  const hook = clampLines(o.hook, 2, 40);
+  const story = clampLines(o.story, 4, 40);
+  const payoff = clampLines(o.payoff, 3, 40);
+
+  return `0–2s\nText: ${hook}\n\n2–10s\nText:\n${story}\n\n10–15s\nText:\n${payoff}\n\nCTA (small):\n${o.cta}`;
+}
+
+function clampLines(text, maxLines, maxChars){
+  // Split by existing line breaks, then re-wrap if lines too long.
+  const raw = String(text || "").split("\n").map(s=>s.trim()).filter(Boolean);
+  const wrapped = [];
+  for(const ln of raw){
+    if(ln.length <= maxChars){
+      wrapped.push(ln);
+    }else{
+      // simple wrap at nearest space before maxChars
+      let rest = ln;
+      while(rest.length > maxChars && wrapped.length < 20){
+        let cut = rest.lastIndexOf(" ", maxChars);
+        if(cut < 18) cut = maxChars;
+        wrapped.push(rest.slice(0, cut).trim());
+        rest = rest.slice(cut).trim();
+      }
+      if(rest) wrapped.push(rest);
+    }
+  }
+  return wrapped.slice(0, maxLines).join("\n");
+}
+
+function generateOne(ctx){
+  // 80% empathy templates, 20% still within style.
+  // Current set is already empathy-forward; we can bias by duplicating empathy-heavy ones.
+  const weighted = [TEMPLATES[0], TEMPLATES[1], TEMPLATES[0], TEMPLATES[2], TEMPLATES[3], TEMPLATES[0], TEMPLATES[4]];
+  const tpl = pick(weighted);
+  const base = tpl(ctx);
+
+  // Title variations (subtle)
+  const title = pick([
+    base.title,
+    "A quiet realization",
+    "A small truth",
+    "Something I noticed",
+    "A thought I had today"
+  ]);
+
+  return { ...base, title };
+}
+
+function generate(){
+  const theme = elTheme.value;
+  const vibe = elVibe.value;
+  const format = elFormat.value;
+  const keyword = normalizeKeyword(elKeyword.value);
+  const count = parseInt(elCount.value, 10);
+
+  const ctx = { theme, vibe, format, keyword, pick };
+
+  const outputs = [];
+  for(let i=0;i<count;i++){
+    outputs.push(generateOne(ctx));
+  }
+  lastOutputs = outputs;
+
+  // Render outputs
+  outEl.innerHTML = "";
+  outputs.forEach((o, idx)=>{
+    const block = document.createElement("div");
+    block.style.marginBottom = "12px";
+    block.innerHTML = `
+      <div class="box">
+        <div class="t">Option ${idx+1} · ${escapeHtml(o.title)}</div>
+        <div class="v script mono">${escapeHtml(formatScript(o))}</div>
+      </div>
+    `;
+    outEl.appendChild(block);
+  });
+
+  // Render side suggestions
+  const shots = FORMATS[format].shot;
+  const ts = FORMATS[format].textStyle;
+  shootEl.textContent = pick(shots);
+  textStyleEl.textContent = pick(ts);
+  audioEl.textContent = pick(AUDIO[vibe]);
+  ctaEl.textContent = pick(CTAS);
+
+  metaEl.textContent = `${cap(theme)} · ${cap(vibe)} · ${cap(format)}` + (keyword ? ` · "${keyword}"` : "");
+  setStatus("Generated");
+}
+
+function cap(s){
+  if(!s) return "";
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function escapeHtml(s){
+  return String(s ?? "").replace(/[&<>"']/g, m=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[m]));
+}
+
+async function copyText(text){
+  try{
+    await navigator.clipboard.writeText(text);
+    showToast("Copied");
+  }catch(e){
+    // Fallback
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+    showToast("Copied");
+  }
+}
+
+function showToast(msg){
+  toast.textContent = msg;
+  toast.classList.add("show");
+  setTimeout(()=> toast.classList.remove("show"), 900);
+}
+
+btnGenerate.addEventListener("click", ()=>{
+  setStatus("Generating…");
+  setTimeout(generate, 10);
+});
+
+btnShuffle.addEventListener("click", ()=>{
+  // Shuffle just regenerates with current inputs
+  setStatus("Shuffling…");
+  setTimeout(generate, 10);
+});
+
+btnCopyScript.addEventListener("click", ()=>{
+  if(!lastOutputs.length){ showToast("Nothing to copy"); return; }
+  // Copy first option script only
+  const text = formatScript(lastOutputs[0]);
+  copyText(text);
+});
+
+btnCopyAll.addEventListener("click", ()=>{
+  if(!lastOutputs.length){ showToast("Nothing to copy"); return; }
+  const theme = cap(elTheme.value);
+  const vibe = cap(elVibe.value);
+  const format = cap(elFormat.value);
+  const keyword = normalizeKeyword(elKeyword.value);
+
+  const header = `Reel Plotter\n${theme} · ${vibe} · ${format}${keyword ? ` · "${keyword}"` : ""}\n\n`;
+  const body = lastOutputs.map((o,i)=>(
+    `Option ${i+1}: ${o.title}\n\n${formatScript(o)}\n`
+  )).join("\n— — —\n\n");
+
+  const extras =
+`Shooting suggestion: ${shootEl.textContent}
+Audio direction: ${audioEl.textContent}
+Text style: ${textStyleEl.textContent}
+CTA: ${ctaEl.textContent}`;
+
+  copyText(header + body + "\n\n" + extras);
+});
+
+btnClear.addEventListener("click", ()=>{
+  lastOutputs = [];
+  outEl.innerHTML = "";
+  metaEl.textContent = "—";
+  shootEl.textContent = "—";
+  audioEl.textContent = "—";
+  textStyleEl.textContent = "—";
+  ctaEl.textContent = "—";
+  setStatus("Cleared");
+});
+
+// Nice default: generate once on load
+generate();
+</script>
+</body>
+</html>
